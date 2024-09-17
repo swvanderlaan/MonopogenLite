@@ -150,7 +150,7 @@ def germline(args):
 			with open(bam_filter) as p:
 				for s in p:
 					N_sample = N_sample + 1
-			if args.verbose:
+			if args.debug:
 				print(f"  -- DEBUGGING: The number of samples for the given region (should always be the same for each region): {N_sample}.")
 
 			# NEW code -- 2024-09-17
