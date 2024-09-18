@@ -124,31 +124,31 @@ fi
 #     fi
 # }
 
-# Submit a job to download data for chromosomes 1-22 and X
-if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to download the phased high-coverage 1000 Genomes VCF files."
-fi
-SLURM_DOWNLOAD=$(sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-CHR=\${SLURM_ARRAY_TASK_ID}
-if [[ "\$CHR" == "23" ]]; then
-    wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz
-else
-    wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr\${CHR}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
-fi
-EOF
-)
+# # Submit a job to download data for chromosomes 1-22 and X
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to download the phased high-coverage 1000 Genomes VCF files."
+# fi
+# SLURM_DOWNLOAD=$(sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# CHR=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHR" == "23" ]]; then
+#     wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz
+# else
+#     wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr\${CHR}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+# fi
+# EOF
+# )
 
-# Extract the job ID from the output
-SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
 # Submit array job to filter chromosomes 1-22 and X
 if [[ $VERBOSE -eq 1 ]]; then
     # echo "> Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
     echo "> Submitting job to filter the VCF files."
 fi
-# SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
