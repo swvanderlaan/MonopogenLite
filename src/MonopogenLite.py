@@ -30,11 +30,13 @@ from pysam import VariantFile # handle VCF files
 # from bamProcess import * 
 from germline import *
 
+# Change log:
+# * v1.1.0 2024-09-18: Added chromosome X support.
 # * v1.0.0 2024-09-19: Initial version. MonoPogenLite is a light-version fork of Monopogen. It only includes the germline-variant-calling pipeline.
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.0.0'
-VERSION_DATE = '2024-09-17'
+VERSION = '1.1.0'
+VERSION_DATE = '2024-09-18'
 COPYRIGHT = 'Copyright 1979-2024. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -158,9 +160,11 @@ def germline(args):
 			if args.verbose:
 				print(f"  - Checking the imputation panel file: [{args.imputation_panel}].")
 			if record[0] == "chrX":
-				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
+				# imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
+				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4." + record[0] + ".vcf.gz"
 			elif record[0] in [f"chr{n}" for n in range(1, 23)]:
-				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+				# imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4." + record[0] + ".vcf.gz"
 			else: 
 				print(f"ERROR: The chromosome {record[0]} is not supported!")
 				sys.exit(1)
