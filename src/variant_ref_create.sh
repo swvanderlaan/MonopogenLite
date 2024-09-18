@@ -124,6 +124,8 @@ if [[ $VERBOSE -eq 1 ]]; then
 fi
 SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
+source ~/.bashrc
+mamba activate monopogen
 CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
@@ -146,6 +148,8 @@ if [[ $VERBOSE -eq 1 ]]; then
 fi
 SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
+source ~/.bashrc
+mamba activate monopogen
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 chrom_files=\$(ls "${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr*.vcf.gz" | tr '\n' ' ')
 bcftools concat \$chrom_files --output-type z --output-file \$OUT_FILE
@@ -161,6 +165,8 @@ if [[ $VERBOSE -eq 1 ]]; then
 fi
 SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_CONCAT_JOBID --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
+source ~/.bashrc
+mamba activate monopogen
 INPUT="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz"
 bcftools annotate --include 'AF>$AF' \$INPUT --output-type z --output-file \$OUT_FILE
@@ -176,6 +182,8 @@ if [[ $VERBOSE -eq 1 ]]; then
 fi
 sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_split --output="$RESOURCE_DIR/pp_split_%A_%a.out" --error="$RESOURCE_DIR/pp_split_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
+source ~/.bashrc
+mamba activate monopogen
 CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     CHROM="X"
