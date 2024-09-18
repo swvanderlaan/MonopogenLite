@@ -35,8 +35,8 @@ print_help() {
     echo "Description:"
     echo "  This script downloads the phased high-coverage 1000 Genomes VCF files "
     echo "  for chromosomes 1-22 and X for use as a variant reference panel."
-    echo "  This script filters, concatenates, and annotates the VCF files using bcftools."
-    echo "  It runs jobs on a SLURM-based system, processing chromosomes 1-22 and X."
+    echo "  It filters, concatenates, and annotates the VCF files using bcftools."
+    echo "  It will run jobs on a SLURM-based system, processing chromosomes 1-22 and X."
     echo ""
     echo "Arguments:"
     echo "  --resource-dir  Directory to store resources and outputs."
@@ -120,7 +120,7 @@ SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
 # Submit array job to filter chromosomes 1-22 and X
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "Submitting job to filter the VCF files."
+    echo "Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
 fi
 SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
@@ -128,7 +128,7 @@ CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' --samples "." \$VCF_IN --regions chrX --output-type z --output-file \$OUT_FILE --force-samples
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' --samples "." \$VCF_IN --regions chrX --regions ^chrX:2781479-155701383 --output-type z --output-file \$OUT_FILE --force-samples
 else
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
