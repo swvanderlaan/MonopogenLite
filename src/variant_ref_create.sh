@@ -131,10 +131,12 @@ if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
     bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' --samples "." \$VCF_IN --regions chrX --regions ^chrX:2781479-155701383 --output-type z --output-file \$OUT_FILE --force-samples
+    tabix -p vcf \$OUT_FILE
 else
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
     bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' --samples "." \$VCF_IN --regions chr\$CHROM --output-type z --output-file \$OUT_FILE --force-samples
+    tabix -p vcf \$OUT_FILE
 fi
 EOF
 )
@@ -153,6 +155,7 @@ mamba activate monopogen
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 chrom_files=\$(ls "${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr*.vcf.gz" | tr '\n' ' ')
 bcftools concat \$chrom_files --output-type z --output-file \$OUT_FILE
+tabix -p vcf \$OUT_FILE
 EOF
 )
 
@@ -170,6 +173,7 @@ mamba activate monopogen
 INPUT="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz"
 bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' \$INPUT --output-type z --output-file \$OUT_FILE
+tabix -p vcf \$OUT_FILE
 EOF
 )
 
@@ -190,6 +194,7 @@ if [[ "\$CHROM" == "23" ]]; then
 fi
 OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr\${CHROM}.vcf.gz"
 bcftools view --regions chr\$CHROM ${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz --output-type z --output-file \$OUT_SPLIT_FILE
+tabix -p vcf \$OUT_SPLIT_FILE
 EOF
 
 if [[ $VERBOSE -eq 1 ]]; then
