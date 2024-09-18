@@ -180,5 +180,5 @@ bcftools view --regions chr\$CHROM ${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonl
 EOF
 
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "Jobs submitted."
+    echo "All jobs submitted. Let's wait and see. Have a beer, buddy!"
 fi
