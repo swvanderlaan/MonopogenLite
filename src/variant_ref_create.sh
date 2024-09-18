@@ -76,6 +76,11 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+# Starting script
+echo "$VERSION_NAME"
+echo "version $VERSION ($VERSION_DATE)"
+echo ""
+
 # Check if resource directory is provided
 if [[ -z "$RESOURCE_DIR" ]]; then
     echo "Error: --resource-dir flag is required."
@@ -182,3 +187,6 @@ EOF
 if [[ $VERBOSE -eq 1 ]]; then
     echo "All jobs submitted. Let's wait and see. Have a beer, buddy!"
 fi
+
+print_version
+### END OF SCRIPT ###
