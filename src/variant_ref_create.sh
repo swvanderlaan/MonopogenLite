@@ -169,7 +169,7 @@ source ~/.bashrc
 mamba activate monopogen
 INPUT="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz"
-bcftools annotate --include 'AF>$AF' \$INPUT --output-type z --output-file \$OUT_FILE
+bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' \$INPUT --output-type z --output-file \$OUT_FILE
 EOF
 )
 
