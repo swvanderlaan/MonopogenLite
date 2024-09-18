@@ -63,7 +63,7 @@ print_version() {
 VERBOSE=0
 AF=0.0005
 VARIANT_TYPE="snp"
-DRY_RUN=0
+# DRY_RUN=0
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
