@@ -42,6 +42,7 @@ print_help() {
     echo "  --resource-dir  Directory to store resources and outputs."
     echo "  --af            Allele frequency filter, c.q. variants to keep above AF>X (default: 0.0005)."
     echo "  --variant-type  Variant type filter (default: snp)."
+    # echo "  --dry-run       Simulate the job submissions without running them."
     echo "  --verbose       Enable verbose output."
     echo "  --help          Show this help message and exit."
     echo "  --version       Display version information and exit."
@@ -62,6 +63,7 @@ print_version() {
 VERBOSE=0
 AF=0.0005
 VARIANT_TYPE="snp"
+DRY_RUN=0
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
@@ -69,6 +71,7 @@ while [[ "$#" -gt 0 ]]; do
         --resource-dir) RESOURCE_DIR="$2"; shift ;;
         --af) AF="$2"; shift ;;
         --variant-type) VARIANT_TYPE="$2"; shift ;;
+        # --dry-run) DRY_RUN=1 ;;
         --verbose) VERBOSE=1 ;;
         --help) print_help ;;
         --version) print_version ;;
@@ -111,6 +114,15 @@ mkdir -p "$OUT_DIR"
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Output directory created at $OUT_DIR"
 fi
+
+# Function to submit or print the job commands
+# run_or_dry_run() {
+#     if [[ $DRY_RUN -eq 1 ]]; then
+#         echo "DRY RUN: $@"
+#     else
+#         eval $@
+#     fi
+# }
 
 # Submit a job to download data for chromosomes 1-22 and X
 if [[ $VERBOSE -eq 1 ]]; then
