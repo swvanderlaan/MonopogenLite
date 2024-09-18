@@ -92,8 +92,8 @@ SBATCH_MAIL="FAIL"
 SBATCH_MAIL_USER="s.w.vanderlaan-2@umcutrecht.nl"
 
 # SLURM parameters
-OUT_DIR="$RESOURCE_DIR/output"
-mkdir -p "$OUT_DIR"
+OUT_DIR="$RESOURCE_DIR"
+mkdir -pv "$OUT_DIR"
 
 # Submit a job to download data for chromosomes 1-22 and X
 if [[ $VERBOSE -eq 1 ]]; then
