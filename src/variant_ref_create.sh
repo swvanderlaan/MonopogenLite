@@ -110,11 +110,13 @@ SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --
 CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
+    OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
+    bcftools view -i 'AF>0.0 & TYPE="snp"' -s "." \$VCF_IN -r chrX -Oz -o \$OUT_FILE --force-samples
 else
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+    OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
+    bcftools view -i 'AF>0.0 & TYPE="snp"' -s "." \$VCF_IN -r chr\$CHROM -Oz -o \$OUT_FILE --force-samples
 fi
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-bcftools view -i 'AF>0.0 & TYPE="snp"' -s "." \$VCF_IN -r \$CHROM -Oz -o \$OUT_FILE --force-samples
 EOF
 )
 
@@ -145,10 +147,13 @@ EOF
 # Extract the job ID from the output
 SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
 
-# Submit job to split the concatenated VCF back into individual chromosomes
-sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --job-name=pp_split --output="$RESOURCE_DIR/pp_split_%A_%a.out" --error="$RESOURCE_DIR/pp_split_%A_%a.err" --array=1-22,X --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# Submit job to split the concatenated VCF back into individual chromosomes (1-22 and X as 23)
+sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_split --output="$RESOURCE_DIR/pp_split_%A_%a.out" --error="$RESOURCE_DIR/pp_split_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 CHR=\${SLURM_ARRAY_TASK_ID}
+if [[ "\$CHR" == "23" ]]; then
+    CHR="X"
+fi
 OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr\${CHR}.vcf.gz"
 bcftools view -r \$CHR ${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz -Oz -o \$OUT_SPLIT_FILE
 EOF
