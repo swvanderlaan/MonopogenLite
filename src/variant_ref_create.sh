@@ -80,6 +80,12 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+# Check if conda is installed
+echo "Actvating conda environment..."
+source ~/.bashrc
+mamba activate monopogen
+echo ""
+
 # Starting script
 echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
@@ -105,15 +111,19 @@ if [[ $VERBOSE -eq 1 ]]; then
     echo "> Resource directory created at $RESOURCE_DIR"
 fi
 
-SBATCH_MAIL="FAIL"
-SBATCH_MAIL_USER="s.w.vanderlaan-2@umcutrecht.nl"
-
-# SLURM parameters
 OUT_DIR="$RESOURCE_DIR"
 mkdir -p "$OUT_DIR"
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Output directory created at $OUT_DIR"
 fi
+
+# Set up SLURM parameters
+SBATCH_MAIL="FAIL"
+SBATCH_MAIL_USER="s.w.vanderlaan-2@umcutrecht.nl"
+
+# Setting up the reference genome
+GRCh38=$(refgenie seek hg38/fasta)
+# GRCh38="/hpc/dhl_ec/data/references/fasta/refdata-gex-GRCh38-2024-A/fasta/genome.fa"
 
 # Function to submit or print the job commands
 # run_or_dry_run() {
@@ -174,14 +184,33 @@ SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to concatenate the filtered VCF files."
+    echo "> Submitting job to normalize the filtered VCF files."
 fi
-SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
-chrom_files=\$(ls "${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr*.vcf.gz" | tr '\n' ' ')
+CHROM=\${SLURM_ARRAY_TASK_ID}
+IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
+OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_afchr\${CHROM}.vcf.gz"
+bcftools  norm -m-both --rm-dup both --check-ref wx --fasta-ref \$GRCh38 \$IN_FILE --output-type z --output-file \$OUT_FILE
+tabix -fp vcf \$OUT_FILE
+EOF
+)
+
+# Extract the job ID from the output
+SLURM_NORM_JOBID=$(echo $SLURM_NORM | awk '{print $4}')
+
+# Wait for the array job to finish before concatenating the files
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "> Submitting job to concatenate the filtered VCF files."
+fi
+SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+#!/bin/bash
+source ~/.bashrc
+mamba activate monopogen
+OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr1_22X.vcf.gz"
+chrom_files=\$(ls "${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr*.vcf.gz" | tr '\n' ' ')
 bcftools concat \$chrom_files --output-type z --output-file \$OUT_FILE
 tabix -fp vcf \$OUT_FILE
 EOF
@@ -198,9 +227,9 @@ SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_CONCAT_JOBID --job-name=pp_a
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
-INPUT="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz"
-OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.cellsnp.vcf.gz"
+INPUT="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr1_22X.vcf.gz"
+OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr1_22X.vcf.gz"
+OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr1_22X.cellsnp.vcf.gz"
 bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' \$INPUT --output-type z --output-file \$OUT_FILE
 tabix -fp vcf \$OUT_FILE
 bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' --samples "." \$INPUT --output-type z --output-file \$OUT_FILE_CELLSNP --force-samples
@@ -223,8 +252,9 @@ CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     CHROM="X"
 fi
-OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr\${CHROM}.vcf.gz"
-bcftools view --regions chr\$CHROM ${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz --output-type z --output-file \$OUT_SPLIT_FILE
+IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr1_22X.vcf.gz"
+OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.vcf.gz"
+bcftools view --regions chr\$CHROM \$IN_FILE --output-type z --output-file \$OUT_SPLIT_FILE
 tabix -fp vcf \$OUT_SPLIT_FILE
 EOF
 
