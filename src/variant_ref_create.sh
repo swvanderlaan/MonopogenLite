@@ -114,8 +114,8 @@ SBATCH_MAIL="FAIL"
 SBATCH_MAIL_USER="s.w.vanderlaan-2@umcutrecht.nl"
 
 # Setting up the reference genome
-GRCh38=$(refgenie seek hg38/fasta)
-# GRCh38="/hpc/dhl_ec/data/references/fasta/refdata-gex-GRCh38-2024-A/fasta/genome.fa"
+# GRCh38=$(refgenie seek hg38/fasta)
+GRCh38="/hpc/dhl_ec/data/references/fasta/refdata-gex-GRCh38-2024-A/fasta/genome.fa"
 
 # Function to submit or print the job commands
 # run_or_dry_run() {
