@@ -196,5 +196,8 @@ if [[ $VERBOSE -eq 1 ]]; then
     echo "All jobs submitted. Let's wait and see. Have a beer, buddy!"
 fi
 
+echo ""
 print_version
+echo ""
+$COPYRIGHT_TEXT
 ### END OF SCRIPT ###
