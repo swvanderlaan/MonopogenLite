@@ -30,7 +30,7 @@ Reference: http://opensource.org.
 print_help() {
     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
     echo ""
-    echo "Usage: $0 --resource-dir <DIR> [--verbose] [--help] [--version]"
+    echo "Usage: $0 --resource-dir <DIR> [--af <FLOAT>] [--variant-type <TYPE>] [--verbose] [--help] [--version]"
     echo ""
     echo "Description:"
     echo "  This script downloads the phased high-coverage 1000 Genomes VCF files "
@@ -40,6 +40,8 @@ print_help() {
     echo ""
     echo "Arguments:"
     echo "  --resource-dir  Directory to store resources and outputs."
+    echo "  --af            Allele frequency filter, c.q. variants to keep above AF>X (default: 0.0005)."
+    echo "  --variant-type  Variant type filter (default: snp)."
     echo "  --verbose       Enable verbose output."
     echo "  --help          Show this help message and exit."
     echo "  --version       Display version information and exit."
@@ -57,11 +59,15 @@ print_version() {
 
 # Default values
 VERBOSE=0
+AF=0.0005
+VARIANT_TYPE="snp"
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --resource-dir) RESOURCE_DIR="$2"; shift ;;
+        --af) AF="$2"; shift ;;
+        --variant-type) VARIANT_TYPE="$2"; shift ;;
         --verbose) VERBOSE=1 ;;
         --help) print_help ;;
         --version) print_version ;;
@@ -90,6 +96,9 @@ OUT_DIR="$RESOURCE_DIR/output"
 mkdir -p "$OUT_DIR"
 
 # Submit a job to download data for chromosomes 1-22 and X
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "Submitting job to download the phased high-coverage 1000 Genomes VCF files."
+fi
 SLURM_DOWNLOAD=$(sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 CHR=\${SLURM_ARRAY_TASK_ID}
@@ -105,17 +114,20 @@ EOF
 SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
 # Submit array job to filter chromosomes 1-22 and X
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "Submitting job to filter the VCF files."
+fi
 SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
-    bcftools view -i 'AF>0.0 & TYPE="snp"' -s "." \$VCF_IN -r chrX -Oz -o \$OUT_FILE --force-samples
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' --samples "." \$VCF_IN --regions chrX --output-type z --output-file \$OUT_FILE --force-samples
 else
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-    bcftools view -i 'AF>0.0 & TYPE="snp"' -s "." \$VCF_IN -r chr\$CHROM -Oz -o \$OUT_FILE --force-samples
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' --samples "." \$VCF_IN --regions chr\$CHROM --output-type z --output-file \$OUT_FILE --force-samples
 fi
 EOF
 )
@@ -124,11 +136,14 @@ EOF
 SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "Submitting job to concatenate the filtered VCF files."
+fi
 SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 chrom_files=\$(ls "${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr*.vcf.gz" | tr '\n' ' ')
-bcftools concat \$chrom_files -Oz -o \$OUT_FILE
+bcftools concat \$chrom_files --output-type z --output-file \$OUT_FILE
 EOF
 )
 
@@ -136,11 +151,14 @@ EOF
 SLURM_CONCAT_JOBID=$(echo $SLURM_CONCAT | awk '{print $4}')
 
 # Submit the annotation job after concatenation
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "Submitting job to annotate the concatenated VCF."
+fi
 SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_CONCAT_JOBID --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 INPUT="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz"
-bcftools annotate -x ^INFO/AF -i 'AF>0.0005' \$INPUT -Oz -o \$OUT_FILE
+bcftools annotate --include 'AF>$AF' \$INPUT --output-type z --output-file \$OUT_FILE
 EOF
 )
 
@@ -148,14 +166,17 @@ EOF
 SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
 
 # Submit job to split the concatenated VCF back into individual chromosomes (1-22 and X as 23)
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "Submitting job to split the concatenated VCF back into individual chromosomes."
+fi
 sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_split --output="$RESOURCE_DIR/pp_split_%A_%a.out" --error="$RESOURCE_DIR/pp_split_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
-CHR=\${SLURM_ARRAY_TASK_ID}
-if [[ "\$CHR" == "23" ]]; then
-    CHR="X"
+CHROM=\${SLURM_ARRAY_TASK_ID}
+if [[ "\$CHROM" == "23" ]]; then
+    CHROM="X"
 fi
-OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr\${CHR}.vcf.gz"
-bcftools view -r \$CHR ${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz -Oz -o \$OUT_SPLIT_FILE
+OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr\${CHROM}.vcf.gz"
+bcftools view --regions chr\$CHROM ${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz --output-type z --output-file \$OUT_SPLIT_FILE
 EOF
 
 if [[ $VERBOSE -eq 1 ]]; then
