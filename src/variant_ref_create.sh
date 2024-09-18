@@ -80,16 +80,17 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+# Starting script
+echo "$VERSION_NAME"
+echo "version $VERSION ($VERSION_DATE)"
+echo ""
+
 # Check if conda is installed
 echo "Actvating conda environment..."
 source ~/.bashrc
 mamba activate monopogen
 echo ""
 
-# Starting script
-echo "$VERSION_NAME"
-echo "version $VERSION ($VERSION_DATE)"
-echo ""
 # Check if resource directory is provided
 if [[ -z "$RESOURCE_DIR" ]]; then
     echo "Error: --resource-dir flag is required."
