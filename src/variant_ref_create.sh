@@ -144,7 +144,8 @@ SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
 # Submit array job to filter chromosomes 1-22 and X
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
+    # echo "> Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
+    echo "> Submitting job to filter the VCF files."
 fi
 # SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
@@ -155,15 +156,15 @@ CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
-    tabix -p vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chrX --regions ^chrX:2781479-155701383 --output-type z --output-file \$OUT_FILE 
-    tabix -p vcf \$OUT_FILE
+    tabix -fp vcf \$VCF_IN
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chrX --output-type z --output-file \$OUT_FILE 
+    tabix -fp vcf \$OUT_FILE
 else
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-    tabix -p vcf \$VCF_IN
+    tabix -fp vcf \$VCF_IN
     bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chr\$CHROM --output-type z --output-file \$OUT_FILE 
-    tabix -p vcf \$OUT_FILE
+    tabix -fp vcf \$OUT_FILE
 fi
 EOF
 )
@@ -182,7 +183,7 @@ mamba activate monopogen
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 chrom_files=\$(ls "${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr*.vcf.gz" | tr '\n' ' ')
 bcftools concat \$chrom_files --output-type z --output-file \$OUT_FILE
-tabix -p vcf \$OUT_FILE
+tabix -fp vcf \$OUT_FILE
 EOF
 )
 
@@ -201,8 +202,9 @@ INPUT="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz"
 OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.cellsnp.vcf.gz"
 bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' \$INPUT --output-type z --output-file \$OUT_FILE
-tabix -p vcf \$OUT_FILE
+tabix -fp vcf \$OUT_FILE
 bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' --samples "." \$INPUT --output-type z --output-file \$OUT_FILE_CELLSNP --force-samples
+tabix -fp vcf \$OUT_FILE_CELLSNP
 EOF
 )
 
@@ -223,7 +225,7 @@ if [[ "\$CHROM" == "23" ]]; then
 fi
 OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr\${CHROM}.vcf.gz"
 bcftools view --regions chr\$CHROM ${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz --output-type z --output-file \$OUT_SPLIT_FILE
-tabix -p vcf \$OUT_SPLIT_FILE
+tabix -fp vcf \$OUT_SPLIT_FILE
 EOF
 
 if [[ $VERBOSE -eq 1 ]]; then
