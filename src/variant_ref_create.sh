@@ -90,7 +90,7 @@ OUT_DIR="$RESOURCE_DIR/output"
 mkdir -p "$OUT_DIR"
 
 # Submit a job to download data for chromosomes 1-22 and X
-sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_DOWNLOAD=$(sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 CHR=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHR" == "23" ]]; then
@@ -99,9 +99,13 @@ else
     wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr\${CHR}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
 fi
 EOF
+)
+
+# Extract the job ID from the output
+SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
 # Submit array job to filter chromosomes 1-22 and X
-sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
@@ -112,25 +116,37 @@ fi
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
 bcftools view -i 'AF>0.0 & TYPE="snp"' -s "." \$VCF_IN -r \$CHROM -Oz -o \$OUT_FILE --force-samples
 EOF
+)
+
+# Extract the job ID from the output
+SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
-sbatch --dependency=afterok:$SLURM_JOB_ID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 chrom_files=\$(ls "${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr*.vcf.gz" | tr '\n' ' ')
 bcftools concat \$chrom_files -Oz -o \$OUT_FILE
 EOF
+)
+
+# Extract the job ID from the output
+SLURM_CONCAT_JOBID=$(echo $SLURM_CONCAT | awk '{print $4}')
 
 # Submit the annotation job after concatenation
-sbatch --dependency=afterok:$SLURM_JOB_ID --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_CONCAT_JOBID --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 INPUT="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr1_22X.vcf.gz"
 bcftools annotate -x ^INFO/AF -i 'AF>0.0005' \$INPUT -Oz -o \$OUT_FILE
 EOF
+)
+
+# Extract the job ID from the output
+SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
 
 # Submit job to split the concatenated VCF back into individual chromosomes
-sbatch --dependency=afterok:$SLURM_JOB_ID --job-name=pp_split --output="$RESOURCE_DIR/pp_split_%A_%a.out" --error="$RESOURCE_DIR/pp_split_%A_%a.err" --array=1-22,X --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --job-name=pp_split --output="$RESOURCE_DIR/pp_split_%A_%a.out" --error="$RESOURCE_DIR/pp_split_%A_%a.err" --array=1-22,X --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 CHR=\${SLURM_ARRAY_TASK_ID}
 OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af_5e4.chr\${CHR}.vcf.gz"
