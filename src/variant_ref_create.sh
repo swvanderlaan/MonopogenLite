@@ -54,6 +54,7 @@ print_help() {
 print_version() {
     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
     echo "$COPYRIGHT"
+    echo "$COPYRIGHT_TEXT"
     exit 1
 }
 
@@ -80,7 +81,15 @@ done
 echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
 echo ""
-
+echo "Starting $VERSION_NAME"
+echo ""
+echo "These are the settings:"
+echo "  Resource directory........: $RESOURCE_DIR"
+echo "  Allele frequency filter...: $AF"
+echo "  Variant type filter.......: $VARIANT_TYPE"
+echo "  Verbosity.................: $VERBOSE"
+echo "  Version...................: $VERSION ($VERSION_DATE)"
+echo ""
 # Check if resource directory is provided
 if [[ -z "$RESOURCE_DIR" ]]; then
     echo "Error: --resource-dir flag is required."
@@ -90,7 +99,7 @@ fi
 # Create the resource directory
 mkdir -p "$RESOURCE_DIR"
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "Resource directory created at $RESOURCE_DIR"
+    echo "> Resource directory created at $RESOURCE_DIR"
 fi
 
 SBATCH_MAIL="FAIL"
@@ -98,11 +107,14 @@ SBATCH_MAIL_USER="s.w.vanderlaan-2@umcutrecht.nl"
 
 # SLURM parameters
 OUT_DIR="$RESOURCE_DIR"
-mkdir -pv "$OUT_DIR"
+mkdir -p "$OUT_DIR"
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "> Output directory created at $OUT_DIR"
+fi
 
 # Submit a job to download data for chromosomes 1-22 and X
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "Submitting job to download the phased high-coverage 1000 Genomes VCF files."
+    echo "> Submitting job to download the phased high-coverage 1000 Genomes VCF files."
 fi
 SLURM_DOWNLOAD=$(sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
@@ -120,7 +132,7 @@ SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
 # Submit array job to filter chromosomes 1-22 and X
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
+    echo "> Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
 fi
 SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
@@ -146,7 +158,7 @@ SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "Submitting job to concatenate the filtered VCF files."
+    echo "> Submitting job to concatenate the filtered VCF files."
 fi
 SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
@@ -164,7 +176,7 @@ SLURM_CONCAT_JOBID=$(echo $SLURM_CONCAT | awk '{print $4}')
 
 # Submit the annotation job after concatenation
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "Submitting job to annotate the concatenated VCF."
+    echo "> Submitting job to annotate the concatenated VCF."
 fi
 SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_CONCAT_JOBID --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
@@ -182,7 +194,7 @@ SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
 
 # Submit job to split the concatenated VCF back into individual chromosomes (1-22 and X as 23)
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "Submitting job to split the concatenated VCF back into individual chromosomes."
+    echo "> Submitting job to split the concatenated VCF back into individual chromosomes."
 fi
 sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_split --output="$RESOURCE_DIR/pp_split_%A_%a.out" --error="$RESOURCE_DIR/pp_split_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
@@ -198,11 +210,10 @@ tabix -p vcf \$OUT_SPLIT_FILE
 EOF
 
 if [[ $VERBOSE -eq 1 ]]; then
+    echo ""
     echo "All jobs submitted. Let's wait and see. Have a beer, buddy!"
 fi
 
 echo ""
 print_version
-echo ""
-$COPYRIGHT_TEXT
 ### END OF SCRIPT ###
