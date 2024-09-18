@@ -90,15 +90,6 @@ echo ""
 echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
 echo ""
-echo "Starting $VERSION_NAME"
-echo ""
-echo "These are the settings:"
-echo "  Resource directory........: $RESOURCE_DIR"
-echo "  Allele frequency filter...: $AF"
-echo "  Variant type filter.......: $VARIANT_TYPE"
-echo "  Verbosity.................: $VERBOSE"
-echo "  Version...................: $VERSION ($VERSION_DATE)"
-echo ""
 # Check if resource directory is provided
 if [[ -z "$RESOURCE_DIR" ]]; then
     echo "Error: --resource-dir flag is required."
@@ -133,6 +124,21 @@ GRCh38=$(refgenie seek hg38/fasta)
 #         eval $@
 #     fi
 # }
+
+echo "Starting $VERSION_NAME"
+echo ""
+echo "These are the settings:"
+echo "  Resource directory........: $RESOURCE_DIR"
+echo "  Allele frequency filter...: $AF"
+echo "  Variant type filter.......: $VARIANT_TYPE"
+echo "  Reference genome..........: $GRCh38"
+echo "  Resource directory........: $RESOURCE_DIR"
+echo "  Job mail type.............: $SBATCH_MAIL"
+echo "  Job mail user.............: $SBATCH_MAIL_USER"
+# echo "  Dry run...................: $DRY_RUN"
+echo "  Verbosity.................: $VERBOSE"
+echo "  Version...................: $VERSION ($VERSION_DATE)"
+echo ""
 
 # # Submit a job to download data for chromosomes 1-22 and X
 # if [[ $VERBOSE -eq 1 ]]; then
