@@ -133,27 +133,6 @@ def check_dependencies(args):
 			print(f"DEBUGGING: Checking JAR file at {jar_path}")
 		assert os.path.isfile(jar_path), "Java jar file {} cannot be found at path {}!".format(jar, jar_path)
 
-def get_lb_value(platform_library):
-	# Updated code to dynamically generate the LB value based on the platform library -- 2024-09-16
-	# - 10x Genomics: Often, the BAM files produced by 10x Genomics pipelines will already have 
-	# appropriate read groups. The PU might reflect the flowcell or lane ID, and the LB would 
-	# represent the library constructed during the 10x library preparation process.
-	# - Smart-seq2 or CEL-Seq2: These platforms involve different library preparation protocols 
-	# and sequencing setups. The LB tag would represent those specific libraries, and the PL 
-	# could be ILLUMINA if an Illumina sequencer is used.
-	# Set up the sample ID and flowcell/experiment for LB based on platform
-	# For 10x Genomics, use flowcell ID and sample ID in LB (replace <flowcell_id> with actual ID) -- f"10xGenomics_<flowcell_id>_{id}"
-    if platform_library == "10x":
-        return f"0.1"
-    # For Smart-seq2, use experiment ID and sample ID in LB (replace <experiment_id> with actual ID) -- f"SmartSeq_<experiment_id>_{id}"
-    elif platform_library == "smartseq2":
-        return f"0.1"
-	# For CEL-Seq2, use experiment ID and sample ID in LB (replace <experiment_id> with actual ID) -- f"CELSeq_<experiment_id>_{id}"
-    elif platform_library == "celseq2":
-        return f"0.1"
-    else:
-        raise ValueError(f"ERROR: Unsupported platform library: {platform_library}. We only support 10X, smartseq2, and celseq2.")
-
 # Function to add the chr prefix to the bam file
 def addChr(in_bam, samtools, verbose=False):
 	# edit the sequence names for your output header
@@ -242,21 +221,35 @@ def BamFilter(myargs):
 
 	# Read the header information from the BAM file -- 2024-09-17
 	tp = infile.header.to_dict()
-	# this debug produces a lot of output
-	# if debug:
-	# 	print(f"Read group information:  {tp}")
-	# To avoid the format issue, we update the RG flag based on sample information
-	sampleID = os.path.splitext(os.path.basename(myargs["bamFile"]))[0]
+	# Check if the read group (RG) information is available in the header
+	# If not, add the read group information to the header
+	if 'RG' not in tp:
+		if verbose: 
+			logger.info("Read group information not found in the header.")
+		# Check the read group information 
+		if debug:
+			print(f"Read group information:  {tp}")
+		# To avoid the format issue, we update the RG flag based on sample information
+		sampleID = os.path.splitext(os.path.basename(myargs["bamFile"]))[0]
 
-	LB_value = get_lb_value(platform_library)
-	logger.info(f"Processing chromosome [{search_chr}]. Setting library identifier (LB) to [{LB_value}].")
-	
-	# Update the read group (RG) information with the dynamically generated LB_value  -- 2024-09-16
-	tp1 = [{'SM':sampleID,'ID':sampleID, 'LB':LB_value, 'PL':"ILLUMINA", 'PU':sampleID}]
-	tp.update({'RG': tp1})
-	# this debug produces a lot of output
-	if debug:
-		print(f"Read group information: {tp1} (original: {tp})")
+		
+		# Update the read group (RG) information with the dynamically generated LB_value  -- 2024-09-19
+		# - 10x Genomics: Often, the BAM files produced by 10x Genomics pipelines will already have 
+		# appropriate read groups. The PU might reflect the flowcell or lane ID, and the LB would 
+		# represent the library constructed during the 10x library preparation process.
+		# - Smart-seq2 or CEL-Seq2: These platforms involve different library preparation protocols 
+		# and sequencing setups. 
+		# Set up the sample ID and flowcell/experiment for LB based on platform
+		if platform_library == "10x":
+			logger.info(f"Setting library identifier (LB) to [0.1] for 10x.")
+			tp1 = [{'SM':sampleID,'ID':sampleID, 'LB':0.1, 'PL':"ILLUMINA", 'PU':sampleID}]
+		elif platform_library == "smartseq2" or platform_library == "celseq2":
+			logger.info(f"Setting sample ID (SM) and cell/sample identifier (ID) for Smart-seq2 or CEL-Seq2.")
+			tp1 = [{'SM':sampleID,'ID':sampleID}]
+		tp.update({'RG': tp1})
+		# this debug produces a lot of output
+		if debug:
+			print(f"Read group information: {tp1} (original: {tp})")
   
 	outfile =  pysam.AlignmentFile( out + "/Bam/" +id + "_" + chr + ".filter.bam", "wb", header=tp)
 
@@ -305,7 +298,6 @@ def BamFilter(myargs):
 
 	# Index the BAM file -- 2024-09-16
 	logger.info(f"Indexing the BAM file [{out}/Bam/{id}_{chr}.filter.bam].")
-	# os.system(samtools + " index " +  out + "/Bam/" + id+ "_"  + chr + ".filter.bam")
 	result = subprocess.run([samtools, "index", out + "/Bam/" + id + "_" + chr + ".filter.bam"], capture_output=True, text=True)
 	if result.returncode != 0:
 		logger.error(f"ERROR: Error running samtools index: {result.stderr}.")
