@@ -241,10 +241,10 @@ def BamFilter(myargs):
 		# and sequencing setups. 
 		# Set up the sample ID and flowcell/experiment for LB based on platform
 		if platform_library == "10x":
-			logger.info(f"Setting library identifier (LB) to [0.1] for 10x.")
+			logger.info(f"Platform is {platform_library} -- setting library identifier (LB) to [0.1].")
 			tp1 = [{'SM':sampleID,'ID':sampleID, 'LB':0.1, 'PL':"ILLUMINA", 'PU':sampleID}]
 		elif platform_library == "smartseq2" or platform_library == "celseq2":
-			logger.info(f"Setting sample ID (SM) and cell/sample identifier (ID) for Smart-seq2 or CEL-Seq2.")
+			logger.info(f"Platform is {platform_library} -- only setting sample ID (SM) and cell/sample identifier (ID).")
 			tp1 = [{'SM':sampleID,'ID':sampleID}]
 		tp.update({'RG': tp1})
 		# this debug produces a lot of output
