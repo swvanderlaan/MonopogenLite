@@ -145,45 +145,45 @@ fi
 EOF
 )
 
-# Extract the job ID from the output
-SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
-# Submit array job to filter chromosomes 1-22 and X
-if [[ $VERBOSE -eq 1 ]]; then
-    # echo "> Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
-    echo "> Submitting job to filter the VCF files."
-fi
-# SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-source ~/.bashrc
-mamba activate monopogen
-CHROM=\${SLURM_ARRAY_TASK_ID}
-if [[ "\$CHROM" == "23" ]]; then
-    VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
-    OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
-    tabix -fp vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
-    tabix -fp vcf \$OUT_FILE
-else
-    VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
-    OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-    tabix -fp vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chr\$CHROM --output-type z -o \$OUT_FILE 
-    tabix -fp vcf \$OUT_FILE
-fi
-EOF
-)
+# # Submit array job to filter chromosomes 1-22 and X
+# if [[ $VERBOSE -eq 1 ]]; then
+#     # echo "> Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
+#     echo "> Submitting job to filter the VCF files."
+# fi
+# # SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# source ~/.bashrc
+# mamba activate monopogen
+# CHROM=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHROM" == "23" ]]; then
+#     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
+#     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
+#     tabix -fp vcf \$VCF_IN
+#     bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
+#     tabix -fp vcf \$OUT_FILE
+# else
+#     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+#     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
+#     tabix -fp vcf \$VCF_IN
+#     bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chr\$CHROM --output-type z -o \$OUT_FILE 
+#     tabix -fp vcf \$OUT_FILE
+# fi
+# EOF
+# )
 
-# Extract the job ID from the output
-SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to normalize the filtered VCF files."
 fi
-# SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
