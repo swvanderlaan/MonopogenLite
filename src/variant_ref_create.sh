@@ -235,10 +235,10 @@ echo ""
 
 # Submit the annotation job after concatenation
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to annotate the normalized data and listing only the variants (for cellsnp)."
+    echo "> Submitting job to subset the normalized and annotated data to list only the variants (for cellsnp)."
 fi
-# SLURM_ANNOTATE_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_ANNOTATE_CELLSNP=$(sbatch --array=1-23 --job-name=pp_annot_cellsnp --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_SUBSET_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_SUBSET_CELLSNP=$(sbatch --array=1-23 --job-name=pp_annot_cellsnp --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
@@ -253,22 +253,22 @@ fi
 IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.vcf.gz"
 OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.cellsnp.vcf.gz"
 
-# annotate the VCF files
+# subsetting the VCF files
 
-bcftools view --include 'AF>$AF & TYPE=$VARIANT_TYPE' --samples "." \$INPUT --output-type z -o \$OUT_FILE_CELLSNP --force-samples
+bcftools view --samples "." \$INPUT --output-type z -o \$OUT_FILE_CELLSNP --force-samples
 tabix -fp vcf \$OUT_FILE_CELLSNP
 EOF
 )
 
 # Extract the job ID from the output
-SLURM_ANNOTATE_CELLSNP_JOBID=$(echo $SLURM_ANNOTATE_CELLSNP | awk '{print $4}')
+SLURM_SUBSET_CELLSNP_JOBID=$(echo $SLURM_SUBSET_CELLSNP | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to concatenate the filtered VCF files for cellsnp."
 fi
 # SLURM_CONCAT_CELLSNP=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CONCAT_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CONCAT_CELLSNP=$(sbatch --dependency=afterok:$SLURM_SUBSET_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
