@@ -349,11 +349,10 @@ def preProcess(args):
     with open(args.bamFile) as f_in:
         for line in f_in:
             record = line.strip().split(",")
-			record = line.strip().split(",")  # Split each line by comma
             if args.verbose:
-                print(f"> PreProcessing sample {record[0]}") # record[0] is the sample ID
+                print(f"> PreProcessing sample {record[0]}")
             logger.debug("PreProcessing sample {}".format(record[0]))
-            # Process chromosome 1-22 -- 2024-09-16
+			# Process chromosome 1-22 -- 2024-09-16
             if args.verbose:
                 print(f"  - Processing chromosomes 1-22, X...")
             for chr in range(1, 23):
@@ -451,7 +450,7 @@ python MonopogenLite.py germline --help\n\n
 	parser_preProcess.add_argument('-r', '--min-read-length', required=False, type=int, default=30,
 									help="The minimum read length for variant calling. Default is 30.")	
 	parser_preProcess.add_argument('-u', '--umi-collapse', required=False, nargs='?', const=True, default=None,
-									help="Collapse UMIs. By default no UMIs are collapsed. Optionally, specify the UMI tag (e.g., 'UMI', 'RX' or 'MI'). If no tag is provided, default is 'UMI'.")	
+									help="Collapse UMIs. By default no UMIs are collapsed. Optionally, specify the UMI tag (e.g., 'UMI', 'RX' or 'MI'). If no tag is provided, default is 'RX'.")	
 	parser_preProcess.add_argument('-v', '--verbose', action='store_true',
 									help="Increase output verbosity.")
 	parser_preProcess.add_argument('-d', '--debug', action='store_true',

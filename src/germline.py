@@ -14,6 +14,7 @@ import glob # Unix style pathname pattern expansion
 import re # regular expressions
 import time # handle time
 import subprocess # run shell commands
+from collections import defaultdict
 import multiprocessing as mp
 from multiprocessing import Pool
 
@@ -197,17 +198,34 @@ def BamFilter(myargs):
 	samtools = myargs.get("samtools") # Add samtools path
 	chr = search_chr # Add chromosome
 	id = myargs.get("id") # Add sample ID
-	max_mismatch = myargs.get("max_mismatch") #
 	out = myargs.get("out") # Add output directory
-	platform_library = myargs.get("platform_library") #
 	verbose = myargs.get("verbose") # Add verbose option
 	debug = myargs.get("debug") # Add debug option
-	min_read_length = myargs.get("min_read_length") # Add option to filter reads by length
+
+	# Get the mismatch and platform library information
+	if verbose:
+		logger.info(f"Filtering reads by mismatch: {myargs.get('max_mismatch')}")
+	max_mismatch = myargs.get("max_mismatch")
+
+	# Get the platform library information
+	if verbose:
+		logger.info(f"Platform library: {myargs.get('platform_library')}; platform (PL) is assumed ILLUMINA.")
+	platform_library = myargs.get("platform_library")
+
+	# Add option to filter reads by length
+	if verbose:
+		logger.info(f"Filtering reads by length: {myargs.get('min_read_length')}")
+	min_read_length = myargs.get("min_read_length") 
     
 	# Get umi_collapse and UMI tag
-    umi_collapse = myargs.get("umi_collapse", False)  # Get whether UMI collapsing is enabled
-    umi_tag = myargs.get("umi_tag", "UMI")  # Default UMI tag is 'RX'
-
+	# Check also this reference: https://github.com/single-cell-genetics/cellsnp-lite/issues/121
+	# Get whether UMI collapsing is enabled
+	umi_collapse = myargs.get("umi_collapse", False)
+	# Default UMI tag is 'RX'
+	umi_tag = myargs.get("umi_tag", "RX")
+	if umi_collapse:
+		logger.info(f"UMI collapsing is enabled. Using tag {umi_tag} to extract UMIs.")
+	
 	os.system("mkdir -p " + out +  "/Bam")
 	infile = pysam.AlignmentFile(bamFile,"rb")
 	contig_names = infile.references
@@ -231,7 +249,7 @@ def BamFilter(myargs):
 	sampleID = os.path.splitext(os.path.basename(myargs["bamFile"]))[0]
 
 	LB_value = get_lb_value(platform_library)
-	logger.info(f"Processing chromosome [{search_chr}]. Platform library is [{platform_library}]. Setting library identifier (LB) to [{LB_value}]; platform (PL) is assumed ILLUMINA.")
+	logger.info(f"Processing chromosome [{search_chr}]. Setting library identifier (LB) to [{LB_value}].")
 	
 	# Update the read group (RG) information with the dynamically generated LB_value  -- 2024-09-16
 	tp1 = [{'SM':sampleID,'ID':sampleID, 'LB':LB_value, 'PL':"ILLUMINA", 'PU':sampleID}]
@@ -253,49 +271,49 @@ def BamFilter(myargs):
 
 	# NEW code -- 2024-09-18
 	# Dictionary to group reads by UMI and position
-    umi_dict = defaultdict(list)
+	umi_dict = defaultdict(list)
 
-    # Process reads and group them by UMI and position
-    for s in infile.fetch(search_chr):
-        if s.has_tag("NM"):
-			if verbose:
+	# Process reads and group them by UMI and position
+	for s in infile.fetch(search_chr):
+		if s.has_tag("NM"):
+			if debug:
 				logger.info(f"Read {s.query_name} has NM tag.")
-            val = s.get_tag("NM")
-        elif s.has_tag("nM"):
-			if verbose:
+			val = s.get_tag("NM")
+		elif s.has_tag("nM"):
+			if debug:
 				logger.info(f"Read {s.query_name} has nM tag.")
-            val = s.get_tag("nM")
+			val = s.get_tag("nM")
 
         # Filter by mismatch and read length
-        if val < max_mismatch and s.query_length >= min_read_length:
-			if verbose: 
+		if val < max_mismatch and s.query_length >= min_read_length:
+			if debug: 
 				logger.info(f"Read {s.query_name} has {val} mismatches and length {s.query_length}.")
-            if umi_collapse and s.has_tag(umi_tag):  # Use the specified UMI tag
-				if verbose:
+			if umi_collapse and s.has_tag(umi_tag):  # Use the specified UMI tag
+				if debug:
 					logger.info(f"Read {s.query_name} has UMI tag {umi_tag}.")
-                umi = s.get_tag(umi_tag)  # Extract UMI from the specified tag
-                pos = (s.reference_name, s.reference_start)
-                umi_dict[(umi, pos)].append(s)  # Group reads by UMI and position
-            else:
-				if verbose:
+				umi = s.get_tag(umi_tag)  # Extract UMI from the specified tag
+				pos = (s.reference_name, s.reference_start)
+				umi_dict[(umi, pos)].append(s)  # Group reads by UMI and position
+			else:
+				if debug:
 					logger.info(f"Read {s.query_name} does not have UMI tag; no UMI collapsing is applied.")
-                outfile.write(s)
+				outfile.write(s)
 
-    # If UMI collapsing is enabled, process grouped reads
-    if umi_collapse:
-		if verbose: 
+	# If UMI collapsing is enabled, process grouped reads
+	if umi_collapse:
+		if debug: 
 			logger.info(f"UMI collapsing is enabled. Processing reads grouped by UMI and position.")
-        for (umi, pos), reads in umi_dict.items():
-            # Collapsing strategy: Keep the read with the highest mapping quality
-            best_read = max(reads, key=lambda x: x.mapping_quality)
-            outfile.write(best_read)  # Write the collapsed read
+		for (umi, pos), reads in umi_dict.items():
+			# Collapsing strategy: Keep the read with the highest mapping quality
+			best_read = max(reads, key=lambda x: x.mapping_quality)
+			outfile.write(best_read)  # Write the collapsed read
 
 	# close out the files
 	infile.close()
 	outfile.close()
 
 	# Index the BAM file -- 2024-09-16
-	logger.info(f"Indexing the BAM file [{out}/{id}_{chr}.filter.bam].")
+	logger.info(f"Indexing the BAM file [{out}/Bam/{id}_{chr}.filter.bam].")
 	# os.system(samtools + " index " +  out + "/Bam/" + id+ "_"  + chr + ".filter.bam")
 	result = subprocess.run([samtools, "index", out + "/Bam/" + id + "_" + chr + ".filter.bam"], capture_output=True, text=True)
 	if result.returncode != 0:
@@ -315,8 +333,8 @@ def robust_get_tag(read, tag_name):
 		return f"ERROR: tag {tagname} not found -- NotFound"
 
 def runCMD(cmd):
-    output = os.system(cmd)
-    if output == 0:
-        return cmd  # Return the command that was successfully run
-    else:
-        return None  # Handle failure case if needed
+	output = os.system(cmd)
+	if output == 0:
+		return cmd  # Return the command that was successfully run
+	else:
+		return None  # Handle failure case if needed
