@@ -206,7 +206,7 @@ echo ""
 
 # # Submit the annotation job after concatenation
 # if [[ $VERBOSE -eq 1 ]]; then
-#     echo "> Submitting job to annotate the concatenated VCF."
+#     echo "> Submitting job to annotate the normalized data."
 # fi
 # # SLURM_ANNOTATE=$(sbatch --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 # SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
@@ -235,7 +235,7 @@ echo ""
 
 # Submit the annotation job after concatenation
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to annotate the concatenated VCF."
+    echo "> Submitting job to annotate the normalized data and listing only the variants (for cellsnp)."
 fi
 # SLURM_ANNOTATE_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 SLURM_ANNOTATE_CELLSNP=$(sbatch --array=1-23 --job-name=pp_annot_cellsnp --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
@@ -265,7 +265,7 @@ SLURM_ANNOTATE_CELLSNP_JOBID=$(echo $SLURM_ANNOTATE_CELLSNP | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
 if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to concatenate the filtered VCF files."
+    echo "> Submitting job to concatenate the filtered VCF files for cellsnp."
 fi
 # SLURM_CONCAT_CELLSNP=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 SLURM_CONCAT_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
