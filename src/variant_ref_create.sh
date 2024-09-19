@@ -156,8 +156,8 @@ echo ""
 #     # echo "> Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
 #     echo "> Submitting job to filter the VCF files."
 # fi
-# # SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-# SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# # SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 # #!/bin/bash
 # source ~/.bashrc
 # mamba activate monopogen
@@ -185,8 +185,8 @@ echo ""
 # if [[ $VERBOSE -eq 1 ]]; then
 #     echo "> Submitting job to normalize the filtered VCF files."
 # fi
-# # SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-# SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# # SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 # #!/bin/bash
 # source ~/.bashrc
 # mamba activate monopogen
@@ -204,12 +204,41 @@ echo ""
 # # Extract the job ID from the output
 # SLURM_NORM_JOBID=$(echo $SLURM_NORM | awk '{print $4}')
 
+# # Submit the annotation job after concatenation
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to annotate the concatenated VCF."
+# fi
+# # SLURM_ANNOTATE=$(sbatch --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# source ~/.bashrc
+# mamba activate monopogen
+
+# # setting chromosome 1-22 and X
+# CHROM=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHROM" == "23" ]]; then
+#     CHROM="X"
+# fi
+
+# # setting input and output files
+# IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
+# OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.vcf.gz"
+
+# # annotate the VCF files
+# bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' \$IN_FILE --output-type z -o \$OUT_FILE
+# tabix -fp vcf \$OUT_FILE
+# EOF
+# )
+
+# # Extract the job ID from the output
+# SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
+
 # Submit the annotation job after concatenation
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to annotate the concatenated VCF."
 fi
-# SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_ANNOTATE=$(sbatch --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_ANNOTATE_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_ANNOTATE_CELLSNP=$(sbatch --array=1-23 --job-name=pp_annot_cellsnp --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
@@ -221,27 +250,25 @@ if [[ "\$CHROM" == "23" ]]; then
 fi
 
 # setting input and output files
-IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.vcf.gz"
+IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.vcf.gz"
 OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.cellsnp.vcf.gz"
 
 # annotate the VCF files
-bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' \$IN_FILE --output-type z -o \$OUT_FILE
-tabix -fp vcf \$OUT_FILE
-bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' --samples "." \$INPUT --output-type z -o \$OUT_FILE_CELLSNP --force-samples
+
+bcftools view -i --include 'AF>$AF & TYPE=$VARIANT_TYPE' --samples "." \$INPUT --output-type z -o \$OUT_FILE_CELLSNP --force-samples
 tabix -fp vcf \$OUT_FILE_CELLSNP
 EOF
 )
 
 # Extract the job ID from the output
-SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
+SLURM_ANNOTATE_CELLSNP_JOBID=$(echo $SLURM_ANNOTATE_CELLSNP | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to concatenate the filtered VCF files."
 fi
-# SLURM_CONCAT=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CONCAT_CELLSNP=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CONCAT_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
