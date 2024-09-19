@@ -5,6 +5,7 @@ import argparse
 import os
 import logging
 import subprocess
+import gzip
 
 # Change log:
 # * v1.0.0 2024-09-19: Initial version.
@@ -73,7 +74,8 @@ def get_vcf_version(input_vcf):
     Extract the VCF version from the input VCF file.
     Default to VCFv4.2 if not found.
     """
-    with open(input_vcf, 'r') as f:
+    open_func = gzip.open if input_vcf.endswith('.gz') else open  # Use gzip.open for .gz files
+    with open_func(input_vcf, 'rt') as f:  # Open as text mode
         for line in f:
             if line.startswith('##fileformat='):
                 return line.strip().split('=')[1]
