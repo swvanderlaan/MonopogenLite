@@ -31,13 +31,14 @@ from pysam import VariantFile # handle VCF files
 from germline import *
 
 # Change log:
+# * v1.2.2 2024-09-18: Updated germline.py to properly account for the 'RG' header given different platforms. 
 # * v1.2.1 2024-09-18: Added a separate script to count overlapping variants between input (derived from bam-files) and output VCF files.
 # * v1.2.0 2024-09-18: Added support to provide a minimum read length for variant calling (defaults to 30), added support for the platform library used for sequencing (10x, smartseq2, celseq2), and added support for collapsing UMIs.
 # * v1.1.0 2024-09-18: Added chromosome X support.
 # * v1.0.0 2024-09-19: Initial version. MonoPogenLite is a light-version fork of Monopogen. It only includes the germline-variant-calling pipeline.
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.2.1'
+VERSION = '1.2.2'
 VERSION_DATE = '2024-09-18'
 COPYRIGHT = 'Copyright 1979-2024. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
