@@ -222,7 +222,7 @@ fi
 
 # Concatenate the files
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
-bcftools concat "\${chrom_files[@]}" --output-type z --output-file \$OUT_FILE
+bcftools concat "\${chrom_files[@]}" --output-type z -o \$OUT_FILE
 
 # Index the output
 tabix -p vcf \$OUT_FILE

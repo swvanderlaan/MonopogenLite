@@ -68,6 +68,17 @@ def parse_vcf(vcf_file, debug=False):
             variants.add(variant_tuple)
     return variants
 
+def get_vcf_version(input_vcf):
+    """
+    Extract the VCF version from the input VCF file.
+    Default to VCFv4.2 if not found.
+    """
+    with open(input_vcf, 'r') as f:
+        for line in f:
+            if line.startswith('##fileformat='):
+                return line.strip().split('=')[1]
+    return 'VCFv4.2'  # Default VCF version
+
 def check_and_index_vcf(vcf_file, verbose=False):
     """
     Check if the VCF file is indexed (i.e., has a .tbi index file for .vcf.gz or .csi for .vcf).
@@ -83,10 +94,7 @@ def check_and_index_vcf(vcf_file, verbose=False):
         if verbose:
             logger.info(f"Index for {vcf_file} not found. Indexing with bcftools...")
         # Run bcftools index to create the correct index (tbi or csi)
-        if vcf_file.endswith('.vcf.gz'):
-            result = subprocess.run(['tabix', '-p', 'vcf', vcf_file], capture_output=True, text=True)
-        else:
-            result = subprocess.run(['bcftools', 'index', vcf_file], capture_output=True, text=True)
+        result = subprocess.run(['bcftools', 'index', vcf_file], capture_output=True, text=True)
         if result.returncode != 0:
             logger.error(f"ERROR: Failed to index {vcf_file}: {result.stderr}")
             raise RuntimeError(f"Failed to index {vcf_file}")
@@ -118,15 +126,47 @@ def compare_vcfs(input_vcf, reference_vcf, verbose=False, debug=False):
 
     return overlapping_variants, non_overlapping_variants
 
-def write_variants_to_file(variants, output_file):
+def write_vcf(variants, output_file, input_vcf):
     """
-    Write a list of variants to an output file, including the header.
+    Write the non-overlapping variants to a new VCF file with the proper VCF headers.
     """
-    with open(output_file, 'w') as f:
-        # Add a header to the output file
-        f.write("#CHROM\tPOS\tREF\tALT\n")
-        for variant in sorted(variants):
-            f.write(f"{variant[0]}\t{variant[1]}\t{variant[2]}\t{variant[3]}\n")
+    logger.info(f"Writing non-overlapping variants to VCF file: {output_file}")
+    
+    # Get the VCF version from the input file
+    vcf_version = get_vcf_version(input_vcf)
+    
+    with pysam.VariantFile(input_vcf) as template_vcf:
+        # Copy the header from the input VCF
+        header = template_vcf.header
+
+        # Add VCF version to the header
+        header.add_meta('fileformat', vcf_version)
+        
+        # Create a new VariantFile with the copied header
+        with pysam.VariantFile(output_file, 'w', header=header) as vcf_out:
+            for variant in sorted(variants):
+                chrom, pos, ref, alt = variant
+                
+                # Construct a new VCF record
+                new_record = vcf_out.new_record(
+                    contig=chrom,
+                    start=pos-1,  # VCF uses 0-based indexing
+                    stop=pos,     # stop is the same as start + len(ref)
+                    alleles=(ref, alt),
+                    id=".",
+                    qual=None,
+                    filter=None,
+                    info={}
+                )
+                
+                # Write the new record to the VCF file
+                vcf_out.write(new_record)
+    
+    # Compress the VCF file with bgzip
+    subprocess.run(['bgzip', output_file], check=True)
+
+    # Index the compressed VCF file with tabix
+    subprocess.run(['tabix', '-p', 'vcf', output_file + '.gz'], check=True)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -136,7 +176,7 @@ Compare a VCF-file to a common reference VCF-file.""",
 		epilog=f"""
 For a given input VCF file (`--input-vcf`), this script will compare it to a given 
 reference VCF file (`--reference-vcf`) and list the non-overlapping variants. The 
-output file will automatically be named as `input_vcf_filename.non_overlapping_variants.txt` and 
+output file will automatically be named as `input_vcf_filename.non_overlapping_variants.vcf.gz` and 
 saved in the same directory as the input VCF file.
 
 Optionally, you can enable verbose output (`--verbose`).
@@ -170,21 +210,19 @@ Example:
     # Derive the output file name from the input VCF file, strip ".vcf.gz" or ".vcf"
     input_vcf_basename = os.path.basename(args.input_vcf)
     input_vcf_dir = os.path.dirname(args.input_vcf)
-    output_file = os.path.join(input_vcf_dir, f"{os.path.splitext(input_vcf_basename)[0].replace('.vcf', '').replace('.gz', '')}.non_overlapping_variants.txt")
+    output_file = os.path.join(input_vcf_dir, f"{os.path.splitext(input_vcf_basename)[0].replace('.vcf', '')}.non_overlapping_variants.vcf")
     
-    logger.info(f"Comparing variants between input VCF: {args.input_vcf} and reference VCF: {args.reference_vcf}")
-
-    # Compare the VCFs
+    # Compare VCF files
     overlapping_variants, non_overlapping_variants = compare_vcfs(
-        args.input_vcf, args.reference_vcf, verbose=args.verbose, debug=args.debug)
+        args.input_vcf, args.reference_vcf, verbose=args.verbose, debug=args.debug
+    )
+    
+    # Write non-overlapping variants to the output VCF file
+    write_vcf(non_overlapping_variants, output_file, args.input_vcf)
 
-    # Write non-overlapping variants to file
-    logger.info(f"Writing non-overlapping variants to {output_file}...")
-    write_variants_to_file(non_overlapping_variants, output_file)
-
-    # Print counts
-    total_input_variants = len(parse_vcf(args.input_vcf))
-    total_reference_variants = len(parse_vcf(args.reference_vcf))
+    # Log final counts
+    total_input_variants = len(overlapping_variants) + len(non_overlapping_variants)
+    total_reference_variants = len(parse_vcf(args.reference_vcf))  # To calculate totals in the reference
     total_overlapping_variants = len(overlapping_variants)
     total_non_overlapping_variants = len(non_overlapping_variants)
 
@@ -192,7 +230,7 @@ Example:
     logger.info(f"Total variants in reference VCF: {total_reference_variants}")
     logger.info(f"Overlapping variants: {total_overlapping_variants}")
     logger.info(f"Non-overlapping variants: {total_non_overlapping_variants}")
-    logger.info(f"Non-overlapping variants written to: {output_file}")
+    logger.info(f"Non-overlapping variants written to: {output_file}.gz")
 
 if __name__ == "__main__":
     main()
