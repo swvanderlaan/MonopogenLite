@@ -166,8 +166,8 @@ def germline(args):
 				# imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
 				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4." + record[0] + ".vcf.gz"
 			elif record[0] in [f"chr{n}" for n in range(1, 23)]:
-				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
-				# imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4." + record[0] + ".vcf.gz"
+				# imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4." + record[0] + ".vcf.gz"
 			else: 
 				print(f"ERROR: The chromosome {record[0]} is not supported!")
 				sys.exit(1)
