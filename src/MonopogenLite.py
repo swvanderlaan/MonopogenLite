@@ -31,11 +31,12 @@ from pysam import VariantFile # handle VCF files
 from germline import *
 
 # Change log:
+# * v1.2.0 2024-09-18: Added support to provide a minimum read length for variant calling (defaults to 30), added support for the platform library used for sequencing (10x, smartseq2, celseq2), and added support for collapsing UMIs.
 # * v1.1.0 2024-09-18: Added chromosome X support.
 # * v1.0.0 2024-09-19: Initial version. MonoPogenLite is a light-version fork of Monopogen. It only includes the germline-variant-calling pipeline.
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.1.0'
+VERSION = '1.2.0'
 VERSION_DATE = '2024-09-18'
 COPYRIGHT = 'Copyright 1979-2024. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -298,94 +299,116 @@ def germline(args):
 
 # Function to perform pre-processing of bam files -- 2024-08-08
 def preProcess(args):
-	logger.info("Performing data preprocess before variant calling with the following arguments.")
-	print_parameters_given(args)
+    logger.info("Performing data preprocess before variant calling with the following arguments.")
+    print_parameters_given(args)
 
-	assert os.path.isfile(args.bamFile), "The list of bam file(s) {} cannot be found!".format(args.bamFile)
+    assert os.path.isfile(args.bamFile), "The list of bam file(s) {} cannot be found!".format(args.bamFile)
 
-	# Create necessary directories -- 2024-09-17
-	if args.verbose:
-		print(f"\n> Checking the existence of the necessary output directories. If they do not exist, they will be created.")
-	if args.out:
-		os.makedirs(args.out, exist_ok=True)
-		if args.verbose:
-			print(f"  - Created output directory: {args.out}")
-		os.makedirs(os.path.join(args.out, 'Bam'), exist_ok=True)
-		if args.verbose:
-			print(f"  - Created directory to store filtered [.bam]-files: {os.path.join(args.out, 'Bam')}")
-	else:
-		print("ERROR: Output directory not specified!")
-		sys.exit(1)
+    # Create necessary directories -- 2024-09-17
+    if args.verbose:
+        print(f"\n> Checking the existence of the necessary output directories. If they do not exist, they will be created.")
+    if args.out:
+        os.makedirs(args.out, exist_ok=True)
+        if args.verbose:
+            print(f"  - Created output directory: {args.out}")
+        os.makedirs(os.path.join(args.out, 'Bam'), exist_ok=True)
+        if args.verbose:
+            print(f"  - Created directory to store filtered [.bam]-files: {os.path.join(args.out, 'Bam')}")
+    else:
+        print("ERROR: Output directory not specified!")
+        sys.exit(1)
 
-	sample=[]
-	# Check the existence of the bam files -- 2024-09-17
-	if args.verbose:
-		print(f"> Checking the existence of the bam files.")
-	with open(args.bamFile) as f_in:
-			for line in f_in:
-				record = line.strip().split(",")
-				sample.append(record[0])
-				if args.verbose:
-					print(f"> Checking sample {record[0]}")
-				logger.debug("Checking sample {}".format(record[0]))
-				assert len(record)==2, "Every line has to have exactly 2 comma-delimited columns! Line with sample name {} does not satisify this requiremnt!".format(record[0])
-				assert os.path.isfile(record[1]), "Bam file {} cannot be found!".format(record[1])
-				assert os.path.isfile(record[1]+".bai"), "Bam file {} has not been indexed!".format(record[1])
-				#assert os.path.isabs(record[1]), "Please use absolute path for bam file {}!".format(record[1])
+    sample = []
+    # Check the existence of the bam files -- 2024-09-17
+    if args.verbose:
+        print(f"> Checking the existence of the bam files.")
+    with open(args.bamFile) as f_in:
+        for line in f_in:
+            record = line.strip().split(",")
+            sample.append(record[0])
+            if args.verbose:
+                print(f"> Checking sample {record[0]}")
+            logger.debug("Checking sample {}".format(record[0]))
+            assert len(record) == 2, "Every line has to have exactly 2 comma-delimited columns! Line with sample name {} does not satisfy this requirement!".format(record[0])
+            assert os.path.isfile(record[1]), "Bam file {} cannot be found!".format(record[1])
+            assert os.path.isfile(record[1]+".bai"), "Bam file {} has not been indexed!".format(record[1])
 
-	para_lst = []
-	with open(args.bamFile) as f_in:
-			for line in f_in:
-				record = line.strip().split(",")
-				if args.verbose:
-					print(f"> PreProcessing sample {record[0]}")
-				logger.debug("PreProcessing sample {}".format(record[0]))
-				# Process chromosome 1-22 -- 2024-09-16
-				if args.verbose:
-					print(f"  - processing chromosome 1-22, X...")
-				for chr in range(1, 23):
-					if args.debug:
-						print(f"  -- DEBUGGING: chromosome [{chr}]")
-					para_single  =  dict(chr = "chr" + str(chr), 
-						out = args.out, id = record[0], 
-						bamFile = record[1], 
-						max_mismatch = args.max_mismatch,
-						samtools = samtools,
-						platform_library = args.platform_library, # new code -- 2024-09-16
-						verbose = args.verbose, # new code -- 2024-09-17
-						debug = args.debug) # new code -- 2024-09-17
-					para_lst.append(para_single)
+    # Handle UMI collapse and UMI tag -- 2024-09-18
+    if args.umi_collapse:
+        umi_collapse = True
+        umi_tag = args.umi_collapse if isinstance(args.umi_collapse, str) else "UMI"
+    else:
+        umi_collapse = False
+        umi_tag = None
 
-				# Process chromosome X -- 2024-09-17
-				for chr in ["X"]:
-					if args.debug:
-						print(f"  -- DEBUGGING: chromosome [{chr}]")
-					para_single = dict(
-						chr = "chr" + chr, 
-						out = args.out, 
-						id = record[0], 
-						bamFile = record[1], 
-						max_mismatch = args.max_mismatch, 
-						samtools = samtools,
-						platform_library = args.platform_library, # new code -- 2024-09-16
-						verbose = args.verbose, # new code -- 2024-09-17
-						debug = args.debug) # new code -- 2024-09-17
-					para_lst.append(para_single)
-	# Run the BamFilter function in parallel for each chromosome from the germline.py-module -- 2024-09-16
-	with Pool(processes=args.nthreads) as pool:
-		result = pool.map(BamFilter, para_lst)
+    para_lst = []
+	# Process each sample in parallel -- 2024-09-18
+	# A list of bam files for each sample is expected
+	# sample1, /path/to/sample1.bam
+	# sample2, /path/to/sample2.bam
+    with open(args.bamFile) as f_in:
+        for line in f_in:
+            record = line.strip().split(",")
+			record = line.strip().split(",")  # Split each line by comma
+            if args.verbose:
+                print(f"> PreProcessing sample {record[0]}") # record[0] is the sample ID
+            logger.debug("PreProcessing sample {}".format(record[0]))
+            # Process chromosome 1-22 -- 2024-09-16
+            if args.verbose:
+                print(f"  - Processing chromosomes 1-22, X...")
+            for chr in range(1, 23):
+                if args.debug:
+                    print(f"  -- DEBUGGING: chromosome [{chr}]")
+                para_single = dict(
+                    chr="chr" + str(chr), # Add the chromosome number to the chromosome name, make strings of the numbers
+                    out=args.out,
+                    id=record[0], # record[0] is the sample ID and this assigned here
+                    bamFile=record[1], # record[1] is the path to the bam file and this assigned here
+                    max_mismatch=args.max_mismatch,
+                    samtools=samtools,
+                    platform_library=args.platform_library,  # new code -- 2024-09-16
+                    verbose=args.verbose,  # new code -- 2024-09-17
+                    debug=args.debug,  # new code -- 2024-09-17
+                    min_read_length=args.min_read_length,  # new code -- 2024-09-18
+                    umi_collapse=umi_collapse,  # Pass umi_collapse flag
+                    umi_tag=umi_tag  # Pass umi_tag if provided
+                )
+                para_lst.append(para_single)
 
-	# NEW CODE
-	# Create bam file list for chromosomes 1-22, X
-	if args.verbose:
-		print(f"> Creating the bam file list for each chromosome, 1-22, X.")
-	for chr in list(range(1, 23)) + ["X"]:
-		if args.debug:
-			print(f"  -- DEBUGGING: chromosome [{chr}]")
-		bamlist = open(args.out + "/Bam/chr" + str(chr) + ".filter.bam.lst", "w")
-		for s in sample:
-			bamlist.write(args.out + "/Bam/" + s + "_chr" + str(chr) + ".filter.bam\n")
-		bamlist.close()
+            # Process chromosome X -- 2024-09-17
+            for chr in ["X"]:
+                if args.debug:
+                    print(f"  -- DEBUGGING: chromosome [{chr}]")
+                para_single = dict(
+                    chr="chr" + chr, # Add the chromosome number to the chromosome name
+                    out=args.out,
+                    id=record[0], # record[0] is the sample ID and this assigned here
+                    bamFile=record[1], # record[1] is the path to the bam file and this assigned here
+                    max_mismatch=args.max_mismatch,
+                    samtools=samtools,
+                    platform_library=args.platform_library,  # new code -- 2024-09-16
+                    verbose=args.verbose,  # new code -- 2024-09-17
+                    debug=args.debug,  # new code -- 2024-09-17
+                    min_read_length=args.min_read_length,  # new code -- 2024-09-18
+                    umi_collapse=umi_collapse,  # Pass umi_collapse flag
+                    umi_tag=umi_tag  # Pass umi_tag if provided
+                )
+                para_lst.append(para_single)
+
+    # Run the BamFilter function in parallel for each chromosome from the germline.py module -- 2024-09-16
+    with Pool(processes=args.nthreads) as pool:
+        result = pool.map(BamFilter, para_lst)
+
+    # NEW CODE: Create bam file list for chromosomes 1-22, X
+    if args.verbose:
+        print(f"> Creating the bam file list for each chromosome, 1-22, X.")
+    for chr in list(range(1, 23)) + ["X"]:
+        if args.debug:
+            print(f"  -- DEBUGGING: chromosome [{chr}]")
+        bamlist = open(args.out + "/Bam/chr" + str(chr) + ".filter.bam.lst", "w")
+        for s in sample:
+            bamlist.write(args.out + "/Bam/" + s + "_chr" + str(chr) + ".filter.bam\n")
+        bamlist.close()
 		
 # Main function -- 2024-08-08
 def main():
@@ -425,6 +448,10 @@ python MonopogenLite.py germline --help\n\n
 									help="Number of threads used for SNVs calling. Default is 1.")
 	parser_preProcess.add_argument('-l', '--platform-library', required=True, choices=['10x','smartseq2','celseq2'], 
 									help="The platform library used for sequencing. This can be 10x, smartseq2, or celseq2. Required.")	
+	parser_preProcess.add_argument('-r', '--min-read-length', required=False, type=int, default=30,
+									help="The minimum read length for variant calling. Default is 30.")	
+	parser_preProcess.add_argument('-u', '--umi-collapse', required=False, nargs='?', const=True, default=None,
+									help="Collapse UMIs. By default no UMIs are collapsed. Optionally, specify the UMI tag (e.g., 'UMI', 'RX' or 'MI'). If no tag is provided, default is 'UMI'.")	
 	parser_preProcess.add_argument('-v', '--verbose', action='store_true',
 									help="Increase output verbosity.")
 	parser_preProcess.add_argument('-d', '--debug', action='store_true',
