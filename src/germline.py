@@ -133,6 +133,14 @@ def check_dependencies(args):
 		assert os.path.isfile(jar_path), "Java jar file {} cannot be found at path {}!".format(jar, jar_path)
 
 def get_lb_value(platform_library):
+	# Updated code to dynamically generate the LB value based on the platform library -- 2024-09-16
+	# - 10x Genomics: Often, the BAM files produced by 10x Genomics pipelines will already have 
+	# appropriate read groups. The PU might reflect the flowcell or lane ID, and the LB would 
+	# represent the library constructed during the 10x library preparation process.
+	# - Smart-seq2 or CEL-Seq2: These platforms involve different library preparation protocols 
+	# and sequencing setups. The LB tag would represent those specific libraries, and the PL 
+	# could be ILLUMINA if an Illumina sequencer is used.
+	# Set up the sample ID and flowcell/experiment for LB based on platform
 	# For 10x Genomics, use flowcell ID and sample ID in LB (replace <flowcell_id> with actual ID) -- f"10xGenomics_<flowcell_id>_{id}"
     if platform_library == "10x":
         return f"0.1"
@@ -184,16 +192,21 @@ def addChr(in_bam, samtools):
 
 # Function to sort and filter the chromosomes -- 2024-09-16
 def BamFilter(myargs):
-	bamFile = myargs.get("bamFile")
-	search_chr = myargs.get("chr")
-	samtools = myargs.get("samtools")
-	chr = search_chr
-	id = myargs.get("id")
-	max_mismatch = myargs.get("max_mismatch")
-	out = myargs.get("out")
-	platform_library = myargs.get("platform_library")
-	verbose = myargs.get("verbose")
-	debug = myargs.get("debug")
+	bamFile = myargs.get("bamFile") # Add input BAM file
+	search_chr = myargs.get("chr") # Add chromosome
+	samtools = myargs.get("samtools") # Add samtools path
+	chr = search_chr # Add chromosome
+	id = myargs.get("id") # Add sample ID
+	max_mismatch = myargs.get("max_mismatch") #
+	out = myargs.get("out") # Add output directory
+	platform_library = myargs.get("platform_library") #
+	verbose = myargs.get("verbose") # Add verbose option
+	debug = myargs.get("debug") # Add debug option
+	min_read_length = myargs.get("min_read_length") # Add option to filter reads by length
+    
+	# Get umi_collapse and UMI tag
+    umi_collapse = myargs.get("umi_collapse", False)  # Get whether UMI collapsing is enabled
+    umi_tag = myargs.get("umi_tag", "UMI")  # Default UMI tag is 'RX'
 
 	os.system("mkdir -p " + out +  "/Bam")
 	infile = pysam.AlignmentFile(bamFile,"rb")
@@ -214,31 +227,9 @@ def BamFilter(myargs):
 	# this debug produces a lot of output
 	# if debug:
 	# 	print(f"Read group information:  {tp}")
-	# Updated code to dynamically generate the LB value based on the platform library -- 2024-09-16
 	# To avoid the format issue, we update the RG flag based on sample information
 	sampleID = os.path.splitext(os.path.basename(myargs["bamFile"]))[0]
-	# - 10x Genomics: Often, the BAM files produced by 10x Genomics pipelines will already have 
-	# appropriate read groups. The PU might reflect the flowcell or lane ID, and the LB would 
-	# represent the library constructed during the 10x library preparation process.
-	# - Smart-seq2 or CEL-Seq2: These platforms involve different library preparation protocols 
-	# and sequencing setups. The LB tag would represent those specific libraries, and the PL 
-	# could be ILLUMINA if an Illumina sequencer is used.
-	# Set up the sample ID and flowcell/experiment for LB based on platform
 
-	# # For 10x Genomics, use flowcell ID and sample ID in LB (replace <flowcell_id> with actual ID) -- f"10xGenomics_<flowcell_id>_{id}"
-	# if platform_library == "10x":
-	# 	LB_value = f"0.1"
-    # # For Smart-seq2, use experiment ID and sample ID in LB (replace <experiment_id> with actual ID) -- f"SmartSeq_<experiment_id>_{id}"
-	# elif platform_library == "smartseq2":
-	# 	LB_value = f"0.1"
-	# # For CEL-Seq2, use experiment ID and sample ID in LB (replace <experiment_id> with actual ID) -- f"CELSeq_<experiment_id>_{id}"
-	# elif platform_library == "celseq2":
-	# 	LB_value = f"0.1"
-	# else:
-	# 	print(f"Platform library {platform_library} is not supported. We only support 10X, smartseq2, and celseq2.")
-	# 	sys.exit(1)
-	# Log the platform library and the LB value
-	# Then in BamFilter:
 	LB_value = get_lb_value(platform_library)
 	logger.info(f"Processing chromosome [{search_chr}]. Platform library is [{platform_library}]. Setting library identifier (LB) to [{LB_value}]; platform (PL) is assumed ILLUMINA.")
 	
@@ -251,14 +242,54 @@ def BamFilter(myargs):
   
 	outfile =  pysam.AlignmentFile( out + "/Bam/" +id + "_" + chr + ".filter.bam", "wb", header=tp)
 
-	# Set the tag value based on the tag name -- 2024-09-17
-	for s in infile.fetch(search_chr):  
-		if s.has_tag("NM"):
-			val= s.get_tag("NM")
-		if s.has_tag("nM"):
-			val= s.get_tag("nM")                  
-		if val < max_mismatch:
-			outfile.write(s)
+	# # Set the tag value based on the tag name -- 2024-09-17
+	# for s in infile.fetch(search_chr):  
+	# 	if s.has_tag("NM"):
+	# 		val= s.get_tag("NM")
+	# 	if s.has_tag("nM"):
+	# 		val= s.get_tag("nM")                  
+	# 	if val < max_mismatch:
+	# 		outfile.write(s)
+
+	# NEW code -- 2024-09-18
+	# Dictionary to group reads by UMI and position
+    umi_dict = defaultdict(list)
+
+    # Process reads and group them by UMI and position
+    for s in infile.fetch(search_chr):
+        if s.has_tag("NM"):
+			if verbose:
+				logger.info(f"Read {s.query_name} has NM tag.")
+            val = s.get_tag("NM")
+        elif s.has_tag("nM"):
+			if verbose:
+				logger.info(f"Read {s.query_name} has nM tag.")
+            val = s.get_tag("nM")
+
+        # Filter by mismatch and read length
+        if val < max_mismatch and s.query_length >= min_read_length:
+			if verbose: 
+				logger.info(f"Read {s.query_name} has {val} mismatches and length {s.query_length}.")
+            if umi_collapse and s.has_tag(umi_tag):  # Use the specified UMI tag
+				if verbose:
+					logger.info(f"Read {s.query_name} has UMI tag {umi_tag}.")
+                umi = s.get_tag(umi_tag)  # Extract UMI from the specified tag
+                pos = (s.reference_name, s.reference_start)
+                umi_dict[(umi, pos)].append(s)  # Group reads by UMI and position
+            else:
+				if verbose:
+					logger.info(f"Read {s.query_name} does not have UMI tag; no UMI collapsing is applied.")
+                outfile.write(s)
+
+    # If UMI collapsing is enabled, process grouped reads
+    if umi_collapse:
+		if verbose: 
+			logger.info(f"UMI collapsing is enabled. Processing reads grouped by UMI and position.")
+        for (umi, pos), reads in umi_dict.items():
+            # Collapsing strategy: Keep the read with the highest mapping quality
+            best_read = max(reads, key=lambda x: x.mapping_quality)
+            outfile.write(best_read)  # Write the collapsed read
+
 	# close out the files
 	infile.close()
 	outfile.close()
