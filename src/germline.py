@@ -155,7 +155,7 @@ def get_lb_value(platform_library):
         raise ValueError(f"ERROR: Unsupported platform library: {platform_library}. We only support 10X, smartseq2, and celseq2.")
 
 # Function to add the chr prefix to the bam file
-def addChr(in_bam, samtools):
+def addChr(in_bam, samtools, verbose=False):
 	# edit the sequence names for your output header
 	prefix = 'chr'
 	out_bam=in_bam+"tmp.bam"
@@ -260,15 +260,6 @@ def BamFilter(myargs):
   
 	outfile =  pysam.AlignmentFile( out + "/Bam/" +id + "_" + chr + ".filter.bam", "wb", header=tp)
 
-	# # Set the tag value based on the tag name -- 2024-09-17
-	# for s in infile.fetch(search_chr):  
-	# 	if s.has_tag("NM"):
-	# 		val= s.get_tag("NM")
-	# 	if s.has_tag("nM"):
-	# 		val= s.get_tag("nM")                  
-	# 	if val < max_mismatch:
-	# 		outfile.write(s)
-
 	# NEW code -- 2024-09-18
 	# Dictionary to group reads by UMI and position
 	umi_dict = defaultdict(list)
@@ -322,19 +313,23 @@ def BamFilter(myargs):
 	# Adding the chr prefix to the BAM file when the contig does not include this-- 2024-09-17
 	if cnt == 0:
 		# Add the chr prefix to the BAM file -- 2024-09-17
-		addChr(out + "/Bam/" +  id+ "_" + chr+ ".filter.bam", samtools)
+		addChr(out + "/Bam/" +  id+ "_" + chr+ ".filter.bam", samtools, verbose=myargs.get("verbose", False))
 	bamfile = out + "/Bam/" +  id+ "_" + chr+ ".filter.bam"
 	return(bamfile)
 
+# Function to get the tag and otherwise return an error message
 def robust_get_tag(read, tag_name):  
 	try:  
 		return read.get_tag(tag_name)
 	except KeyError:
 		return f"ERROR: tag {tagname} not found -- NotFound"
 
+# Function to extract the command errors if any
 def runCMD(cmd):
-	output = os.system(cmd)
-	if output == 0:
+	result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+	if result.returncode == 0:
 		return cmd  # Return the command that was successfully run
 	else:
+		logger.error(f"ERROR: Command '{cmd}' failed with error: {result.stderr}")
 		return None  # Handle failure case if needed
+
