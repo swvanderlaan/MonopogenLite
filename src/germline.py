@@ -320,6 +320,7 @@ def robust_get_tag(read, tag_name):
 def runCMD(cmd):
 	result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
 	if result.returncode == 0:
+		logger.info(f"Command '{cmd}' successfully run.")
 		return cmd  # Return the command that was successfully run
 	else:
 		logger.error(f"ERROR: Command '{cmd}' failed with error: {result.stderr}")
