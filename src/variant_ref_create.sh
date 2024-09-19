@@ -212,7 +212,7 @@ source ~/.bashrc
 mamba activate monopogen
 
 # Use shell expansion to capture the files
-chrom_files=(\${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr*.vcf.gz)
+chrom_files=(${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr*.vcf.gz)
 
 # Check if the files exist
 if [[ \${#chrom_files[@]} -eq 0 ]]; then
