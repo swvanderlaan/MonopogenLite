@@ -255,7 +255,7 @@ OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filte
 
 # subsetting the VCF files
 
-bcftools view --samples "." \$INPUT --output-type z -o \$OUT_FILE_CELLSNP --force-samples
+bcftools view --samples "." \$IN_FILE --output-type z -o \$OUT_FILE_CELLSNP --force-samples
 tabix -fp vcf \$OUT_FILE_CELLSNP
 EOF
 )
