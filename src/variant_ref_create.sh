@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# Change log:
+# * v1.0.0 2024-09-19: Initial version. 
+# Version and license information 
 VERSION_NAME='Variant Reference Creator'
 VERSION='1.0.0'
-VERSION_DATE='2024-09-18'
+VERSION_DATE='2024-09-19'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -260,27 +263,6 @@ bcftools concat "\${chrom_files[@]}" --output-type z -o \$OUT_FILE
 tabix -p vcf \$OUT_FILE
 EOF
 )
-
-# # Extract the job ID from the output
-# SLURM_CONCAT_JOBID=$(echo $SLURM_CONCAT | awk '{print $4}')
-
-# # Submit job to split the concatenated VCF back into individual chromosomes (1-22 and X as 23)
-# if [[ $VERBOSE -eq 1 ]]; then
-#     echo "> Submitting job to split the concatenated VCF back into individual chromosomes."
-# fi
-# sbatch --dependency=afterok:$SLURM_CONCAT_JOBID --array=1-23 --job-name=pp_split --output="$RESOURCE_DIR/pp_split_%A_%a.out" --error="$RESOURCE_DIR/pp_split_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-# #!/bin/bash
-# source ~/.bashrc
-# mamba activate monopogen
-# CHROM=\${SLURM_ARRAY_TASK_ID}
-# if [[ "\$CHROM" == "23" ]]; then
-#     CHROM="X"
-# fi
-# IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr1_22X.vcf.gz"
-# OUT_SPLIT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.vcf.gz"
-# bcftools view --regions chr\$CHROM \$IN_FILE --output-type z -o \$OUT_SPLIT_FILE
-# tabix -fp vcf \$OUT_SPLIT_FILE
-# EOF
 
 if [[ $VERBOSE -eq 1 ]]; then
     echo ""
