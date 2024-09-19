@@ -201,42 +201,43 @@ echo ""
 # # Extract the job ID from the output
 # SLURM_NORM_JOBID=$(echo $SLURM_NORM | awk '{print $4}')
 
-# Wait for the array job to finish before concatenating the files
-if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to concatenate the filtered VCF files."
-fi
-# SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CONCAT=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-source ~/.bashrc
-mamba activate monopogen
+# # Wait for the array job to finish before concatenating the files
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to concatenate the filtered VCF files."
+# fi
+# # SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CONCAT=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# source ~/.bashrc
+# mamba activate monopogen
 
-# Use shell expansion to capture the files
-chrom_files=(${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr*.vcf.gz)
+# # Use shell expansion to capture the files
+# chrom_files=(${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr*.vcf.gz)
 
-# Check if the files exist
-if [[ \${#chrom_files[@]} -eq 0 ]]; then
-    echo "No VCF files found matching the pattern."
-    exit 1
-fi
+# # Check if the files exist
+# if [[ \${#chrom_files[@]} -eq 0 ]]; then
+#     echo "No VCF files found matching the pattern."
+#     exit 1
+# fi
 
-# Concatenate the files
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
-bcftools concat "\${chrom_files[@]}" --output-type z -o \$OUT_FILE
+# # Concatenate the files
+# OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr1_22X.vcf.gz"
+# bcftools concat "\${chrom_files[@]}" --output-type z -o \$OUT_FILE
 
-# Index the output
-tabix -p vcf \$OUT_FILE
-EOF
-)
+# # Index the output
+# tabix -p vcf \$OUT_FILE
+# EOF
+# )
 
-# Extract the job ID from the output
-SLURM_CONCAT_JOBID=$(echo $SLURM_CONCAT | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_CONCAT_JOBID=$(echo $SLURM_CONCAT | awk '{print $4}')
 
 # Submit the annotation job after concatenation
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to annotate the concatenated VCF."
 fi
-SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_CONCAT_JOBID --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_CONCAT_JOBID --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_ANNOTATE=$(sbatch --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate.out" --error="$RESOURCE_DIR/pp_annotate.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
