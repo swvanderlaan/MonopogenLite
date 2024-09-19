@@ -236,3 +236,5 @@ example/germline/chr22.phased.vcf.gz
 example/germline/chrX.gl.vcf.gz
 example/scripts/runGermline_chr22.sh
 example/scripts/runGermline_chrX.sh
+example/germline/
+chr22.gl.non_overlapping_variants.txt

@@ -4,6 +4,7 @@ import pysam
 import argparse
 import os
 import logging
+import subprocess
 
 # Change log:
 # * v1.0.0 2024-09-19: Initial version.
@@ -34,6 +35,17 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 Reference: http://opensource.org.
 '''
 
+# Initialize logger globally
+logger = logging.getLogger()
+
+def log_version_info():
+    """
+    Logs the version information at the start of the script.
+    """
+    logger.info(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE})")
+    logger.info(f"{COPYRIGHT}")
+    logger.info(f"{COPYRIGHT_TEXT.splitlines()[1]}")  # Shortened copyright text for the log
+
 def parse_vcf(vcf_file, debug=False):
     """
     Parse a VCF file and return a set of variants.
@@ -55,6 +67,34 @@ def parse_vcf(vcf_file, debug=False):
             variant_tuple = (chrom, pos, ref, alt)
             variants.add(variant_tuple)
     return variants
+
+def check_and_index_vcf(vcf_file, verbose=False):
+    """
+    Check if the VCF file is indexed (i.e., has a .tbi index file for .vcf.gz or .csi for .vcf).
+    If not, index the VCF using bcftools index.
+    """
+    # Determine the expected index file based on whether it's a compressed VCF
+    if vcf_file.endswith('.vcf.gz'):
+        index_file = vcf_file + '.tbi'
+    else:
+        index_file = vcf_file + '.csi'
+
+    if not os.path.exists(index_file):
+        if verbose:
+            logger.info(f"Index for {vcf_file} not found. Indexing with bcftools...")
+        # Run bcftools index to create the correct index (tbi or csi)
+        if vcf_file.endswith('.vcf.gz'):
+            result = subprocess.run(['tabix', '-p', 'vcf', vcf_file], capture_output=True, text=True)
+        else:
+            result = subprocess.run(['bcftools', 'index', vcf_file], capture_output=True, text=True)
+        if result.returncode != 0:
+            logger.error(f"ERROR: Failed to index {vcf_file}: {result.stderr}")
+            raise RuntimeError(f"Failed to index {vcf_file}")
+        if verbose:
+            logger.info(f"Index created for {vcf_file}.")
+    else:
+        if verbose:
+            logger.info(f"Index found for {vcf_file}. No indexing needed.")
 
 def compare_vcfs(input_vcf, reference_vcf, verbose=False, debug=False):
     """
@@ -80,9 +120,11 @@ def compare_vcfs(input_vcf, reference_vcf, verbose=False, debug=False):
 
 def write_variants_to_file(variants, output_file):
     """
-    Write a list of variants to an output file.
+    Write a list of variants to an output file, including the header.
     """
     with open(output_file, 'w') as f:
+        # Add a header to the output file
+        f.write("#CHROM\tPOS\tREF\tALT\n")
         for variant in sorted(variants):
             f.write(f"{variant[0]}\t{variant[1]}\t{variant[2]}\t{variant[3]}\n")
 
@@ -94,7 +136,8 @@ Compare a VCF-file to a common reference VCF-file.""",
 		epilog=f"""
 For a given input VCF file (`--input-vcf`), this script will compare it to a given 
 reference VCF file (`--reference-vcf`) and list the non-overlapping variants. The 
-output file will automatically be named as `input_vcf_filename.non_overlapping_variants.txt`.
+output file will automatically be named as `input_vcf_filename.non_overlapping_variants.txt` and 
+saved in the same directory as the input VCF file.
 
 Optionally, you can enable verbose output (`--verbose`).
 
@@ -117,6 +160,39 @@ Example:
     logging.basicConfig(format='%(asctime)s - %(message)s', level=logging_level)
     logger = logging.getLogger()
 
+    # Log version information
+    log_version_info()
+
+    # Ensure both VCF files are indexed
+    check_and_index_vcf(args.input_vcf, verbose=args.verbose)
+    check_and_index_vcf(args.reference_vcf, verbose=args.verbose)
+
     # Derive the output file name from the input VCF file, strip ".vcf.gz" or ".vcf"
     input_vcf_basename = os.path.basename(args.input_vcf)
-    output_file = f"{os.path.splitext(input_vcf_basename)[0].replace('.vcf', '').replace('.gz',
+    input_vcf_dir = os.path.dirname(args.input_vcf)
+    output_file = os.path.join(input_vcf_dir, f"{os.path.splitext(input_vcf_basename)[0].replace('.vcf', '').replace('.gz', '')}.non_overlapping_variants.txt")
+    
+    logger.info(f"Comparing variants between input VCF: {args.input_vcf} and reference VCF: {args.reference_vcf}")
+
+    # Compare the VCFs
+    overlapping_variants, non_overlapping_variants = compare_vcfs(
+        args.input_vcf, args.reference_vcf, verbose=args.verbose, debug=args.debug)
+
+    # Write non-overlapping variants to file
+    logger.info(f"Writing non-overlapping variants to {output_file}...")
+    write_variants_to_file(non_overlapping_variants, output_file)
+
+    # Print counts
+    total_input_variants = len(parse_vcf(args.input_vcf))
+    total_reference_variants = len(parse_vcf(args.reference_vcf))
+    total_overlapping_variants = len(overlapping_variants)
+    total_non_overlapping_variants = len(non_overlapping_variants)
+
+    logger.info(f"Total variants in input VCF: {total_input_variants}")
+    logger.info(f"Total variants in reference VCF: {total_reference_variants}")
+    logger.info(f"Overlapping variants: {total_overlapping_variants}")
+    logger.info(f"Non-overlapping variants: {total_non_overlapping_variants}")
+    logger.info(f"Non-overlapping variants written to: {output_file}")
+
+if __name__ == "__main__":
+    main()

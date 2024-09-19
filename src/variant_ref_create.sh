@@ -178,41 +178,54 @@ echo ""
 # # Extract the job ID from the output
 # SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
-# Wait for the array job to finish before concatenating the files
-if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to normalize the filtered VCF files."
-fi
-# SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-source ~/.bashrc
-mamba activate monopogen
-CHROM=\${SLURM_ARRAY_TASK_ID}
-if [[ "\$CHROM" == "23" ]]; then
-    CHROM="X"
-fi
-IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr\${CHROM}.vcf.gz"
-bcftools norm -m-both --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
-tabix -fp vcf \$OUT_FILE
-EOF
-)
+# # Wait for the array job to finish before concatenating the files
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to normalize the filtered VCF files."
+# fi
+# # SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# source ~/.bashrc
+# mamba activate monopogen
+# CHROM=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHROM" == "23" ]]; then
+#     CHROM="X"
+# fi
+# IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
+# OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr\${CHROM}.vcf.gz"
+# bcftools norm -m-both --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
+# tabix -fp vcf \$OUT_FILE
+# EOF
+# )
 
-# Extract the job ID from the output
-SLURM_NORM_JOBID=$(echo $SLURM_NORM | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_NORM_JOBID=$(echo $SLURM_NORM | awk '{print $4}')
 
 # Wait for the array job to finish before concatenating the files
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to concatenate the filtered VCF files."
 fi
-SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CONCAT=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CONCAT=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr1_22X.vcf.gz"
-chrom_files=\$(ls "${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr*.vcf.gz" | tr '\n' ' ')
-bcftools concat \$chrom_files --output-type z -o \$OUT_FILE
-tabix -fp vcf \$OUT_FILE
+
+# Use shell expansion to capture the files
+chrom_files=(\${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr*.vcf.gz)
+
+# Check if the files exist
+if [[ \${#chrom_files[@]} -eq 0 ]]; then
+    echo "No VCF files found matching the pattern."
+    exit 1
+fi
+
+# Concatenate the files
+OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr1_22X.vcf.gz"
+bcftools concat "\${chrom_files[@]}" --output-type z --output-file \$OUT_FILE
+
+# Index the output
+tabix -p vcf \$OUT_FILE
 EOF
 )
 
