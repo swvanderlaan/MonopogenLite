@@ -188,10 +188,14 @@ SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-
 source ~/.bashrc
 mamba activate monopogen
 CHROM=\${SLURM_ARRAY_TASK_ID}
+if [[ "\$CHROM" == "23" ]]; then
+    CHROM="X"
+fi
 IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_afchr\${CHROM}.vcf.gz"
+OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr\${CHROM}.vcf.gz"
 bcftools norm -m-both --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
 tabix -fp vcf \$OUT_FILE
+fi
 EOF
 )
 
