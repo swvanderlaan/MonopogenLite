@@ -328,7 +328,7 @@ def germline(args):
 			print(f"  - Reference..............: {args.reference}\n")
 			print(f"  - Imputation panel.......: {args.imputation_panel}\n")
 			print(f"  - Maximum soft-clipped...: {args.max_softClipped}\n")
-			if subcommand == "preProcess":
+			if args.subcommand == "preProcess":
 				print(f"  - Maximum mismatch.......: {args.max_mismatch}\n")
 				print(f"  - Platform library.......: {args.platform_library}\n")
 				print(f"  - Minimum read length....: {args.min_read_length}\n")
@@ -351,7 +351,7 @@ def germline(args):
 		print(f"  - Reference..............: {args.reference}\n")
 		print(f"  - Imputation panel.......: {args.imputation_panel}\n")
 		print(f"  - Maximum soft-clipped...: {args.max_softClipped}\n")
-		if subcommand == "preProcess":
+		if args.subcommand == "preProcess":
 			print(f"  - Maximum mismatch.......: {args.max_mismatch}\n")
 			print(f"  - Platform library.......: {args.platform_library}\n")
 			print(f"  - Minimum read length....: {args.min_read_length}\n")
