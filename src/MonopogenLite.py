@@ -254,17 +254,17 @@ def germline(args):
 				if args.verbose:
 					print(f"    * variant calling command")
 				# writing some extra information to the shell script
-				f_out.write(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE}) \nMonopogenLite: SNV calling and phasing from single-cell sequencing data.\n")
-				f_out.write("\nSettings:\n")
-				f_out.write(f"  - Region.................: {jobid}\n")
-				f_out.write(f"  - Reference..............: {args.reference}\n")
-				f_out.write(f"  - Imputation panel.......: {args.imputation_panel}\n")
-				f_out.write(f"  - Maximum soft-clipped...: {args.max_softClipped}\n")
-				f_out.write(f"  - App path...............: {args.app_path}\n")
-				f_out.write(f"  - Threads................: {args.nthreads}\n")
-				f_out.write(f"  - Output.................: {out}\n")
+				f_out.write(f"# {VERSION_NAME} v{VERSION} ({VERSION_DATE}) \nMonopogenLite: SNV calling and phasing from single-cell sequencing data.\n")
+				f_out.write("\n# Settings:\n")
+				f_out.write(f"#  - Region.................: {jobid}\n")
+				f_out.write(f"#  - Reference..............: {args.reference}\n")
+				f_out.write(f"#  - Imputation panel.......: {args.imputation_panel}\n")
+				f_out.write(f"#  - Maximum soft-clipped...: {args.max_softClipped}\n")
+				f_out.write(f"#  - App path...............: {args.app_path}\n")
+				f_out.write(f"#  - Threads................: {args.nthreads}\n")
+				f_out.write(f"#  - Output.................: {out}\n")
 				f_out.write("\n")
-				f_out.write("\nVariant genotype calling.\n")
+				f_out.write("\n# Variant genotype calling.\n")
 				f_out.write(f"{cmd1}\n")
 			if args.step == "varProb" or args.step == "all":
 				# NEW code -- 2024-09-17
@@ -272,7 +272,7 @@ def germline(args):
 					print(f"    * variant phased genotype probabilities command")
 				
 				# writing some extra information to the shell script
-				f_out.write(f"\nPhasing variant genotype probabilities.\n")
+				f_out.write(f"\n# Phasing variant genotype probabilities.\n")
 				f_out.write(f"{cmd3}\n")
 				# OBSOLETE code -- 2024-09-17
 				# The genotype field typically indicates whether a variant is present in an individual. For example:
@@ -301,11 +301,11 @@ def germline(args):
 				if args.verbose:
 					print(f"    * variant genotype phasing command")
 				# writing some extra information to the shell script
-				f_out.write(f"\nPhasing hard-called phased genotypes (based on genotype probabilities).\n")
-				f_out.write(f"cmd5 \n")
+				f_out.write(f"\n# Phasing hard-called phased genotypes (based on genotype probabilities).\n")
+				f_out.write(f"{cmd5} \n")
 			
 			# writing some extra information to the shell script
-			f_out.write(f"\n{VERSION_NAME} v{VERSION}. {COPYRIGHT} \n{COPYRIGHT_TEXT}\n")
+			f_out.write(f"\n# {VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
 			# NEW code -- 2024-08-15
 			# append jobs to the job list
 			if args.verbose:
