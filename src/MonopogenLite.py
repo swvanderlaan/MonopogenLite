@@ -254,7 +254,7 @@ def germline(args):
 				if args.verbose:
 					print(f"    * variant calling command")
 				# writing some extra information to the shell script
-				f_out.write(f"# {VERSION_NAME} v{VERSION} ({VERSION_DATE}) \nMonopogenLite: SNV calling and phasing from single-cell sequencing data.\n")
+				f_out.write(f"# {VERSION_NAME} v{VERSION} ({VERSION_DATE}) \n# MonopogenLite: SNV calling and phasing from single-cell sequencing data.\n")
 				f_out.write("\n# Settings:\n")
 				f_out.write(f"#  - Region.................: {jobid}\n")
 				f_out.write(f"#  - Reference..............: {args.reference}\n")
@@ -314,12 +314,26 @@ def germline(args):
 	# close the file
 	f_out.close()
 
-	if not args.norun == "TRUE":
+	# pool the shell scripts in the job list when the norun flag is not set
+	if not args.norun:
 		with Pool(processes=args.nthreads) as pool:
 			print(f"Running the germline variant calling pipeline in a pool.")
-			print(f"\nNumber of threads used: {args.nthreads} (downsample for BEAGLE phasing: {nthreads_downsample}\n")
+			print(f"\nNumber of threads used: {args.nthreads} (downsample for BEAGLE phasing: {nthreads_downsample}.\n")
 			print(joblst)
 			result = pool.map(runCMD, joblst)
+			print(f"All jobs submitted and run.")
+			print(f"\n")
+			print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
+	else:
+		print(f"Generated the job scripts only. The jobs will not be run.")
+		print(f"\nNumber of threads used: {args.nthreads} (downsample for BEAGLE phasing: {nthreads_downsample}.\n")
+		print(joblst)
+		print(f"Run the following command to run the jobs:")
+		print(f"parallel -j {args.nthreads} < {out}/scripts/runGermline_{jobid}.sh")
+		print(f"Exiting.")
+		print(f"\n")
+		print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
+
 
 # Function to perform pre-processing of bam files -- 2024-08-08
 def preProcess(args):
