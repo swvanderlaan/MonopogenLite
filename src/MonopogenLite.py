@@ -317,21 +317,19 @@ def germline(args):
 	# pool the shell scripts in the job list when the norun flag is not set
 	if not args.norun:
 		with Pool(processes=args.nthreads) as pool:
-			print(f"Running the germline variant calling pipeline in a pool.")
-			print(f"\nNumber of threads used: {args.nthreads} (downsample for BEAGLE phasing: {nthreads_downsample}.\n")
+			print(f"\nRunning the germline variant calling pipeline in a pool.")
+			print(f"> Number of threads used: {args.nthreads} (downsample for BEAGLE phasing: {nthreads_downsample}).\n")
+			print(f"> Jobs submitted:")
 			print(joblst)
 			result = pool.map(runCMD, joblst)
-			print(f"All jobs submitted and run.")
-			print(f"\n")
+			print(f"\nAll jobs submitted and run.")
 			print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
 	else:
-		print(f"Generated the job scripts only. The jobs will not be run.")
-		print(f"\nNumber of threads used: {args.nthreads} (downsample for BEAGLE phasing: {nthreads_downsample}.\n")
+		print(f"\nGenerated the job scripts only. The jobs will not be run.")
+		print(f"> Number of threads used: {args.nthreads} (downsample for BEAGLE phasing: {nthreads_downsample}).\n")
+		print(f"> Jobs generated:")
 		print(joblst)
-		print(f"Run the following command to run the jobs:")
-		print(f"parallel -j {args.nthreads} < {out}/scripts/runGermline_{jobid}.sh")
-		print(f"Exiting.")
-		print(f"\n")
+		print(f"\nExiting.")
 		print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
 
 
