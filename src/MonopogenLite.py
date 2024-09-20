@@ -274,7 +274,7 @@ def germline(args):
 				# writing some extra information to the shell script
 				f_out.write("\nPhasing variant genotype probabilities.\n")
 				f_out.write(cmd3 + "\n")
-				# NEW code -- 2024-09-17
+				# OBSOLETE code -- 2024-09-17
 				# The genotype field typically indicates whether a variant is present in an individual. For example:
 				# - 0/0 means the individual is homozygous for the reference allele (no variation).
 				# - 0/1 means the individual is heterozygous, carrying one reference allele and one alternate allele.
@@ -494,8 +494,6 @@ python MonopogenLite.py germline --help\n\n
 								help="The genome regions for variant calling. This file should have either 1 column (chromosome) or 3 columns (chromosome, start, end), where chromosome X is noted as chrX. Required.")
 	parser_germline.add_argument('-s', '--step', required= True, default="all", choices=['varScan', 'varProb' , 'varPhasing', 'all'],
 								help="Run germline variant calling step by step. varScan: variant calling; varProb: variant phased genotype probabilities; varPhasing: variant phasing; all: all steps. Default is all.")
-	# parser_germline.add_argument('-z', '--homozygote-filter', required=False, action='store_true',
-	# 							help="Filter out homozygote calls from the VCF file when dealing with one sample. Use with caution: one creates artificial missing data when processing one sample each time, but ultimately analyzing these together. Default is False.")
 	parser_germline.add_argument('-o', '--out', required= False,
 								help="The output directory. The output will be saved in the output directory. Required.")
 	parser_germline.add_argument('-g', '--reference', required= True, 
