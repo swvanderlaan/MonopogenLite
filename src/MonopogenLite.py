@@ -31,15 +31,16 @@ from pysam import VariantFile # handle VCF files
 from germline import *
 
 # Change log:
-# * v1.2.2 2024-09-18: Updated germline.py to properly account for the 'RG' header given different platforms. 
-# * v1.2.1 2024-09-18: Added a separate script to count overlapping variants between input (derived from bam-files) and output VCF files.
-# * v1.2.0 2024-09-18: Added support to provide a minimum read length for variant calling (defaults to 30), added support for the platform library used for sequencing (10x, smartseq2, celseq2), and added support for collapsing UMIs.
-# * v1.1.0 2024-09-18: Added chromosome X support.
-# * v1.0.0 2024-09-19: Initial version. MonoPogenLite is a light-version fork of Monopogen. It only includes the germline-variant-calling pipeline.
+# * v1.2.3, 2024-09-19: Added more information the the runGermline scripts.
+# * v1.2.2, 2024-09-18: Updated germline.py to properly account for the 'RG' header given different platforms. 
+# * v1.2.1, 2024-09-18: Added a separate script to count overlapping variants between input (derived from bam-files) and output VCF files.
+# * v1.2.0, 2024-09-18: Added support to provide a minimum read length for variant calling (defaults to 30), added support for the platform library used for sequencing (10x, smartseq2, celseq2), and added support for collapsing UMIs.
+# * v1.1.0, 2024-09-18: Added chromosome X support.
+# * v1.0.0, 2024-09-19: Initial version. MonoPogenLite is a light-version fork of Monopogen. It only includes the germline-variant-calling pipeline.
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.2.2'
-VERSION_DATE = '2024-09-18'
+VERSION = '1.2.3'
+VERSION_DATE = '2024-09-19'
 COPYRIGHT = 'Copyright 1979-2024. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -252,11 +253,26 @@ def germline(args):
 				# NEW code -- 2024-09-17
 				if args.verbose:
 					print(f"    * variant calling command")
+				# writing some extra information to the shell script
+				f_out.write({VERSION_NAME} + "v" + {VERSION} + "(" + {VERSION_DATE} + ") \nMonopogenLite: SNV calling and phasing from single-cell sequencing data.\n")
+				f_out.write("\nSettings:\n")
+				f_out.write("  - Region.................: " + jobid + "\n")
+				f_out.write("  - Reference..............: " + args.reference + "\n")
+				f_out.write("  - Imputation panel.......: " + args.imputation_panel + "\n")
+				f_out.write("  - Maximum soft-clipped...: " + str(args.max_softClipped) + "\n")
+				f_out.write("  - App path...............: " + args.app_path + "\n")
+				f_out.write("  - Threads................: " + str(args.nthreads) + "\n")
+				f_out.write("  - Output.................: " + out + "\n")
+				f_out.write("\n")
+				f_out.write("\nVariant genotype calling.\n")
 				f_out.write(cmd1 + "\n")
 			if args.step == "varProb" or args.step == "all":
 				# NEW code -- 2024-09-17
 				if args.verbose:
 					print(f"    * variant phased genotype probabilities command")
+				
+				# writing some extra information to the shell script
+				f_out.write("\nPhasing variant genotype probabilities.\n")
 				f_out.write(cmd3 + "\n")
 				# NEW code -- 2024-09-17
 				# The genotype field typically indicates whether a variant is present in an individual. For example:
@@ -284,8 +300,12 @@ def germline(args):
 				# NEW code -- 2024-09-17
 				if args.verbose:
 					print(f"    * variant genotype phasing command")
+				# writing some extra information to the shell script
+				f_out.write("\nPhasing hard-called phased genotypes (based on genotype probabilities).\n")
 				f_out.write(cmd5 + "\n")
 			
+			# writing some extra information to the shell script
+			f_out.write("\n" + {VERSION_NAME} + " v" + {VERSION} + "." + {COPYRIGHT} + "\n" + {COPYRIGHT_TEXT} + "\n")
 			# NEW code -- 2024-08-15
 			# append jobs to the job list
 			if args.verbose:
@@ -296,6 +316,8 @@ def germline(args):
 
 	if not args.norun == "TRUE":
 		with Pool(processes=args.nthreads) as pool:
+			print(f"Running the germline variant calling pipeline in a pool.")
+			print(f"\nNumber of threads used: {args.nthreads} (downsample for BEAGLE phasing: {nthreads_downsample}\n")
 			print(joblst)
 			result = pool.map(runCMD, joblst)
 
