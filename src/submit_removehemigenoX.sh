@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.2 2024-09-24: Fixed issue where there was no --version flag in the help message.
 # * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit RemoveHemiGenoX'
-VERSION='1.0.0'
+VERSION='1.0.2'
 VERSION_DATE='2024-09-24'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -55,14 +56,14 @@ print_help() {
     echo ""
     echo "$COPYRIGHT"
     echo "$COPYRIGHT_TEXT"
-    exit 1
+    exit 0
 }
 
 print_version() {
     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
     echo "$COPYRIGHT"
     echo "$COPYRIGHT_TEXT"
-    exit 1
+    exit 0
 }
 
 # Starting script
@@ -97,6 +98,7 @@ while [[ "$#" -gt 0 ]]; do
         --mail) SBATCH_MAILTYPE="$2"; shift ;;
         --user) SBATCH_MAILUSER="$2"; shift ;;
         --verbose) VERBOSE=1 ;;
+        --version) print_version ;;
         --help) print_help ;;
         *) echo "Unknown parameter passed: $1"; print_help ;;
     esac
@@ -135,8 +137,8 @@ cat << EOF > $SBATCH_SCRIPT
 #SBATCH --time=$SBATCH_TIME
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
-#SBATCH --output=${SBATCH_JOB_NAME}_%A_%a.out
-#SBATCH --error=${SBATCH_JOB_NAME}_%A_%a.err
+#SBATCH --output=${SBATCH_JOB_NAME}_%j.out
+#SBATCH --error=${SBATCH_JOB_NAME}_%j.err
 
 source ~/.bashrc
 mamba activate monopogen
@@ -152,6 +154,10 @@ chmod +x $SBATCH_SCRIPT
 
 # Submit the job to SLURM
 sbatch $SBATCH_SCRIPT
+
+JOB_ID=$(sbatch $SBATCH_SCRIPT)
+echo "Job submitted with ID: $JOB_ID"
+
 
 echo ""
 print_version
