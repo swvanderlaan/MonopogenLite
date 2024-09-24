@@ -138,47 +138,49 @@ echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 
-# Submit a job to download data for chromosomes 1-22 and X
-if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to download the phased high-coverage 1000 Genomes VCF files."
-fi
-SLURM_DOWNLOAD=$(sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-CHR=\${SLURM_ARRAY_TASK_ID}
-if [[ "\$CHR" == "23" ]]; then
-    wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz
-else
-    wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr\${CHR}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
-fi
-EOF
-)
+# # Submit a job to download data for chromosomes 1-22 and X
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to download the phased high-coverage 1000 Genomes VCF files."
+# fi
+# SLURM_DOWNLOAD=$(sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# CHR=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHR" == "23" ]]; then
+#     wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz
+# else
+#     wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr\${CHR}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+# fi
+# EOF
+# )
 
-# Extract the job ID from the output
-SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
 # Submit array job to filter chromosomes 1-22 and X
 if [[ $VERBOSE -eq 1 ]]; then
     # echo "> Submitting job to filter the VCF files. Also filtering out the nonPAR heterozygous variants from chrX (--regions ^chrX:2781479-155701383)."
     echo "> Submitting job to filter the VCF files."
 fi
-# SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
 CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
+    echo "Processing chromosome X"
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
     tabix -fp vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE" & GT!~\"0|\" & GT!~\"1|\"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE" & GT!~"0|" & GT!~"1|"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
     tabix -fp vcf \$OUT_FILE
 else
-    VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
-    OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-    tabix -fp vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chr\$CHROM --output-type z -o \$OUT_FILE 
-    tabix -fp vcf \$OUT_FILE
+    echo "Processing chromosome \$CHROM"
+    # VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+    # OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
+    # tabix -fp vcf \$VCF_IN
+    # bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chr\$CHROM --output-type z -o \$OUT_FILE 
+    # tabix -fp vcf \$OUT_FILE
 fi
 EOF
 )
@@ -242,8 +244,8 @@ SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to subset the normalized and annotated data to list only the variants (for cellsnp)."
 fi
-# SLURM_SUBSET_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_SUBSET_CELLSNP=$(sbatch --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_SUBSET_CELLSNP=$(sbatch --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_SUBSET_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
