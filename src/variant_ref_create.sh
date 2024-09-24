@@ -188,7 +188,7 @@ EOF
 # Extract the job ID from the output
 SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
-# Wait for the array job to finish before concatenating the files
+# Wait for the array job to finish before normalizing the files
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to normalize the filtered VCF files."
 fi
@@ -306,3 +306,273 @@ fi
 echo ""
 print_version
 ### END OF SCRIPT ###
+
+### FANCY VERSION -- not worked out yet
+
+# #!/bin/bash
+
+# # Change log:
+# # * v1.1.0 2024-09-24: Rewrite to write the SLURM jobs for downloading, filtering, normalizing, annotation and concatenation the VCF files to scripts.
+# # * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
+# # * v1.0.0 2024-09-19: Initial version. 
+# # Version and license information 
+# VERSION_NAME='Variant Reference Creator'
+# VERSION='1.1.0'
+# VERSION_DATE='2024-09-24'
+# COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
+# COPYRIGHT_TEXT='''
+# The MIT License (MIT).
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
+# associated documentation files (the "Software"), to deal in the Software without restriction, 
+# including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+# sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all copies 
+# or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+# PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS 
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE 
+# OR OTHER DEALINGS IN THE SOFTWARE.
+
+# Reference: http://opensource.org.
+# '''
+
+# # Argument parsing function
+# print_help() {
+#     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
+#     echo ""
+#     echo "Usage: $0 --resource-dir <DIR> [--af <FLOAT>] [--variant-type <TYPE>] [--step <STEP>] [--verbose] [--help] [--version]"
+#     echo ""
+#     echo "Description:"
+#     echo "  This script downloads the phased high-coverage 1000 Genomes VCF files "
+#     echo "  for chromosomes 1-22 and X for use as a variant reference panel."
+#     echo "  It filters, normalizes, concatenates, and annotates the VCF files using bcftools."
+#     echo "  It will run jobs on a SLURM-based system, processing chromosomes 1-22 and X."
+#     echo "  The output will be stored in the resource directory."
+#     echo "  The script requires the monopogen-environment, and refgenie and bcftools software."
+#     echo ""
+#     echo "Arguments:"
+#     echo "  --resource-dir  Directory to store resources and outputs."
+#     echo "  --af            Allele frequency filter, c.q. variants to keep above AF>X (default: 0.0005)."
+#     echo "  --variant-type  Variant type filter (default: snp)."
+#     echo "  --step          Step to start from ('download', 'filter', 'normalize', 'annotate', 'cellsnp', 'concat', or 'all')."
+#     echo "  --verbose       Enable verbose output."
+#     echo "  --help          Show this help message and exit."
+#     echo "  --version       Display version information and exit."
+#     echo ""
+#     echo "$COPYRIGHT"
+#     echo "$COPYRIGHT_TEXT"
+#     exit 1
+# }
+
+# print_version() {
+#     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
+#     echo "$COPYRIGHT"
+#     echo "$COPYRIGHT_TEXT"
+#     exit 1
+# }
+
+# # Default values
+# VERBOSE=0
+# AF=0.0005
+# VARIANT_TYPE="snp"
+# STEP="all"
+
+# # Parse arguments
+# while [[ "$#" -gt 0 ]]; do
+#     case $1 in
+#         --resource-dir) RESOURCE_DIR="$2"; shift ;;
+#         --af) AF="$2"; shift ;;
+#         --variant-type) VARIANT_TYPE="$2"; shift ;;
+#         --step) STEP="$2"; shift ;;
+#         --verbose) VERBOSE=1 ;;
+#         --help) print_help ;;
+#         --version) print_version ;;
+#         *) echo "Unknown parameter passed: $1"; print_help ;;
+#     esac
+#     shift
+# done
+
+# # Starting script
+# echo "$VERSION_NAME"
+# echo "version $VERSION ($VERSION_DATE)"
+# echo ""
+
+# # Check if conda is installed
+# echo "Activating conda environment..."
+# source ~/.bashrc
+# mamba activate monopogen
+# echo ""
+
+# # Check if resource directory is provided
+# if [[ -z "$RESOURCE_DIR" ]]; then
+#     echo "Error: --resource-dir flag is required."
+#     exit 1
+# fi
+
+# # Create the resource directory
+# mkdir -p "$RESOURCE_DIR"
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Resource directory created at $RESOURCE_DIR"
+# fi
+
+# OUT_DIR="$RESOURCE_DIR"
+# mkdir -p "$OUT_DIR"
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Output directory created at $OUT_DIR"
+# fi
+
+# # Set up SLURM parameters
+# SBATCH_MAIL="FAIL"
+# SBATCH_MAIL_USER="s.w.vanderlaan-2@umcutrecht.nl"
+
+# # Setting up the reference genome
+# GRCh38="/hpc/dhl_ec/data/references/fasta/refdata-gex-GRCh38-2024-A/fasta/genome.fa"
+
+# echo "Starting $VERSION_NAME"
+# echo ""
+# echo "These are the settings:"
+# echo "  Resource directory........: $RESOURCE_DIR"
+# echo "  Allele frequency filter...: $AF"
+# echo "  Variant type filter.......: $VARIANT_TYPE"
+# echo "  Reference genome..........: $GRCh38"
+# echo "  Resource directory........: $RESOURCE_DIR"
+# echo "  Job mail type.............: $SBATCH_MAIL"
+# echo "  Job mail user.............: $SBATCH_MAIL_USER"
+# echo "  Step to start from........: $STEP"
+# echo "  Verbosity.................: $VERBOSE"
+# echo "  Version...................: $VERSION ($VERSION_DATE)"
+# echo ""
+
+# # Function to create and submit SLURM job scripts
+# submit_job_script() {
+#     local STEP_NAME=$1
+#     local SCRIPT_CONTENT=$2
+#     local CHR_NAME=$3
+
+#     JOB_SCRIPT="$RESOURCE_DIR/job_${STEP_NAME}_chr${CHR_NAME}.sh"
+#     echo "$SCRIPT_CONTENT" > $JOB_SCRIPT
+#     chmod +x $JOB_SCRIPT
+#     sbatch $JOB_SCRIPT
+# }
+
+# # Add dependency variable
+# DEPENDENCY=""
+
+# # STEP 1: Download VCF Files for Chromosomes 1-22 and X
+# if [[ $STEP == "download" || $STEP == "all" ]]; then
+#     echo "Step 1: Download VCF Files for Chromosomes 1-22 and X"
+#     SCRIPT_CONTENT=$(cat << EOF
+# #!/bin/bash
+# #SBATCH --array=1-23
+# #SBATCH --job-name=pp_download_chr
+# #SBATCH --output="$RESOURCE_DIR/pp_download_chr_%A_%a.out"
+# #SBATCH --error="$RESOURCE_DIR/pp_download_chr_%A_%a.err"
+# #SBATCH --ntasks=1
+# #SBATCH --cpus-per-task=1
+# #SBATCH --mem=8G
+# #SBATCH --time=00:30:00
+# #SBATCH --mail-type="$SBATCH_MAIL"
+# #SBATCH --mail-user="$SBATCH_MAIL_USER"
+
+# CHR=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHR" == "23" ]]; then
+#     wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz
+# else
+#     wget -P "$RESOURCE_DIR" http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr\${CHR}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+# fi
+# EOF
+#     )
+#     submit_job_script "download" "$SCRIPT_CONTENT" ""
+#     # Update dependency with job ID of the download step
+#     DEPENDENCY="afterok:\$(sacct -n -X --format=JobID --name=pp_download_chr --state=COMPLETED | head -n 1)"
+# fi
+
+# # STEP 2: Filter VCF Files for Chromosomes 1-22 and X
+# if [[ $STEP == "filter" || $STEP == "all" ]]; then
+#     echo "Step 2: Filter VCF Files for Chromosomes 1-22 and X"
+#     SCRIPT_CONTENT=$(cat << EOF
+# #!/bin/bash
+# #SBATCH --array=1-23
+# #SBATCH --job-name=pp_filter_chr
+# #SBATCH --output="$RESOURCE_DIR/pp_filter_chr_%A_%a.out"
+# #SBATCH --error="$RESOURCE_DIR/pp_filter_chr_%A_%a.err"
+# #SBATCH --ntasks=1
+# #SBATCH --cpus-per-task=1
+# #SBATCH --mem=8G
+# #SBATCH --time=00:30:00
+# #SBATCH --mail-type="$SBATCH_MAIL"
+# #SBATCH --mail-user="$SBATCH_MAIL_USER"
+# #SBATCH --dependency=$DEPENDENCY
+
+# source ~/.bashrc
+# mamba activate monopogen
+
+# CHR=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHR" == "23" ]]; then
+#     CHR_NAME="X"
+# else
+#     CHR_NAME="\$CHR"
+# fi
+
+# VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHR_NAME}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+# OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHR_NAME}.vcf.gz"
+
+# bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' --regions chr\${CHR_NAME} --output-type z -o \$OUT_FILE
+# tabix -fp vcf \$OUT_FILE
+# EOF
+#     )
+#     submit_job_script "filter" "$SCRIPT_CONTENT" ""
+#     # Update dependency with job ID of the filter step
+#     DEPENDENCY="afterok:\$(sacct -n -X --format=JobID --name=pp_filter_chr --state=COMPLETED | head -n 1)"
+# fi
+
+# # STEP 3: Normalize Filtered VCF Files for Chromosomes 1-22 and X
+# if [[ $STEP == "normalize" || $STEP == "all" ]]; then
+#     echo "Step 3: Normalize Filtered VCF Files for Chromosomes 1-22 and X"
+#     SCRIPT_CONTENT=$(cat << EOF
+# #!/bin/bash
+# #SBATCH --array=1-23
+# #SBATCH --job-name=pp_norm_chr
+# #SBATCH --output="$RESOURCE_DIR/pp_norm_chr_%A_%a.out"
+# #SBATCH --error="$RESOURCE_DIR/pp_norm_chr_%A_%a.err"
+# #SBATCH --ntasks=1
+# #SBATCH --cpus-per-task=1
+# #SBATCH --mem=8G
+# #SBATCH --time=01:00:00
+# #SBATCH --mail-type="$SBATCH_MAIL"
+# #SBATCH --mail-user="$SBATCH_MAIL_USER"
+# #SBATCH --dependency=$DEPENDENCY
+
+# source ~/.bashrc
+# mamba activate monopogen
+
+# CHR=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHR" == "23" ]]; then
+#     CHR_NAME="X"
+# else
+#     CHR_NAME="\$CHR"
+# fi
+
+# IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHR_NAME}.vcf.gz"
+# OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr\${CHR_NAME}.vcf.gz"
+
+# bcftools norm -m-both --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
+# tabix -fp vcf \$OUT_FILE
+# EOF
+#     )
+#     submit_job_script "normalize" "$SCRIPT_CONTENT" ""
+#     # Update dependency with job ID of the normalize step
+#     DEPENDENCY="afterok:\$(sacct -n -X --format=JobID --name=pp_norm_chr --state=COMPLETED | head -n 1)"
+# fi
+
+# # Repeat similar blocks for "annotate", "cellsnp", and "concat" with their respective steps and dependencies
+
+# echo ""
+# print_version
+# ### END OF SCRIPT ###
