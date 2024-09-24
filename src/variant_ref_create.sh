@@ -172,7 +172,7 @@ if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
     tabix -fp vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE" & GT!~"0|" & GT!~"1|"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE" & GT!~"0" & GT!~"1"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
     tabix -fp vcf \$OUT_FILE
 else
     echo "Processing chromosome \$CHROM"
