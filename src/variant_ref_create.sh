@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.2 2024-09-24: Added script to remove homozygous calls for chromosome X.
 # * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
 # * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
 VERSION_NAME='Variant Reference Creator'
-VERSION='1.0.1'
+VERSION='1.0.2'
 VERSION_DATE='2024-09-24'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -43,8 +44,9 @@ print_help() {
     echo "  It will run jobs on a SLURM-based system, processing chromosomes 1-22 and X."
     echo "  The output will be stored in the resource directory."
     echo "  The script requires the monopogen-environment, and refgenie and bcftools software."
-    echo "  Note that homozygous calls - e.g. 0 or 1 - are filtered out for chromosome X, "
-    echo "  thus only variants with heterozygous calls, i.e. 0|0, 0|1, and 1|1 are retained."
+    echo "  Note that homozygous calls - e.g. 0 or 1 - are not filtered out for chromosome X. "
+    echo "  Use the submit_removehemigeno.sh to retain only variants with heterozygous calls, "
+    echo "  i.e. 0|0, 0|1, and 1|1 are retained."
     echo ""
     echo "Arguments:"
     echo "  --resource-dir  Directory to store resources and outputs."
@@ -133,7 +135,6 @@ echo "  Reference genome..........: $GRCh38"
 echo "  Resource directory........: $RESOURCE_DIR"
 echo "  Job mail type.............: $SBATCH_MAIL"
 echo "  Job mail user.............: $SBATCH_MAIL_USER"
-# echo "  Dry run...................: $DRY_RUN"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
