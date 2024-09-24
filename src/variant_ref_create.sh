@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
 # * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
 VERSION_NAME='Variant Reference Creator'
-VERSION='1.0.0'
-VERSION_DATE='2024-09-19'
+VERSION='1.0.1'
+VERSION_DATE='2024-09-24'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -40,6 +41,10 @@ print_help() {
     echo "  for chromosomes 1-22 and X for use as a variant reference panel."
     echo "  It filters, concatenates, and annotates the VCF files using bcftools."
     echo "  It will run jobs on a SLURM-based system, processing chromosomes 1-22 and X."
+    echo "  The output will be stored in the resource directory."
+    echo "  The script requires the monopogen-environment, and refgenie and bcftools software."
+    echo "  Note that homozygous calls - e.g. 0 or 1 - are filtered out for chromosome X, "
+    echo "  thus only variants with heterozygous calls, i.e. 0|0, 0|1, and 1|1 are retained."
     echo ""
     echo "Arguments:"
     echo "  --resource-dir  Directory to store resources and outputs."
@@ -166,7 +171,7 @@ if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
     tabix -fp vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE" & GT!~\"0|\" & GT!~\"1|\"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
     tabix -fp vcf \$OUT_FILE
 else
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
