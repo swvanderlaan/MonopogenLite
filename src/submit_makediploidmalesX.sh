@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.3 2024-09-25: Changed script name
 # * v1.0.2 2024-09-24: Fixed issue where there was no --version flag in the help message.
 # * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
-VERSION_NAME='Submit RemoveHemiGenoX'
+VERSION_NAME='Submit MakeDiploidMalesX'
 VERSION='1.0.2'
-VERSION_DATE='2024-09-24'
+VERSION_DATE='2024-09-25'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -38,8 +39,8 @@ print_help() {
     echo "Usage: $0 --input <input.vcf.gz> --output <output.vcf.gz> [--job-name <job_name>] [--cpus <num_cpus>] [--mem <memory>] [--time <time>] [--mail <mail-type>] [--user <mail-user>] [--verbose]"
     echo ""
     echo "Description:"
-    echo "  This script will submit a job to the SLURM scheduler to remove "
-    echo "  hemizygous variants from a VCF file."
+    echo "  This script will submit a job to the SLURM scheduler to make "
+    echo "  haploid genotypes in males diploid given a VCF file."
     echo ""
     echo "Arguments:"
     echo "  --input         The input VCF file."
@@ -115,7 +116,7 @@ if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" ]]; then
 fi
 
 # Create the SLURM batch job script
-SBATCH_SCRIPT="$MPG/submit_removehemigenoX.sbatch"
+SBATCH_SCRIPT="$MPG/submit_makediploidmalesX.sbatch"
 
 echo "Starting $VERSION_NAME"
 echo ""
@@ -161,10 +162,10 @@ echo "  SLURM mail user...........: $SBATCH_MAILUSER"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
-echo "Running RemoveHemiGenoX..."
-python3 $MPG/src/removehemigenoX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
+echo "Running makediploidmalesX..."
+python3 $MPG/src/makediploidmalesX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
 
-echo "RemoveHemiGenoX finished successfully. Let's have a beer, buddy!"
+echo "MakeDiploidMalesX finished successfully. Let's have a beer, buddy!"
 
 mamba deactivate
 EOF
