@@ -185,8 +185,8 @@ if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chrX.vcf.gz"
 
-    echo "> Indexing \$VCF_IN" 
-    tabix -fp vcf \$VCF_IN
+    # echo "> Indexing \$VCF_IN" 
+    # tabix -fp vcf \$VCF_IN
 
     echo "> Applying filtering and bi-allelic SNP selection"
     # Step 1: Ensure AF tag is present
@@ -195,8 +195,8 @@ if [[ "\$CHROM" == "23" ]]; then
 
     # Step 2: Apply filtering and bi-allelic SNP selection
     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chrX --output-type z -o ${OUT_DIR}/temp.chrX.vcf.gz \$OUT_FILE
-    rm -v ${OUT_DIR}/temp.chrX.vcf.gz
-    rm -v ${OUT_DIR}/temp.chrX.vcf.gz.tbi
+    # rm -v ${OUT_DIR}/temp.chrX.vcf.gz
+    # rm -v ${OUT_DIR}/temp.chrX.vcf.gz.tbi
     
     echo "> Indexing \$OUT_FILE"
     tabix -fp vcf \$OUT_FILE
@@ -205,8 +205,8 @@ else
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
 
-    echo "> Indexing \$VCF_IN"
-    tabix -fp vcf \$VCF_IN
+    # echo "> Indexing \$VCF_IN"
+    # tabix -fp vcf \$VCF_IN
 
     echo "> Applying filtering and bi-allelic SNP selection"
     # Step 1: Ensure AF tag is present
@@ -215,8 +215,8 @@ else
 
     # Step 2: Apply filtering and bi-allelic SNP selection
     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz \$OUT_FILE
-    rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
-    rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz.tbi
+    # rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
+    # rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz.tbi
 
     echo "> Indexing \$OUT_FILE"
     tabix -fp vcf \$OUT_FILE
