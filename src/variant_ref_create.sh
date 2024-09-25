@@ -190,7 +190,7 @@ if [[ "\$CHROM" == "23" ]]; then
 
     echo "> Applying filtering and bi-allelic SNP selection"
     # Step 1: Ensure AF tag is present
-    bcftools +fill-tags \$VCF_IN -Oz -o ${OUT_DIR}/temp.chrX.vcf -- -t AF 
+    bcftools +fill-tags \$VCF_IN --output-type z -o ${OUT_DIR}/temp.chrX.vcf.gz -- -t AF,INFO/TYPE
     tabix -fp vcf ${OUT_DIR}/temp.chrX.vcf.gz
 
     # Step 2: Apply filtering and bi-allelic SNP selection
@@ -210,9 +210,9 @@ else
 
     echo "> Applying filtering and bi-allelic SNP selection"
     # Step 1: Ensure AF tag is present
-    bcftools +fill-tags \$VCF_IN -Oz -o ${OUT_DIR}/temp.chr\${CHROM}.vcf -- -t AF 
+    bcftools +fill-tags \$VCF_IN --output-type z -o ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz -- -t AF,INFO/TYPE
     tabix -fp vcf ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
-    
+
     # Step 2: Apply filtering and bi-allelic SNP selection
     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o ${OUT_DIR}/temp.\$CHROM.vcf \$OUT_FILE
     rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
