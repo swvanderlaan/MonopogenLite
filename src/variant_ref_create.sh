@@ -77,7 +77,7 @@ print_version() {
 VARIANT_TYPE="snp"
 # Assuming AF is an argument for allele frequency field
 AF_FIELD="AF"  # Default allele frequency field
-AF_FIELD=0.0005 # 0.5% allele frequency
+AF=0.0005 # 0.5% allele frequency
 # Convert AF to scientific notation (e.g., 0.0005 becomes 5e4)
 AF_SCI=$(printf "%.0e" $AF)
 VERBOSE=0
@@ -114,12 +114,11 @@ if [[ -z "$RESOURCE_DIR" ]]; then
     exit 1
 fi
 
-# Create the resource directory
+# Create the resource directory and output directory
 mkdir -p "$RESOURCE_DIR"
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Resource directory created at $RESOURCE_DIR"
 fi
-
 OUT_DIR="$RESOURCE_DIR"
 mkdir -p "$OUT_DIR"
 if [[ $VERBOSE -eq 1 ]]; then
@@ -206,7 +205,6 @@ else
 fi
 EOF
 )
-
 
 # Extract the job ID from the output
 SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
