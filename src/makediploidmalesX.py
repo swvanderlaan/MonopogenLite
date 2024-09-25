@@ -170,6 +170,25 @@ Example to reverse:
     
     args = parser.parse_args()
     
+    # Check if the changes and reverse options are used together
+    if args.changes and args.reverse:
+    parser.error("--changes and --reverse cannot be used together.")
+
+    # Check if the input file exists
+    if not os.path.exists(args.input_file):
+        print(f"Error: Input file does not exist: {args.input_file}")
+        exit(1)
+    
+    # Check if the changes file exists
+    if args.changes and not os.path.exists(args.changes):
+        print(f"Error: Changes file does not exist: {args.changes}")
+        exit(1)
+    
+    # List the arguments and version through the logger
+    logger = setup_logger(script_name, args.verbose)
+    logger.info(f"Arguments: {args}")
+    logger.info(f"Version: {VERSION_NAME} v{VERSION} ({VERSION_DATE})")
+    
     # Setup logger with date and script name
     logger = setup_logger(script_name, args.verbose)
     
