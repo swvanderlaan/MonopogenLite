@@ -184,25 +184,33 @@ if [[ "\$CHROM" == "23" ]]; then
     echo "Processing chromosome X"
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chrX.vcf.gz"
+
+    echo "> Indexing \$VCF_IN" 
     tabix -fp vcf \$VCF_IN
 
+    echo "> Applying filtering and bi-allelic SNP selection"
     # Step 1: Ensure AF tag is present
     # Step 2: Apply filtering and bi-allelic SNP selection
     bcftools +fill-tags \$VCF_IN -- -t AF | \
     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chrX --output-type z -o \$OUT_FILE
     
+    echo "> Indexing \$OUT_FILE"
     tabix -fp vcf \$OUT_FILE
 else
     echo "Processing chromosome \$CHROM"
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
+
+    echo "> Indexing \$VCF_IN"
     tabix -fp vcf \$VCF_IN
 
+    echo "> Applying filtering and bi-allelic SNP selection"
     # Step 1: Ensure AF tag is present
     # Step 2: Apply filtering and bi-allelic SNP selection
     bcftools +fill-tags \$VCF_IN -- -t AF | \
     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o \$OUT_FILE
     
+    echo "> Indexing \$OUT_FILE"
     tabix -fp vcf \$OUT_FILE
 fi
 EOF
@@ -224,9 +232,14 @@ CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     CHROM="X"
 fi
+echo "Normalizing chromosome \$CHROM"
 IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.chr\${CHROM}.vcf.gz"
+
+echo "> Normalizing \$IN_FILE"
 bcftools norm --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
+
+echo "> Indexing \$OUT_FILE"
 tabix -fp vcf \$OUT_FILE
 EOF
 )
@@ -250,12 +263,16 @@ if [[ "\$CHROM" == "23" ]]; then
     CHROM="X"
 fi
 
+echo "Annotating chromosome \$CHROM"
 # setting input and output files
 IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.chr\${CHROM}.vcf.gz"
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.vcf.gz"
 
 # annotate the VCF files
+echo "> Annotating \$IN_FILE"
 bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' \$IN_FILE --output-type z -o \$OUT_FILE
+
+echo "> Indexing \$OUT_FILE"
 tabix -fp vcf \$OUT_FILE
 EOF
 )
@@ -279,13 +296,16 @@ if [[ "\$CHROM" == "23" ]]; then
     CHROM="X"
 fi
 
+echo "Subsetting chromosome \$CHROM"
 # setting input and output files
 IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.vcf.gz"
 OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.cellsnp.vcf.gz"
 
 # subsetting the VCF files
-
+echo "> Subsetting \$IN_FILE"
 bcftools view --samples "." \$IN_FILE --output-type z -o \$OUT_FILE_CELLSNP --force-samples
+
+echo "> Indexing \$OUT_FILE_CELLSNP"
 tabix -fp vcf \$OUT_FILE_CELLSNP
 EOF
 )
@@ -303,6 +323,7 @@ SLURM_CONCAT_CELLSNP=$(sbatch --dependency=afterok:$SLURM_SUBSET_CELLSNP_JOBID -
 source ~/.bashrc
 mamba activate monopogen
 
+echo "Concatenating the filtered VCF files for cellsnp"
 # Use shell expansion to capture the files
 chrom_files=(${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr*.cellsnp.vcf.gz)
 
@@ -314,9 +335,12 @@ fi
 
 # Concatenate the files
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr1_22X.cellsnp.vcf.gz"
+
+echo "> Concatenating \${chrom_files[@]}"
 bcftools concat "\${chrom_files[@]}" --output-type z -o \$OUT_FILE
 
 # Index the output
+echo "> Indexing \$OUT_FILE"
 tabix -fp vcf \$OUT_FILE
 EOF
 )
