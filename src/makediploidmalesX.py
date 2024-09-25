@@ -164,10 +164,10 @@ used to modify a VCF file and save the changes, or reverse the changes based on 
 and samples.
 
 Example to modify:
-    python modifyhemigenox.py --input input.vcf --output modified.vcf --changes changes.txt.gz --verbose
+    python makediploidmalesX.py --input input.vcf --output modified.vcf --changes changes.txt.gz --verbose
 
 Example to reverse:
-    python modifyhemigenox.py --input modified.vcf --output original.vcf --reverse changes.txt.gz --verbose
+    python makediploidmalesX.py --input modified.vcf --output original.vcf --reverse changes.txt.gz --verbose
 
 + {VERSION_NAME} v{VERSION}. {COPYRIGHT} +
 {COPYRIGHT_TEXT}""",
