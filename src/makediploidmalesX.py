@@ -172,7 +172,7 @@ Example to reverse:
     
     # Check if the changes and reverse options are used together
     if args.changes and args.reverse:
-    parser.error("--changes and --reverse cannot be used together.")
+        parser.error("--changes and --reverse cannot be used together.")
 
     # Check if the input file exists
     if not os.path.exists(args.input_file):
