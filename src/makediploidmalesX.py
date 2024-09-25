@@ -10,12 +10,13 @@ from datetime import datetime
 
 # Version information
 # Change log:
+# * v1.1.3 (2024-09-26): Fixed an issue where the gzipped VCF file was not recognized correctly.
 # * v1.1.2 (2024-09-26): Fixed an issue where the check for changes and reverse options was incorrect.
 # * v1.1.1 (2024-09-26): Fixed an issue where the changes-file wasn't created.
 # * v1.1.0 (2024-09-25): Fix the issue where the haploid genotypes were removed instead of made diploid. Added the option to reverse changes based on a list of variants and samples. Added a logger to log the changes and reversals.
 # * v1.0.0 (2024-09-24): Initial version.
 VERSION_NAME = 'MakeDiploidMalesX'
-VERSION = '1.1.2'
+VERSION = '1.1.3'
 VERSION_DATE = '2024-09-25'
 COPYRIGHT = 'Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -86,7 +87,10 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
     else:
         reverse_changes = None
 
-    with open(input_vcf, 'r') as infile, open(output_vcf, 'w') as outfile:
+    # with open(input_vcf, 'r') as infile, open(output_vcf, 'w') as outfile:
+    # Open the input VCF file (use gzip if file is gzipped)
+    open_func = gzip.open if input_vcf.endswith('.gz') else open
+    with open_func(input_vcf, 'rt') as infile, open(output_vcf, 'w') as outfile:
         for line in infile:
             if line.startswith("#"):  # Keep header lines
                 outfile.write(line)
