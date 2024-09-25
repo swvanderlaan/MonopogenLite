@@ -166,7 +166,7 @@ python3 $MPG/src/removehemigenoX.py --input-file $INPUT_FILE --output-file $OUTP
 
 echo "RemoveHemiGenoX finished successfully. Let's have a beer, buddy!"
 
-print_version
+"$print_version"
 
 mamba deactivate
 EOF
