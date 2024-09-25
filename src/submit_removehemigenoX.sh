@@ -156,8 +156,8 @@ EOF
 chmod +x $SBATCH_SCRIPT
 
 # Submit the job to SLURM
-JOB_ID=$(sbatch $SBATCH_SCRIPT)
-echo "Job submitted with ID: $JOB_ID"
+# JOB_ID=$(sbatch $SBATCH_SCRIPT)
+# echo "Job submitted with ID: $JOB_ID"
 
 echo ""
 print_version
