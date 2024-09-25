@@ -31,7 +31,7 @@ Reference: http://opensource.org.
 
 # Argument parsing function
 print_help() {
-    echo "Usage: $0 --input <full-path-to-vcf-file> [--verbose] [--help] [--version] [--mem <memory>] [--time <time>] [--mailtype <mail type>] [--mailuser <email>]"
+    echo "Usage: $0 --input <full-path-to-input.vcf.gz> [--verbose] [--help] [--version] [--mem <memory>] [--time <time>] [--mailtype <mail type>] [--mailuser <email>]"
     echo
     echo "  --input         Full path to the input VCF file (including .vcf.gz)."
     echo "  --verbose       Enable verbose output (optional)."
@@ -80,10 +80,10 @@ while [[ "$#" -gt 0 ]]; do
         --input) INPUT_VCF="$2"; shift ;;
         --job-name) SBATCH_JOB_NAME="$2"; shift ;;
         --cpus) SBATCH_CPUS="$2"; shift ;;
-        --mem) MEM="$2"; shift ;;
-        --time) TIME="$2"; shift ;;
-        --mailtype) MAILTYPE="$2"; shift ;;
-        --mailuser) MAILUSER="$2"; shift ;;
+        --mem) SBATCH_MEM="$2"; shift ;;
+        --time) SBATCH_TIME="$2"; shift ;;
+        --mailtype) SBATCH_MAILTYPE="$2"; shift ;;
+        --mailuser) SBATCH_MAILUSER="$2"; shift ;;
         --verbose) VERBOSE=1 ;;
         --version) print_version ;;
         --help) print_help ;;
@@ -95,13 +95,13 @@ done
 # Check mandatory parameters
 if [[ -z "$INPUT_VCF" ]]; then
     echo "Error: --input is required."
-    usage
+    print_help
     exit 1
 fi
 
 # Check if input file exists
-if [[ ! -f "$INPUT_FILE" ]]; then
-    echo "Error: Input file '$INPUT_FILE' does not exist."
+if [[ ! -f "$INPUT_VCF" ]]; then
+    echo "Error: Input file '$INPUT_VCF' does not exist."
     exit 1
 fi
 
@@ -111,7 +111,7 @@ SBATCH_SCRIPT="$MPG/submit_makediploidmalesX.sbatch"
 echo "Starting $VERSION_NAME"
 echo ""
 echo "These are the settings:"
-echo "  Input file................: $INPUT_FILE"
+echo "  Input file................: $INPUT_VCF"
 echo "  SLURM job name............: $SBATCH_JOB_NAME"
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
@@ -155,7 +155,7 @@ echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
 echo ""
 echo "These are the settings:"
-echo "  Input file................: $INPUT_FILE"
+echo "  Input file................: $INPUT_VCF"
 echo "  VCF directory.............: $VCF_DIR"
 echo "  VCF file prefix...........: $PREFIX"
 echo ""
@@ -187,7 +187,7 @@ if [[ ! -f "\$CHR_VCF" ]]; then
 fi
 
 echo "> Run the Python script for the specified chromosome..."
-python3 bcftools_stats_plot.py --input "\$CHR_VCF" ${VERBOSE}
+python3 bcftools_stats_plot.py --input "\$CHR_VCF" $( [[ $VERBOSE -eq 1 ]] && echo "--verbose" )
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
