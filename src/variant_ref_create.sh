@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.4 2024-09-25: Fixed an issue where the AF field was not calculated and filtering was not applied. Added option to choose the AF field. Fixed an issue where the AF was dynamically printed in the file name.
 # * v1.0.3 2024-09-25: Fixed an issue where the multi-allelic variants aren't filtered out.
 # * v1.0.2 2024-09-24: Added script to remove homozygous calls for chromosome X.
 # * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
 # * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
 VERSION_NAME='Variant Reference Creator'
-VERSION='1.0.3'
+VERSION='1.0.4'
 VERSION_DATE='2024-09-25'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -36,7 +37,7 @@ Reference: http://opensource.org.
 print_help() {
     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
     echo ""
-    echo "Usage: $0 --resource-dir <DIR> [--af <FLOAT>] [--variant-type <TYPE>] [--verbose] [--help] [--version]"
+    echo "Usage: $0 --resource-dir <DIR> [--af-field <AF, AF_EUR, AF_EAS, AF_SAS, AF_AMR, AF_AFR>] [--af <FLOAT>] [--variant-type <TYPE>] [--verbose] [--help] [--version]"
     echo ""
     echo "Description:"
     echo "  This script downloads the phased high-coverage 1000 Genomes VCF files "
@@ -53,6 +54,7 @@ print_help() {
     echo ""
     echo "Arguments:"
     echo "  --resource-dir  Directory to store resources and outputs."
+    echo "  --af-field      Allele frequency field (default: AF)."
     echo "  --af            Allele frequency filter, c.q. variants to keep above AF>X (default: 0.0005)."
     echo "  --variant-type  Variant type filter (default: snp)."
     echo "  --verbose       Enable verbose output."
@@ -72,16 +74,21 @@ print_version() {
 }
 
 # Default values
-VERBOSE=0
-AF=0.0005 # 0.5% allele frequency
 VARIANT_TYPE="snp"
+# Assuming AF is an argument for allele frequency field
+AF_FIELD="AF"  # Default allele frequency field
+AF_FIELD=0.0005 # 0.5% allele frequency
+# Convert AF to scientific notation (e.g., 0.0005 becomes 5e4)
+AF_SCI=$(printf "%.0e" $AF)
+VERBOSE=0
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --resource-dir) RESOURCE_DIR="$2"; shift ;;
-        --af) AF="$2"; shift ;;
-        --variant-type) VARIANT_TYPE="$2"; shift ;;
+        --resource-dir) RESOURCE_DIR="$2"; shift ;; # Resource directory
+        --af) AF="$2"; AF_SCI=$(printf "%.0e" $AF); shift ;;  # Automatically format AF into scientific notation
+        --af-field) AF_FIELD="$2"; shift ;;  # Allow choosing which AF field to use
+        --variant-type) VARIANT_TYPE="$2"; shift ;; # Variant type filter
         --verbose) VERBOSE=1 ;;
         --help) print_help ;;
         --version) print_version ;;
@@ -161,43 +168,55 @@ echo ""
 # # Extract the job ID from the output
 # SLURM_DOWNLOAD_JOBID=$(echo $SLURM_DOWNLOAD | awk '{print $4}')
 
-# # Submit array job to filter chromosomes 1-22 and X
-# if [[ $VERBOSE -eq 1 ]]; then
-#     echo "> Submitting job to filter the VCF files."
-# fi
-# # SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-# SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-# #!/bin/bash
-# source ~/.bashrc
-# mamba activate monopogen
-# CHROM=\${SLURM_ARRAY_TASK_ID}
-# if [[ "\$CHROM" == "23" ]]; then
-#     echo "Processing chromosome X"
-#     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
-#     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
-#     tabix -fp vcf \$VCF_IN
-#     bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
-#     tabix -fp vcf \$OUT_FILE
-# else
-#     echo "Processing chromosome \$CHROM"
-#     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
-#     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-#     tabix -fp vcf \$VCF_IN
-#     bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 \$VCF_IN --regions chr\$CHROM --output-type z -o \$OUT_FILE 
-#     tabix -fp vcf \$OUT_FILE
-# fi
-# EOF
-# )
+# Submit array job to filter chromosomes 1-22 and X
+if [[ $VERBOSE -eq 1 ]]; then
+    echo "> Submitting job to filter the VCF files."
+fi
+# SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+#!/bin/bash
+source ~/.bashrc
+mamba activate monopogen
+CHROM=\${SLURM_ARRAY_TASK_ID}
 
-# # Extract the job ID from the output
-# SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
+if [[ "\$CHROM" == "23" ]]; then
+    echo "Processing chromosome X"
+    VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
+    OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chrX.vcf.gz"
+    tabix -fp vcf \$VCF_IN
+
+    # Step 1: Ensure AF tag is present
+    # Step 2: Apply filtering and bi-allelic SNP selection
+    bcftools +fill-tags \$VCF_IN -- -t AF -Ou | \
+    bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chrX --output-type z -o \$OUT_FILE
+    
+    tabix -fp vcf \$OUT_FILE
+else
+    echo "Processing chromosome \$CHROM"
+    VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+    OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
+    tabix -fp vcf \$VCF_IN
+
+    # Step 1: Ensure AF tag is present
+    # Step 2: Apply filtering and bi-allelic SNP selection
+    bcftools +fill-tags \$VCF_IN -- -t AF -Ou | \
+    bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o \$OUT_FILE
+    
+    tabix -fp vcf \$OUT_FILE
+fi
+EOF
+)
+
+
+# Extract the job ID from the output
+SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
 # Wait for the array job to finish before normalizing the files
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to normalize the filtered VCF files."
 fi
-# SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
@@ -205,8 +224,8 @@ CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     CHROM="X"
 fi
-IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr\${CHROM}.vcf.gz"
+IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
+OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.chr\${CHROM}.vcf.gz"
 bcftools norm --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
 tabix -fp vcf \$OUT_FILE
 EOF
@@ -232,11 +251,11 @@ if [[ "\$CHROM" == "23" ]]; then
 fi
 
 # setting input and output files
-IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.vcf.gz"
+IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.chr\${CHROM}.vcf.gz"
+OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.vcf.gz"
 
 # annotate the VCF files
-bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' --include 'AF>$AF' \$IN_FILE --output-type z -o \$OUT_FILE
+bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' \$IN_FILE --output-type z -o \$OUT_FILE
 tabix -fp vcf \$OUT_FILE
 EOF
 )
@@ -261,8 +280,8 @@ if [[ "\$CHROM" == "23" ]]; then
 fi
 
 # setting input and output files
-IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.vcf.gz"
-OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr\${CHROM}.cellsnp.vcf.gz"
+IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.vcf.gz"
+OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.cellsnp.vcf.gz"
 
 # subsetting the VCF files
 
@@ -285,7 +304,7 @@ source ~/.bashrc
 mamba activate monopogen
 
 # Use shell expansion to capture the files
-chrom_files=(${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr*.cellsnp.vcf.gz)
+chrom_files=(${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr*.cellsnp.vcf.gz)
 
 # Check if the files exist
 if [[ \${#chrom_files[@]} -eq 0 ]]; then
@@ -294,7 +313,7 @@ if [[ \${#chrom_files[@]} -eq 0 ]]; then
 fi
 
 # Concatenate the files
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4.chr1_22X.cellsnp.vcf.gz"
+OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr1_22X.cellsnp.vcf.gz"
 bcftools concat "\${chrom_files[@]}" --output-type z -o \$OUT_FILE
 
 # Index the output
