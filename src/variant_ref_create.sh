@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.5 2024-09-25: Fixed an issue where the bcftools arguments were not properly given.
 # * v1.0.4 2024-09-25: Fixed an issue where the AF field was not calculated and filtering was not applied. Added option to choose the AF field. Fixed an issue where the AF was dynamically printed in the file name.
 # * v1.0.3 2024-09-25: Fixed an issue where the multi-allelic variants aren't filtered out.
 # * v1.0.2 2024-09-24: Added script to remove homozygous calls for chromosome X.
@@ -8,7 +9,7 @@
 # * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
 VERSION_NAME='Variant Reference Creator'
-VERSION='1.0.4'
+VERSION='1.0.5'
 VERSION_DATE='2024-09-25'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -187,7 +188,7 @@ if [[ "\$CHROM" == "23" ]]; then
 
     # Step 1: Ensure AF tag is present
     # Step 2: Apply filtering and bi-allelic SNP selection
-    bcftools +fill-tags \$VCF_IN -- -t AF -Ou | \
+    bcftools +fill-tags \$VCF_IN -- -t AF | \
     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chrX --output-type z -o \$OUT_FILE
     
     tabix -fp vcf \$OUT_FILE
@@ -199,7 +200,7 @@ else
 
     # Step 1: Ensure AF tag is present
     # Step 2: Apply filtering and bi-allelic SNP selection
-    bcftools +fill-tags \$VCF_IN -- -t AF -Ou | \
+    bcftools +fill-tags \$VCF_IN -- -t AF | \
     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o \$OUT_FILE
     
     tabix -fp vcf \$OUT_FILE
