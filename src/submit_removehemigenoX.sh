@@ -143,8 +143,9 @@ cat << EOF > $SBATCH_SCRIPT
 source ~/.bashrc
 mamba activate monopogen
 
+MPG=\"/hpc/local/Rocky8/dhl_ec/software/MonopogenLite\"
 echo "Running RemoveHemiGenoX on $INPUT_FILE"
-python3 removehemigenoX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
+python3 \$MPG/src/removehemigenoX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
 
 echo "RemoveHemiGenoX finished successfully"
 EOF
