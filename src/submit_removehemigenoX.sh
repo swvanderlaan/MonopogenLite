@@ -146,10 +146,25 @@ cat << EOF > $SBATCH_SCRIPT
 source ~/.bashrc
 mamba activate monopogen
 
-echo "Running RemoveHemiGenoX on $INPUT_FILE"
+echo "$VERSION_NAME"
+echo "version $VERSION ($VERSION_DATE)"
+echo ""
+echo "These are the settings:"
+echo "  Input file................: $INPUT_FILE"
+echo "  Output file...............: $OUTPUT_FILE"
+echo "  SLURM job name............: $SBATCH_JOB_NAME"
+echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM memory..............: $SBATCH_MEM"
+echo "  SLURM time................: $SBATCH_TIME"
+echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
+echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo "  Verbosity.................: $VERBOSE"
+echo "  Version...................: $VERSION ($VERSION_DATE)"
+echo ""
+echo "Running RemoveHemiGenoX..."
 python3 $MPG/src/removehemigenoX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
 
-echo "RemoveHemiGenoX finished successfully"
+echo "RemoveHemiGenoX finished successfully. Let's have a beer, buddy!"
 
 print_version
 
