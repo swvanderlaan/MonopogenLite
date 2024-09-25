@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Change log:
-# * v1.0.3 2024-09-25: Changed script name
+# * v1.0.4 2024-09-25: Added a check if the input file exists. Added optional --changes and --reverse flags.
+# * v1.0.3 2024-09-25: Changed script name.
 # * v1.0.2 2024-09-24: Fixed issue where there was no --version flag in the help message.
 # * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.0.2'
+VERSION='1.0.4'
 VERSION_DATE='2024-09-25'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -36,15 +37,16 @@ Reference: http://opensource.org.
 print_help() {
     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
     echo ""
-    echo "Usage: $0 --input <input.vcf.gz> --output <output.vcf.gz> [--job-name <job_name>] [--cpus <num_cpus>] [--mem <memory>] [--time <time>] [--mail <mail-type>] [--user <mail-user>] [--verbose]"
+    echo "Usage: $0 --input <input.vcf.gz> --output <output.vcf.gz> [--changes <changes.txt.gz>] [--reverse <reverse.txt.gz>] [--job-name <job_name>] [--cpus <num_cpus>] [--mem <memory>] [--time <time>] [--mail <mail-type>] [--user <mail-user>] [--verbose]"
     echo ""
     echo "Description:"
-    echo "  This script will submit a job to the SLURM scheduler to make "
-    echo "  haploid genotypes in males diploid given a VCF file."
+    echo "  This script will submit a job to the SLURM scheduler to make haploid genotypes in males diploid given a VCF file."
     echo ""
     echo "Arguments:"
     echo "  --input         The input VCF file."
     echo "  --output        The output VCF file."
+    echo "  --changes       Gzipped file to save the list of changes (optional)."
+    echo "  --reverse       Gzipped file with list of changes to reverse (optional)."
     echo "  --job-name      The name of the SLURM job."
     echo "  --cpus          The number of CPUs to use."
     echo "  --mem           The amount of memory to use."
@@ -73,7 +75,7 @@ echo "version $VERSION ($VERSION_DATE)"
 echo ""
 
 # Check if conda is installed
-echo "Actvating conda environment..."
+echo "Activating conda environment..."
 source ~/.bashrc
 mamba activate monopogen
 echo ""
@@ -86,6 +88,8 @@ SBATCH_TIME="02:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 VERBOSE=0
+CHANGES_FILE=""
+REVERSE_FILE=""
 
 # MonopogenLite location
 MPG="/hpc/local/Rocky8/dhl_ec/software/MonopogenLite"
@@ -95,6 +99,8 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --input) INPUT_FILE="$2"; shift ;;
         --output) OUTPUT_FILE="$2"; shift ;;
+        --changes) CHANGES_FILE="$2"; shift ;;
+        --reverse) REVERSE_FILE="$2"; shift ;;
         --job-name) SBATCH_JOB_NAME="$2"; shift ;;
         --cpus) SBATCH_CPUS="$2"; shift ;;
         --mem) SBATCH_MEM="$2"; shift ;;
@@ -115,6 +121,12 @@ if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" ]]; then
     exit 1
 fi
 
+# Check if input file exists
+if [[ ! -f "$INPUT_FILE" ]]; then
+    echo "Error: Input file '$INPUT_FILE' does not exist."
+    exit 1
+fi
+
 # Create the SLURM batch job script
 SBATCH_SCRIPT="$MPG/submit_makediploidmalesX.sbatch"
 
@@ -123,6 +135,8 @@ echo ""
 echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
+echo "  Changes file..............: $CHANGES_FILE"
+echo "  Reverse file..............: $REVERSE_FILE"
 echo "  SLURM job name............: $SBATCH_JOB_NAME"
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
@@ -132,6 +146,18 @@ echo "  SLURM mail user...........: $SBATCH_MAILUSER"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
+
+# Prepare the changes and reverse options for the Python script
+CHANGES_FLAG=""
+REVERSE_FLAG=""
+
+if [[ -n "$CHANGES_FILE" ]]; then
+    CHANGES_FLAG="--changes $CHANGES_FILE"
+fi
+
+if [[ -n "$REVERSE_FILE" ]]; then
+    REVERSE_FLAG="--reverse $REVERSE_FILE"
+fi
 
 cat << EOF > $SBATCH_SCRIPT
 #!/bin/bash
@@ -153,6 +179,8 @@ echo ""
 echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
+echo "  Changes file..............: $CHANGES_FILE"
+echo "  Reverse file..............: $REVERSE_FILE"
 echo "  SLURM job name............: $SBATCH_JOB_NAME"
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
@@ -163,9 +191,13 @@ echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 echo "Running makediploidmalesX..."
-python3 $MPG/src/makediploidmalesX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
+python3 $MPG/src/makediploidmalesX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE:+--verbose}
 
-echo "MakeDiploidMalesX finished successfully. Let's have a beer, buddy!"
+if [ \$? -eq 0 ]; then
+  echo "MakeDiploidMalesX finished successfully. Let's have a beer, buddy!"
+else
+  echo "MakeDiploidMalesX encountered an error."
+fi
 
 mamba deactivate
 EOF
@@ -174,7 +206,7 @@ EOF
 chmod +x $SBATCH_SCRIPT
 
 # Submit the job to SLURM
-JOB_ID=$(sbatch $SBATCH_SCRIPT)
+JOB_ID=$(sbatch $SBATCH_SCRIPT | awk '{print $4}')
 echo "Job submitted with ID: $JOB_ID"
 
 echo ""
