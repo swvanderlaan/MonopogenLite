@@ -10,10 +10,11 @@ from datetime import datetime
 
 # Version information
 # Change log:
+# * v1.1.1 (2024-09-26): Fixed an issue where the changes-file wasn't created.
 # * v1.1.0 (2024-09-25): Fix the issue where the haploid genotypes were removed instead of made diploid. Added the option to reverse changes based on a list of variants and samples. Added a logger to log the changes and reversals.
 # * v1.0.0 (2024-09-24): Initial version.
 VERSION_NAME = 'MakeDiploidMalesX'
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 VERSION_DATE = '2024-09-25'
 COPYRIGHT = 'Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -110,11 +111,17 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
             
             outfile.write('\t'.join(variant + genotypes) + '\n')
 
+    # Write changes if not in reverse mode
     if not reverse_file and changes_file:
-        with gzip.open(changes_file, 'wt') as ch_file:
-            for change in changes:
-                ch_file.write(f"{change[0]},{change[1]}\n")
-        logger.info(f"Changes saved to: {changes_file}")
+        logger.info(f"Saving changes to: {changes_file}")
+        try:
+            with gzip.open(changes_file, 'wt') as ch_file:
+                for change in changes:
+                    ch_file.write(f"{change[0]},{change[1]}\n")
+            logger.info(f"Changes saved successfully to {changes_file}")
+        except Exception as e:
+            logger.error(f"Error saving changes to {changes_file}: {e}")
+            raise
 
     logger.info(f"Modifications completed. Output written to: {output_vcf}")
 
