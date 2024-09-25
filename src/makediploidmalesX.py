@@ -10,11 +10,12 @@ from datetime import datetime
 
 # Version information
 # Change log:
+# * v1.1.2 (2024-09-26): Fixed an issue where the check for changes and reverse options was incorrect.
 # * v1.1.1 (2024-09-26): Fixed an issue where the changes-file wasn't created.
 # * v1.1.0 (2024-09-25): Fix the issue where the haploid genotypes were removed instead of made diploid. Added the option to reverse changes based on a list of variants and samples. Added a logger to log the changes and reversals.
 # * v1.0.0 (2024-09-24): Initial version.
 VERSION_NAME = 'MakeDiploidMalesX'
-VERSION = '1.1.1'
+VERSION = '1.1.2'
 VERSION_DATE = '2024-09-25'
 COPYRIGHT = 'Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -186,19 +187,16 @@ Example to reverse:
         print(f"Error: Input file does not exist: {args.input_file}")
         exit(1)
     
-    # Check if the changes file exists
-    if args.changes and not os.path.exists(args.changes):
-        print(f"Error: Changes file does not exist: {args.changes}")
+    # Check if the reverse changes file exists (only when --reverse is provided)
+    if args.reverse and not os.path.exists(args.reverse):
+        print(f"Error: Reverse file does not exist: {args.reverse}")
         exit(1)
     
     # List the arguments and version through the logger
     logger = setup_logger(script_name, args.verbose)
     logger.info(f"Arguments: {args}")
     logger.info(f"Version: {VERSION_NAME} v{VERSION} ({VERSION_DATE})")
-    
-    # Setup logger with date and script name
-    logger = setup_logger(script_name, args.verbose)
-    
+
     # Call the modify function
     modify_vcf(args.input_file, args.output_file, changes_file=args.changes, reverse_file=args.reverse, logger=logger)
     
