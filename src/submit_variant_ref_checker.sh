@@ -1,14 +1,10 @@
 #!/bin/bash
 
 # Change log:
-# * v1.0.4 2024-09-25: Added a check if the input file exists. Added optional --changes and --reverse flags.
-# * v1.0.3 2024-09-25: Changed script name.
-# * v1.0.2 2024-09-24: Fixed issue where there was no --version flag in the help message.
-# * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
-# * v1.0.0 2024-09-24: Initial version. 
+# * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
-VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.0.4'
+VERSION_NAME='Variant Reference Creator'
+VERSION='1.0.0'
 VERSION_DATE='2024-09-25'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -35,30 +31,16 @@ Reference: http://opensource.org.
 
 # Argument parsing function
 print_help() {
-    echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
-    echo ""
-    echo "Usage: $0 --input <input.vcf.gz> --output <output.vcf.gz> [--changes <changes.txt.gz>] [--reverse <reverse.txt.gz>] [--job-name <job_name>] [--cpus <num_cpus>] [--mem <memory>] [--time <time>] [--mail <mail-type>] [--user <mail-user>] [--verbose]"
-    echo ""
-    echo "Description:"
-    echo "  This script will submit a job to the SLURM scheduler to make haploid genotypes in males diploid given a VCF file."
-    echo ""
-    echo "Arguments:"
-    echo "  --input         The input VCF file."
-    echo "  --output        The output VCF file."
-    echo "  --changes       Gzipped file to save the list of changes (optional)."
-    echo "  --reverse       Gzipped file with list of changes to reverse (optional)."
-    echo "  --job-name      The name of the SLURM job."
-    echo "  --cpus          The number of CPUs to use."
-    echo "  --mem           The amount of memory to use."
-    echo "  --time          The maximum time to run the job."
-    echo "  --mail          The type of mail to send."
-    echo "  --user          The email address to send the mail to."
-    echo "  --verbose       Enable verbose output."
+    echo "Usage: $0 --input <full-path-to-vcf-file> [--verbose] [--help] [--version] [--mem <memory>] [--time <time>] [--mailtype <mail type>] [--mailuser <email>]"
+    echo
+    echo "  --input         Full path to the input VCF file (including .vcf.gz)."
+    echo "  --verbose       Enable verbose output (optional)."
     echo "  --help          Show this help message and exit."
-    echo "  --version       Display version information and exit."
-    echo ""
-    echo "$COPYRIGHT"
-    echo "$COPYRIGHT_TEXT"
+    echo "  --version       Show the script version and exit."
+    echo "  --mem           Memory per task (default: 4G)."
+    echo "  --time          Time limit per task (default: 00:30:00)."
+    echo "  --mailtype      Mail type for SLURM (default: FAIL)."
+    echo "  --mailuser      Email for SLURM notifications (default: s.w.vanderlaan-2@umcutrecht.nl)."
     exit 0
 }
 
@@ -80,33 +62,28 @@ source ~/.bashrc
 mamba activate monopogen
 echo ""
 
-# Default values
+# Default values for optional parameters
 SBATCH_JOB_NAME="makediploidmalesX"
 SBATCH_CPUS=1
-SBATCH_MEM="8G"
-SBATCH_TIME="02:00:00"
+SBATCH_MEM="4G"
+SBATCH_TIME="00:30:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 VERBOSE=0
-CHANGES_FILE=""
-REVERSE_FILE=""
 
 # MonopogenLite location
 MPG="/hpc/local/Rocky8/dhl_ec/software/MonopogenLite"
 
-# Argument parsing
+# Parse command line arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --input) INPUT_FILE="$2"; shift ;;
-        --output) OUTPUT_FILE="$2"; shift ;;
-        --changes) CHANGES_FILE="$2"; shift ;;
-        --reverse) REVERSE_FILE="$2"; shift ;;
+        --input) INPUT_VCF="$2"; shift ;;
         --job-name) SBATCH_JOB_NAME="$2"; shift ;;
         --cpus) SBATCH_CPUS="$2"; shift ;;
-        --mem) SBATCH_MEM="$2"; shift ;;
-        --time) SBATCH_TIME="$2"; shift ;;
-        --mail) SBATCH_MAILTYPE="$2"; shift ;;
-        --user) SBATCH_MAILUSER="$2"; shift ;;
+        --mem) MEM="$2"; shift ;;
+        --time) TIME="$2"; shift ;;
+        --mailtype) MAILTYPE="$2"; shift ;;
+        --mailuser) MAILUSER="$2"; shift ;;
         --verbose) VERBOSE=1 ;;
         --version) print_version ;;
         --help) print_help ;;
@@ -115,9 +92,10 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# Check if input and output are provided
-if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" ]]; then
-    echo "Error: Both --input and --output arguments are required."
+# Check mandatory parameters
+if [[ -z "$INPUT_VCF" ]]; then
+    echo "Error: --input is required."
+    usage
     exit 1
 fi
 
@@ -134,9 +112,6 @@ echo "Starting $VERSION_NAME"
 echo ""
 echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
-echo "  Output file...............: $OUTPUT_FILE"
-echo "  Changes file..............: $CHANGES_FILE"
-echo "  Reverse file..............: $REVERSE_FILE"
 echo "  SLURM job name............: $SBATCH_JOB_NAME"
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
@@ -147,28 +122,31 @@ echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 
-# Prepare the changes and reverse options for the Python script
-CHANGES_FLAG=""
-REVERSE_FLAG=""
+# Extract directory and base file name
+VCF_DIR=$(dirname "$INPUT_VCF")
+BASE_NAME=$(basename "$INPUT_VCF")
 
-if [[ -n "$CHANGES_FILE" ]]; then
-    CHANGES_FLAG="--changes $CHANGES_FILE"
+# Get the part of the file name before ".chr#."
+PREFIX=$(echo "$BASE_NAME" | sed -r 's/\.chr[0-9XY]+\.vcf\.gz//')
+
+if [[ -z "$PREFIX" ]]; then
+    echo "Error: Unable to parse the input VCF file name to determine the base prefix."
+    exit 1
 fi
 
-if [[ -n "$REVERSE_FILE" ]]; then
-    REVERSE_FLAG="--reverse $REVERSE_FILE"
-fi
-
+# Submit the SLURM job array
 cat << EOF > $SBATCH_SCRIPT
 #!/bin/bash
+
 #SBATCH --job-name=$SBATCH_JOB_NAME
 #SBATCH --cpus-per-task=$SBATCH_CPUS
 #SBATCH --mem=$SBATCH_MEM
 #SBATCH --time=$SBATCH_TIME
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
-#SBATCH --output=${SBATCH_JOB_NAME}_%j.out
-#SBATCH --error=${SBATCH_JOB_NAME}_%j.err
+#SBATCH --output=${SBATCH_JOB_NAME}_%A_%a.out
+#SBATCH --error=${SBATCH_JOB_NAME}_%A_%a.err
+#SBATCH --array=1-23
 
 source ~/.bashrc
 mamba activate monopogen
@@ -178,9 +156,8 @@ echo "version $VERSION ($VERSION_DATE)"
 echo ""
 echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
-echo "  Output file...............: $OUTPUT_FILE"
-echo "  Changes file..............: $CHANGES_FILE"
-echo "  Reverse file..............: $REVERSE_FILE"
+echo "  VCF directory.............: $VCF_DIR"
+echo "  VCF file prefix...........: $PREFIX"
 echo ""
 echo "  SLURM job name............: $SBATCH_JOB_NAME"
 echo "  SLURM CPUs................: $SBATCH_CPUS"
@@ -193,7 +170,24 @@ echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 echo "Running $VERSION_NAME..."
-python3 $MPG/src/makediploidmalesX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE:+--verbose}
+
+echo "> Chromosome mapping for SLURM array task ID 23..."
+CHR_LIST=($(seq 1 22) "X")
+
+echo "> Set the chromosome based on the array task ID..."
+CHR=\${CHR_LIST[\$SLURM_ARRAY_TASK_ID - 1]}
+
+echo "Construct the input VCF file for the current chromosome..."
+CHR_VCF="${VCF_DIR}/${PREFIX}.chr\${CHR}.vcf.gz"
+
+echo "> Check if the file exists..."
+if [[ ! -f "\$CHR_VCF" ]]; then
+    echo "Error: VCF file not found for chromosome \${CHR}: \$CHR_VCF"
+    exit 1
+fi
+
+echo "> Run the Python script for the specified chromosome..."
+python3 bcftools_stats_plot.py --input "\$CHR_VCF" ${VERBOSE}
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
@@ -202,6 +196,7 @@ else
 fi
 
 mamba deactivate
+
 EOF
 
 # Make the script executable
