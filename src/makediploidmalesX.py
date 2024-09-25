@@ -198,8 +198,15 @@ Example to reverse:
     
     # List the arguments and version through the logger
     logger = setup_logger(script_name, args.verbose)
-    logger.info(f"Arguments: {args}")
-    logger.info(f"Version: {VERSION_NAME} v{VERSION} ({VERSION_DATE})")
+    logger.info(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE})")
+    logger.info(f"Settings:")
+    logger.info(f"Input file: {args.input_file}")
+    logger.info(f"Output file: {args.output_file}")
+    if args.changes:
+        logger.info(f"Changes file: {args.changes}")
+    if args.reverse:
+        logger.info(f"Reverse file: {args.reverse}")
+    logger.info(f"Verbose: {args.verbose}")
 
     # Call the modify function
     modify_vcf(args.input_file, args.output_file, changes_file=args.changes, reverse_file=args.reverse, logger=logger)
