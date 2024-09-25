@@ -55,7 +55,7 @@ def filter_vcf(input_vcf, output_vcf, verbose=False):
             
             for genotype in genotypes:
                 if verbose:
-                    print(f"Checking variant: {variant[2]} - {genotype[0]}")
+                    print(f"Checking variant: {variant[2]} - {genotype[0:3]}")
                 if not (genotype.startswith("0|0") or genotype.startswith("0|1") or genotype.startswith("1|1") or \
                         genotype.startswith("0/0") or genotype.startswith("0/1") or genotype.startswith("1/1")):
                     valid = False
