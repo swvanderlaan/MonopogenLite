@@ -150,6 +150,10 @@ echo "Running RemoveHemiGenoX on $INPUT_FILE"
 python3 $MPG/src/removehemigenoX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
 
 echo "RemoveHemiGenoX finished successfully"
+
+print_version
+
+mamba deactivate
 EOF
 
 # Make the script executable
