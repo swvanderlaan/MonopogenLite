@@ -50,9 +50,12 @@ def filter_vcf(input_vcf, output_vcf, verbose=False):
             
             fields = line.strip().split('\t')
             genotypes = fields[9:]  # Genotype columns start at index 9
+            variant = fields[0:9]  # Variant columns start at index 0
             valid = True
             
             for genotype in genotypes:
+                if verbose:
+                    print(f"Checking genotype: {variant}")
                 if not (genotype.startswith("0|0") or genotype.startswith("0|1") or genotype.startswith("1|1") or \
                         genotype.startswith("0/0") or genotype.startswith("0/1") or genotype.startswith("1/1")):
                     valid = False
