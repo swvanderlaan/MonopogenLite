@@ -86,6 +86,9 @@ SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 VERBOSE=0
 
+# MonopogenLite location
+MPG="/hpc/local/Rocky8/dhl_ec/software/MonopogenLite"
+
 # Argument parsing
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -112,7 +115,7 @@ if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" ]]; then
 fi
 
 # Create the SLURM batch job script
-SBATCH_SCRIPT="submit_removehemigenoX.sbatch"
+SBATCH_SCRIPT="$MPG/submit_removehemigenoX.sbatch"
 
 echo "Starting $VERSION_NAME"
 echo ""
@@ -143,9 +146,8 @@ cat << EOF > $SBATCH_SCRIPT
 source ~/.bashrc
 mamba activate monopogen
 
-MPG=\"/hpc/local/Rocky8/dhl_ec/software/MonopogenLite\"
 echo "Running RemoveHemiGenoX on $INPUT_FILE"
-python3 \$MPG/src/removehemigenoX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
+python3 $MPG/src/removehemigenoX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${VERBOSE:+--verbose}
 
 echo "RemoveHemiGenoX finished successfully"
 EOF
