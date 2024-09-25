@@ -81,7 +81,7 @@ mamba activate monopogen
 echo ""
 
 # Default values
-SBATCH_JOB_NAME="delhemiX"
+SBATCH_JOB_NAME="makediploidmalesX"
 SBATCH_CPUS=1
 SBATCH_MEM="8G"
 SBATCH_TIME="02:00:00"
