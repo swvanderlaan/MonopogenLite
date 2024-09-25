@@ -70,7 +70,7 @@ print_version() {
 
 # Default values
 VERBOSE=0
-AF=0.0005
+AF=0.0005 # 0.5% allele frequency
 VARIANT_TYPE="snp"
 # DRY_RUN=0
 
