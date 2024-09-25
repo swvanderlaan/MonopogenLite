@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.3 2024-09-25: Fixed an issue where the multi-allelic variants aren't filtered out.
 # * v1.0.2 2024-09-24: Added script to remove homozygous calls for chromosome X.
 # * v1.0.1 2024-09-24: Added a filter for variants that are homozygous in the phased high-coverage 1000 Genomes VCF files, only for chromosome X.
 # * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
 VERSION_NAME='Variant Reference Creator'
-VERSION='1.0.2'
-VERSION_DATE='2024-09-24'
+VERSION='1.0.3'
+VERSION_DATE='2024-09-25'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -172,14 +173,14 @@ if [[ "\$CHROM" == "23" ]]; then
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chrX.vcf.gz"
     tabix -fp vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 \$VCF_IN --regions chrX --output-type z -o \$OUT_FILE 
     tabix -fp vcf \$OUT_FILE
 else
     echo "Processing chromosome \$CHROM"
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
     tabix -fp vcf \$VCF_IN
-    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' \$VCF_IN --regions chr\$CHROM --output-type z -o \$OUT_FILE 
+    bcftools view --include 'AF>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 \$VCF_IN --regions chr\$CHROM --output-type z -o \$OUT_FILE 
     tabix -fp vcf \$OUT_FILE
 fi
 EOF
@@ -203,7 +204,7 @@ if [[ "\$CHROM" == "23" ]]; then
 fi
 IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_af.chr\${CHROM}.vcf.gz"
 OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af.chr\${CHROM}.vcf.gz"
-bcftools norm -m-both --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
+bcftools norm --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
 tabix -fp vcf \$OUT_FILE
 EOF
 )
