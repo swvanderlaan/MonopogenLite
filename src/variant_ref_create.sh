@@ -190,7 +190,7 @@ if [[ "\$CHROM" == "23" ]]; then
 
     echo "> Applying filtering and bi-allelic SNP selection"
     # Step 1: Ensure AF tag is present
-    bcftools +fill-tags \$VCF_IN -- -t AF -Ou > ${OUT_DIR}/temp.chrX.vcf  
+    bcftools +fill-tags \$VCF_IN -- -t AF -Ou -o ${OUT_DIR}/temp.chrX.vcf  
 
     # Step 2: bgzip the temporary file
     bgzip ${OUT_DIR}/temp.chrX.vcf
@@ -213,7 +213,7 @@ else
 
     echo "> Applying filtering and bi-allelic SNP selection"
     # Step 1: Ensure AF tag is present
-    bcftools +fill-tags \$VCF_IN -- -t AF -Ou > ${OUT_DIR}/temp.chr\${CHROM}.vcf  
+    bcftools +fill-tags \$VCF_IN -- -t AF -Ou -o ${OUT_DIR}/temp.chr\${CHROM}.vcf  
 
     # Step 2: bgzip the temporary file
     bgzip ${OUT_DIR}/temp.chr\${CHROM}.vcf
@@ -221,8 +221,8 @@ else
 
     # Step 3: Apply filtering and bi-allelic SNP selection
     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o ${OUT_DIR}/temp.\$CHROM.vcf \$OUT_FILE
-    rm -v ${OUT_DIR}/temp.chrX.vcf.gz
-    rm -v ${OUT_DIR}/temp.chrX.vcf.gz.tbi
+    rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
+    rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz.tbi
 
     echo "> Indexing \$OUT_FILE"
     tabix -fp vcf \$OUT_FILE
