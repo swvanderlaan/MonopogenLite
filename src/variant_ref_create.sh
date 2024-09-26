@@ -194,7 +194,7 @@ if [[ "\$CHROM" == "23" ]]; then
     tabix -fp vcf ${OUT_DIR}/temp.chrX.vcf.gz
 
     # Step 2: Apply filtering and bi-allelic SNP selection
-    bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chrX --output-type z -o ${OUT_DIR}/temp.chrX.vcf.gz \$OUT_FILE
+    bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chrX --output-type z -o \$OUT_FILE ${OUT_DIR}/temp.chrX.vcf.gz 
     # rm -v ${OUT_DIR}/temp.chrX.vcf.gz
     # rm -v ${OUT_DIR}/temp.chrX.vcf.gz.tbi
     
@@ -214,7 +214,7 @@ else
     tabix -fp vcf ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
 
     # Step 2: Apply filtering and bi-allelic SNP selection
-    bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz \$OUT_FILE
+    bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o \$OUT_FILE ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz 
     # rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
     # rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz.tbi
 
