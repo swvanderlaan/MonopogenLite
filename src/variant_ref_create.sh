@@ -174,13 +174,14 @@ if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to filter the VCF files."
 fi
 # SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CREATE=$(sbatch --job-name=pp_create --output="$RESOURCE_DIR/pp_create_x.out" --error="$RESOURCE_DIR/pp_create_x.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
 CHROM=\${SLURM_ARRAY_TASK_ID}
 
-if [[ "\$CHROM" == "23" ]]; then
+# if [[ "\$CHROM" == "23" ]]; then
     echo "Processing chromosome X"
     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chrX.filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chrX.vcf.gz"
@@ -200,158 +201,158 @@ if [[ "\$CHROM" == "23" ]]; then
     
     echo "> Indexing \$OUT_FILE"
     tabix -fp vcf \$OUT_FILE
-else
-    echo "Processing chromosome \$CHROM"
-    VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
-    OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
+# else
+#     echo "Processing chromosome \$CHROM"
+#     VCF_IN="${RESOURCE_DIR}/1kGP_high_coverage_Illumina.chr\${CHROM}.filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
+#     OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
 
-    echo "> Indexing \$VCF_IN"
-    tabix -fp vcf \$VCF_IN
+#     echo "> Indexing \$VCF_IN"
+#     tabix -fp vcf \$VCF_IN
 
-    echo "> Applying filtering and bi-allelic SNP selection"
-    # Step 1: Ensure AF tag is present
-    bcftools +fill-tags \$VCF_IN --output-type z -o ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz -- -t AF,INFO/TYPE
-    tabix -fp vcf ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
+#     echo "> Applying filtering and bi-allelic SNP selection"
+#     # Step 1: Ensure AF tag is present
+#     bcftools +fill-tags \$VCF_IN --output-type z -o ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz -- -t AF,INFO/TYPE
+#     tabix -fp vcf ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
 
-    # Step 2: Apply filtering and bi-allelic SNP selection
-    bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o \$OUT_FILE ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz 
-    # rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
-    # rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz.tbi
+#     # Step 2: Apply filtering and bi-allelic SNP selection
+#     bcftools view --include '$AF_FIELD>$AF & TYPE="$VARIANT_TYPE"' -m2 -M2 --types snps --regions chr\$CHROM --output-type z -o \$OUT_FILE ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz 
+#     # rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz
+#     # rm -v ${OUT_DIR}/temp.chr\${CHROM}.vcf.gz.tbi
 
-    echo "> Indexing \$OUT_FILE"
-    tabix -fp vcf \$OUT_FILE
-fi
+#     echo "> Indexing \$OUT_FILE"
+#     tabix -fp vcf \$OUT_FILE
+# fi
 EOF
 )
 
-# Extract the job ID from the output
-SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_CREATE_JOBID=$(echo $SLURM_CREATE | awk '{print $4}')
 
-# Wait for the array job to finish before normalizing the files
-if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to normalize the filtered VCF files."
-fi
-# SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-source ~/.bashrc
-mamba activate monopogen
-CHROM=\${SLURM_ARRAY_TASK_ID}
-if [[ "\$CHROM" == "23" ]]; then
-    CHROM="X"
-fi
-echo "Normalizing chromosome \$CHROM"
-IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.chr\${CHROM}.vcf.gz"
+# # Wait for the array job to finish before normalizing the files
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to normalize the filtered VCF files."
+# fi
+# # SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# source ~/.bashrc
+# mamba activate monopogen
+# CHROM=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHROM" == "23" ]]; then
+#     CHROM="X"
+# fi
+# echo "Normalizing chromosome \$CHROM"
+# IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.chr\${CHROM}.vcf.gz"
+# OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.chr\${CHROM}.vcf.gz"
 
-echo "> Normalizing \$IN_FILE"
-bcftools norm --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
+# echo "> Normalizing \$IN_FILE"
+# bcftools norm --rm-dup both --check-ref wx --fasta-ref ${GRCh38} \$IN_FILE --output-type z -o \$OUT_FILE
 
-echo "> Indexing \$OUT_FILE"
-tabix -fp vcf \$OUT_FILE
-EOF
-)
+# echo "> Indexing \$OUT_FILE"
+# tabix -fp vcf \$OUT_FILE
+# EOF
+# )
 
-# Extract the job ID from the output
-SLURM_NORM_JOBID=$(echo $SLURM_NORM | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_NORM_JOBID=$(echo $SLURM_NORM | awk '{print $4}')
 
-# Submit the annotation job after concatenation
-if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to annotate the normalized data."
-fi
-# SLURM_ANNOTATE=$(sbatch --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate_%A_%a.out" --error="$RESOURCE_DIR/pp_annotate_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate_%A_%a.out" --error="$RESOURCE_DIR/pp_annotate_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-source ~/.bashrc
-mamba activate monopogen
+# # Submit the annotation job after concatenation
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to annotate the normalized data."
+# fi
+# # SLURM_ANNOTATE=$(sbatch --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate_%A_%a.out" --error="$RESOURCE_DIR/pp_annotate_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate_%A_%a.out" --error="$RESOURCE_DIR/pp_annotate_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# source ~/.bashrc
+# mamba activate monopogen
 
-# setting chromosome 1-22 and X
-CHROM=\${SLURM_ARRAY_TASK_ID}
-if [[ "\$CHROM" == "23" ]]; then
-    CHROM="X"
-fi
+# # setting chromosome 1-22 and X
+# CHROM=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHROM" == "23" ]]; then
+#     CHROM="X"
+# fi
 
-echo "Annotating chromosome \$CHROM"
-# setting input and output files
-IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.chr\${CHROM}.vcf.gz"
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.vcf.gz"
+# echo "Annotating chromosome \$CHROM"
+# # setting input and output files
+# IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.chr\${CHROM}.vcf.gz"
+# OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.vcf.gz"
 
-# annotate the VCF files
-echo "> Annotating \$IN_FILE"
-bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' \$IN_FILE --output-type z -o \$OUT_FILE
+# # annotate the VCF files
+# echo "> Annotating \$IN_FILE"
+# bcftools annotate -x ID -I +'%CHROM:%POS:%REF:%ALT' \$IN_FILE --output-type z -o \$OUT_FILE
 
-echo "> Indexing \$OUT_FILE"
-tabix -fp vcf \$OUT_FILE
-EOF
-)
+# echo "> Indexing \$OUT_FILE"
+# tabix -fp vcf \$OUT_FILE
+# EOF
+# )
 
-# Extract the job ID from the output
-SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_ANNOTATE_JOBID=$(echo $SLURM_ANNOTATE | awk '{print $4}')
 
-# Submit the annotation job after concatenation
-if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to subset the normalized and annotated data to list only the variants (for cellsnp)."
-fi
-# SLURM_SUBSET_CELLSNP=$(sbatch --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_SUBSET_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-source ~/.bashrc
-mamba activate monopogen
+# # Submit the annotation job after concatenation
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to subset the normalized and annotated data to list only the variants (for cellsnp)."
+# fi
+# # SLURM_SUBSET_CELLSNP=$(sbatch --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_SUBSET_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# source ~/.bashrc
+# mamba activate monopogen
 
-# setting chromosome 1-22 and X
-CHROM=\${SLURM_ARRAY_TASK_ID}
-if [[ "\$CHROM" == "23" ]]; then
-    CHROM="X"
-fi
+# # setting chromosome 1-22 and X
+# CHROM=\${SLURM_ARRAY_TASK_ID}
+# if [[ "\$CHROM" == "23" ]]; then
+#     CHROM="X"
+# fi
 
-echo "Subsetting chromosome \$CHROM"
-# setting input and output files
-IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.vcf.gz"
-OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.cellsnp.vcf.gz"
+# echo "Subsetting chromosome \$CHROM"
+# # setting input and output files
+# IN_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.vcf.gz"
+# OUT_FILE_CELLSNP="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr\${CHROM}.cellsnp.vcf.gz"
 
-# subsetting the VCF files
-echo "> Subsetting \$IN_FILE"
-bcftools view --samples "." \$IN_FILE --output-type z -o \$OUT_FILE_CELLSNP --force-samples
+# # subsetting the VCF files
+# echo "> Subsetting \$IN_FILE"
+# bcftools view --samples "." \$IN_FILE --output-type z -o \$OUT_FILE_CELLSNP --force-samples
 
-echo "> Indexing \$OUT_FILE_CELLSNP"
-tabix -fp vcf \$OUT_FILE_CELLSNP
-EOF
-)
+# echo "> Indexing \$OUT_FILE_CELLSNP"
+# tabix -fp vcf \$OUT_FILE_CELLSNP
+# EOF
+# )
 
-# Extract the job ID from the output
-SLURM_SUBSET_CELLSNP_JOBID=$(echo $SLURM_SUBSET_CELLSNP | awk '{print $4}')
+# # Extract the job ID from the output
+# SLURM_SUBSET_CELLSNP_JOBID=$(echo $SLURM_SUBSET_CELLSNP | awk '{print $4}')
 
-# Wait for the array job to finish before concatenating the files
-if [[ $VERBOSE -eq 1 ]]; then
-    echo "> Submitting job to concatenate the filtered VCF files for cellsnp."
-fi
-# SLURM_CONCAT_CELLSNP=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CONCAT_CELLSNP=$(sbatch --dependency=afterok:$SLURM_SUBSET_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=8 --mem=16G --time=02:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-#!/bin/bash
-source ~/.bashrc
-mamba activate monopogen
+# # Wait for the array job to finish before concatenating the files
+# if [[ $VERBOSE -eq 1 ]]; then
+#     echo "> Submitting job to concatenate the filtered VCF files for cellsnp."
+# fi
+# # SLURM_CONCAT_CELLSNP=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# SLURM_CONCAT_CELLSNP=$(sbatch --dependency=afterok:$SLURM_SUBSET_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=8 --mem=16G --time=02:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+# #!/bin/bash
+# source ~/.bashrc
+# mamba activate monopogen
 
-echo "Concatenating the filtered VCF files for cellsnp"
-# Use shell expansion to capture the files
-chrom_files=(${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr*.cellsnp.vcf.gz)
+# echo "Concatenating the filtered VCF files for cellsnp"
+# # Use shell expansion to capture the files
+# chrom_files=(${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr*.cellsnp.vcf.gz)
 
-# Check if the files exist
-if [[ \${#chrom_files[@]} -eq 0 ]]; then
-    echo "No VCF files found matching the pattern."
-    exit 1
-fi
+# # Check if the files exist
+# if [[ \${#chrom_files[@]} -eq 0 ]]; then
+#     echo "No VCF files found matching the pattern."
+#     exit 1
+# fi
 
-# Concatenate the files
-OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr1_22X.cellsnp.vcf.gz"
+# # Concatenate the files
+# OUT_FILE="${OUT_DIR}/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_${AF_FIELD}_${AF_SCI}.norm.fixvariantid.chr1_22X.cellsnp.vcf.gz"
 
-echo "> Concatenating \${chrom_files[@]}"
-bcftools concat "\${chrom_files[@]}" --output-type z -o \$OUT_FILE
+# echo "> Concatenating \${chrom_files[@]}"
+# bcftools concat "\${chrom_files[@]}" --output-type z -o \$OUT_FILE
 
-# Index the output
-echo "> Indexing \$OUT_FILE"
-tabix -fp vcf \$OUT_FILE
-EOF
-)
+# # Index the output
+# echo "> Indexing \$OUT_FILE"
+# tabix -fp vcf \$OUT_FILE
+# EOF
+# )
 
 if [[ $VERBOSE -eq 1 ]]; then
     echo ""
