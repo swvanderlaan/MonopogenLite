@@ -7,17 +7,19 @@ import argparse
 import gzip
 import logging
 from datetime import datetime
+import pysam
 
 # Version information
 # Change log:
+# * v1.2.0 (2024-09-27): Speed-gain by using pysam instead of manual parsing.
 # * v1.1.3 (2024-09-26): Fixed an issue where the gzipped VCF file was not recognized correctly.
 # * v1.1.2 (2024-09-26): Fixed an issue where the check for changes and reverse options was incorrect.
 # * v1.1.1 (2024-09-26): Fixed an issue where the changes-file wasn't created.
 # * v1.1.0 (2024-09-25): Fix the issue where the haploid genotypes were removed instead of made diploid. Added the option to reverse changes based on a list of variants and samples. Added a logger to log the changes and reversals.
 # * v1.0.0 (2024-09-24): Initial version.
 VERSION_NAME = 'MakeDiploidMalesX'
-VERSION = '1.1.3'
-VERSION_DATE = '2024-09-25'
+VERSION = '1.2.0'
+VERSION_DATE = '2024-09-27'
 COPYRIGHT = 'Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -72,13 +74,13 @@ def setup_logger(script_name, verbose):
     return logger
 
 # Make diploid males in a VCF file
+# PYSAM VERSION
 def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logger=None):
     """Modify male genotypes on chromosome X or reverse the changes based on the input lists."""
     
     logger.info(f"Processing input VCF: {input_vcf}")
-
     changes = []
-    
+
     if reverse_file:
         logger.info(f"Reversing changes based on: {reverse_file}")
         # Load reverse information from the reverse file
@@ -87,34 +89,27 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
     else:
         reverse_changes = None
 
-    # with open(input_vcf, 'r') as infile, open(output_vcf, 'w') as outfile:
-    # Open the input VCF file (use gzip if file is gzipped)
-    open_func = gzip.open if input_vcf.endswith('.gz') else open
-    with open_func(input_vcf, 'rt') as infile, open(output_vcf, 'w') as outfile:
-        for line in infile:
-            if line.startswith("#"):  # Keep header lines
-                outfile.write(line)
-                continue
-            
-            fields = line.strip().split('\t')
-            variant_id = fields[2]  # Variant ID
-            genotypes = fields[9:]  # Genotype columns start at index 9
-            variant = fields[0:9]  # Variant information
-            
-            for i, genotype in enumerate(genotypes):
+    # Open the VCF/BCF file using pysam
+    with pysam.VariantFile(input_vcf, 'r') as infile, pysam.VariantFile(output_vcf, 'w', header=infile.header) as outfile:
+        for record in infile:
+            variant_id = record.id  # The variant ID
+            for i, sample in enumerate(record.samples):
+                genotype = record.samples[sample]["GT"]
+
                 if reverse_file:
                     if (variant_id, str(i)) in reverse_changes:
-                        original = genotype[0]
-                        genotypes[i] = original if original in ['0', '1'] else genotype
-                        logger.debug(f"Reversed genotype at {variant_id} for sample {i}")
+                        original_genotype = genotype[0]
+                        record.samples[sample]["GT"] = (original_genotype,) if original_genotype in [0, 1] else genotype
+                        logger.debug(f"Reversed genotype at {variant_id} for sample {sample}")
                 else:
-                    if genotype == "0" or genotype == "1":
-                        new_genotype = f"{genotype}|{genotype}"
-                        genotypes[i] = new_genotype
+                    if genotype == (0,) or genotype == (1,):
+                        new_genotype = (genotype[0], genotype[0])
+                        record.samples[sample]["GT"] = new_genotype
                         changes.append((variant_id, i))
-                        logger.debug(f"Modified {genotype} to {new_genotype} at {variant_id} for sample {i}")
-            
-            outfile.write('\t'.join(variant + genotypes) + '\n')
+                        logger.debug(f"Modified {genotype} to {new_genotype} at {variant_id} for sample {sample}")
+
+            # Write the modified record to the output VCF
+            outfile.write(record)
 
     # Write changes if not in reverse mode
     if not reverse_file and changes_file:
@@ -129,20 +124,89 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
             raise
 
     logger.info(f"Modifications completed. Output written to: {output_vcf}")
+# MANUAL VERSION
+# def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logger=None):
+#     """Modify male genotypes on chromosome X or reverse the changes based on the input lists."""
+    
+#     logger.info(f"Processing input VCF: {input_vcf}")
 
-# Index the output VCF file using bgzip and tabix
+#     changes = []
+    
+#     if reverse_file:
+#         logger.info(f"Reversing changes based on: {reverse_file}")
+#         # Load reverse information from the reverse file
+#         with gzip.open(reverse_file, 'rt') as rev_file:
+#             reverse_changes = set(tuple(line.strip().split(',')) for line in rev_file)
+#     else:
+#         reverse_changes = None
+
+#     # with open(input_vcf, 'r') as infile, open(output_vcf, 'w') as outfile:
+#     # Open the input VCF file (use gzip if file is gzipped)
+#     open_func = gzip.open if input_vcf.endswith('.gz') else open
+#     with open_func(input_vcf, 'rt') as infile, open(output_vcf, 'w') as outfile:
+#         for line in infile:
+#             if line.startswith("#"):  # Keep header lines
+#                 outfile.write(line)
+#                 continue
+            
+#             fields = line.strip().split('\t')
+#             variant_id = fields[2]  # Variant ID
+#             genotypes = fields[9:]  # Genotype columns start at index 9
+#             variant = fields[0:9]  # Variant information
+            
+#             for i, genotype in enumerate(genotypes):
+#                 if reverse_file:
+#                     if (variant_id, str(i)) in reverse_changes:
+#                         original = genotype[0]
+#                         genotypes[i] = original if original in ['0', '1'] else genotype
+#                         logger.debug(f"Reversed genotype at {variant_id} for sample {i}")
+#                 else:
+#                     if genotype == "0" or genotype == "1":
+#                         new_genotype = f"{genotype}|{genotype}"
+#                         genotypes[i] = new_genotype
+#                         changes.append((variant_id, i))
+#                         logger.debug(f"Modified {genotype} to {new_genotype} at {variant_id} for sample {i}")
+            
+#             outfile.write('\t'.join(variant + genotypes) + '\n')
+
+#     # Write changes if not in reverse mode
+#     if not reverse_file and changes_file:
+#         logger.info(f"Saving changes to: {changes_file}")
+#         try:
+#             with gzip.open(changes_file, 'wt') as ch_file:
+#                 for change in changes:
+#                     ch_file.write(f"{change[0]},{change[1]}\n")
+#             logger.info(f"Changes saved successfully to {changes_file}")
+#         except Exception as e:
+#             logger.error(f"Error saving changes to {changes_file}: {e}")
+#             raise
+#     logger.info(f"Modifications completed. Output written to: {output_vcf}")
+
+# Index the output VCF file using pysam's tabix_index
 def index_vcf(output_vcf, logger):
     """Index the output VCF file using bgzip and tabix."""
     logger.info(f"Indexing VCF file: {output_vcf}")
 
     try:
-        subprocess.run(["bgzip", "-f", output_vcf], check=True)
-        compressed_vcf = output_vcf + ".gz"
-        subprocess.run(["tabix", "-f", "-p", "vcf", compressed_vcf], check=True)
-        logger.info(f"Indexing completed for {compressed_vcf}")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Error during bgzip/tabix compression or indexing: {e}")
+        pysam.tabix_index(output_vcf, preset="vcf", force=True)
+        logger.info(f"Indexing completed for {output_vcf}")
+    except Exception as e:
+        logger.error(f"Error during tabix indexing: {e}")
         exit(1)
+
+# # Index the output VCF file using bgzip and tabix
+# def index_vcf(output_vcf, logger):
+#     """Index the output VCF file using bgzip and tabix."""
+#     logger.info(f"Indexing VCF file: {output_vcf}")
+
+#     try:
+#         subprocess.run(["bgzip", "-f", output_vcf], check=True)
+#         compressed_vcf = output_vcf + ".gz"
+#         subprocess.run(["tabix", "-f", "-p", "vcf", compressed_vcf], check=True)
+#         logger.info(f"Indexing completed for {compressed_vcf}")
+#     except subprocess.CalledProcessError as e:
+#         logger.error(f"Error during bgzip/tabix compression or indexing: {e}")
+#         exit(1)
 
 # Main function
 def main():
