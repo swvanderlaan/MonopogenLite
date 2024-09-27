@@ -91,22 +91,27 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
         reverse_changes = None
 
     # Open the VCF/BCF file using pysam
-    with pysam.VariantFile(input_vcf, 'r') as infile, pysam.VariantFile(output_vcf, 'w', header=infile.header) as outfile:
+    # with pysam.VariantFile(input_vcf, 'r') as infile, pysam.VariantFile(output_vcf, 'w', header=infile.header) as outfile:
+    with pysam.VariantFile(input_vcf) as infile, pysam.VariantFile(output_vcf, 'w', header=infile.header) as outfile:
+
         for record in infile:
             variant_id = record.id  # The variant ID
             for i, sample in enumerate(record.samples):
                 genotype = record.samples[sample]["GT"]
 
                 if reverse_file:
+                    # Reverse the changes based on the reverse file
                     if (variant_id, str(i)) in reverse_changes:
                         original_genotype = genotype[0]
                         record.samples[sample]["GT"] = (original_genotype,) if original_genotype in [0, 1] else genotype
+                        record.samples[sample].phased = True  # Ensure phased flag is set
                         logger.debug(f"Reversed genotype at {variant_id} for sample {sample}")
                 else:
                     if genotype == (0,) or genotype == (1,):
-                        # new_genotype = (genotype[0], genotype[0]) # This produces a tuple with the same value twice like 0/0 or 1/1
-                        new_genotype = f"{genotype}|{genotype}"  # This will now correctly set the genotype to 0|0 or 1|1
+                        new_genotype = (genotype[0], genotype[0]) # This produces a tuple with the same value twice like 0/0 or 1/1
+                        # new_genotype = f"{genotype}|{genotype}"  # This will now correctly set the genotype to 0|0 or 1|1 - however this is very slow
                         record.samples[sample]["GT"] = new_genotype
+                        record.samples[sample].phased = True  # Enforce phasing (0|0 or 1|1)
                         changes.append((variant_id, i))
                         logger.debug(f"Modified {genotype} to {new_genotype} at {variant_id} for sample {sample}")
 
