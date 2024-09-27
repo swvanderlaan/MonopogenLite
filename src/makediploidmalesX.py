@@ -11,6 +11,7 @@ import pysam
 
 # Version information
 # Change log:
+# * v1.2.1 (2024-09-27): Fixed an issue where the genotypes were not correctly (g/g instead of g|g) set to diploid.
 # * v1.2.0 (2024-09-27): Speed-gain by using pysam instead of manual parsing.
 # * v1.1.3 (2024-09-26): Fixed an issue where the gzipped VCF file was not recognized correctly.
 # * v1.1.2 (2024-09-26): Fixed an issue where the check for changes and reverse options was incorrect.
@@ -18,7 +19,7 @@ import pysam
 # * v1.1.0 (2024-09-25): Fix the issue where the haploid genotypes were removed instead of made diploid. Added the option to reverse changes based on a list of variants and samples. Added a logger to log the changes and reversals.
 # * v1.0.0 (2024-09-24): Initial version.
 VERSION_NAME = 'MakeDiploidMalesX'
-VERSION = '1.2.0'
+VERSION = '1.2.1'
 VERSION_DATE = '2024-09-27'
 COPYRIGHT = 'Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -103,7 +104,8 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
                         logger.debug(f"Reversed genotype at {variant_id} for sample {sample}")
                 else:
                     if genotype == (0,) or genotype == (1,):
-                        new_genotype = (genotype[0], genotype[0])
+                        # new_genotype = (genotype[0], genotype[0]) # This produces a tuple with the same value twice like 0/0 or 1/1
+                        new_genotype = f"{genotype}|{genotype}"  # This will now correctly set the genotype to 0|0 or 1|1
                         record.samples[sample]["GT"] = new_genotype
                         changes.append((variant_id, i))
                         logger.debug(f"Modified {genotype} to {new_genotype} at {variant_id} for sample {sample}")
