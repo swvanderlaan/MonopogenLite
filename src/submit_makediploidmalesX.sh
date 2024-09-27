@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.5 2024-09-27: Changed default values for SLURM.
 # * v1.0.4 2024-09-25: Added a check if the input file exists. Added optional --changes and --reverse flags.
 # * v1.0.3 2024-09-25: Changed script name.
 # * v1.0.2 2024-09-24: Fixed issue where there was no --version flag in the help message.
@@ -8,8 +9,8 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.0.4'
-VERSION_DATE='2024-09-25'
+VERSION='1.0.5'
+VERSION_DATE='2024-09-27'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -82,9 +83,9 @@ echo ""
 
 # Default values
 SBATCH_JOB_NAME="makediploidmalesX"
-SBATCH_CPUS=1
-SBATCH_MEM="8G"
-SBATCH_TIME="02:00:00"
+SBATCH_CPUS=4
+SBATCH_MEM="32G"
+SBATCH_TIME="12:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 VERBOSE=0
