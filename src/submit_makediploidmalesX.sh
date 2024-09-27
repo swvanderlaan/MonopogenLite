@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.6 2024-09-27: Fixed an issue where the script was always using --verbose, even if it was not passed.
 # * v1.0.5 2024-09-27: Changed default values for SLURM.
 # * v1.0.4 2024-09-25: Added a check if the input file exists. Added optional --changes and --reverse flags.
 # * v1.0.3 2024-09-25: Changed script name.
@@ -9,7 +10,7 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.0.5'
+VERSION='1.0.6'
 VERSION_DATE='2024-09-27'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -88,7 +89,7 @@ SBATCH_MEM="32G"
 SBATCH_TIME="12:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
-VERBOSE=0
+VERBOSE=0  # Set to 0 by default (not verbose)
 CHANGES_FILE=""
 REVERSE_FILE=""
 
@@ -108,7 +109,7 @@ while [[ "$#" -gt 0 ]]; do
         --time) SBATCH_TIME="$2"; shift ;;
         --mail) SBATCH_MAILTYPE="$2"; shift ;;
         --user) SBATCH_MAILUSER="$2"; shift ;;
-        --verbose) VERBOSE=1 ;;
+        --verbose) VERBOSE=1 ;;  # Set verbose to 1 if --verbose is passed
         --version) print_version ;;
         --help) print_help ;;
         *) echo "Unknown parameter passed: $1"; print_help ;;
@@ -160,6 +161,12 @@ if [[ -n "$REVERSE_FILE" ]]; then
     REVERSE_FLAG="--reverse $REVERSE_FILE"
 fi
 
+# Only add --verbose if VERBOSE is 1
+VERBOSE_FLAG=""
+if [[ "$VERBOSE" -eq 1 ]]; then
+    VERBOSE_FLAG="--verbose"
+fi
+
 cat << EOF > $SBATCH_SCRIPT
 #!/bin/bash
 #SBATCH --job-name=$SBATCH_JOB_NAME
@@ -194,7 +201,7 @@ echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 echo "Running $VERSION_NAME..."
-python3 $MPG/src/makediploidmalesX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE:+--verbose}
+python3 $MPG/src/makediploidmalesX.py --input-file $INPUT_FILE --output-file $OUTPUT_FILE ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
