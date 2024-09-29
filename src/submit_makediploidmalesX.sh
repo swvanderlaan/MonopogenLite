@@ -307,11 +307,11 @@ EOF
 chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
 # Submit the array job to SLURM
-ARRAY_JOB_ID=$(sbatch --array=1-$CHUNK_SIZE $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
+ARRAY_JOB_ID=$(sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
 echo "Job submitted with ID: $ARRAY_JOB_ID"
 
 # Submit a concatenation job that depends on the completion of the array job
-sbatch --dependency=afterok:$ARRAY_JOB_ID SBATCH_SCRIPT_CONCATINDEX
+CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
 echo "Concatenation job submitted with ID: $CONCAT_JOB_ID"
 
 echo ""
