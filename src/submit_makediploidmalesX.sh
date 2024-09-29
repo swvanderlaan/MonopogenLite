@@ -39,8 +39,8 @@ Reference: http://opensource.org.
 # Default values
 SBATCH_JOB_NAME="makediploidmalesX"
 SBATCH_CPUS=4
-SBATCH_MEM="32G"
-SBATCH_TIME="12:00:00"
+SBATCH_MEM="16G"
+SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 VERBOSE=0  # Set to 0 by default (not verbose)
@@ -169,7 +169,8 @@ if [[ "$VERBOSE" -eq 1 ]]; then
 fi
 
 # Create the SLURM batch job script
-SBATCH_SCRIPT="$MPG/submit_makediploidmalesX.sbatch"
+SBATCH_SCRIPT_MAKEDIPLOIDMALESX="$MPG/submit_makediploidmalesX.sbatch"
+SBATCH_SCRIPT_CONCATINDEX="$MPG/submit_concatindexdiploidmalesX.sbatch"
 
 echo "Starting $VERSION_NAME"
 echo ""
@@ -190,7 +191,7 @@ echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 
 # Create the SLURM batch job script
-cat << EOF > $SBATCH_SCRIPT
+cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #!/bin/bash
 #SBATCH --job-name=$SBATCH_JOB_NAME
 #SBATCH --array=1-$CHUNK_SIZE
@@ -241,12 +242,57 @@ CHUNK=$(printf "chunk%02d.bcf" "\$SLURM_ARRAY_TASK_ID")
 echo "> Set the input and output files..."
 python3 $MPG/src/makediploidmalesX.py --input-file "$BASE_NAME_INPUT_DIR/\$CHUNK" --output-file "$BASE_NAME_INPUT_DIR/\$CHUNK"_processed ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
 
+if [ \$? -eq 0 ]; then
+  echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
+else
+  echo "$VERSION_NAME encountered an error."
+fi
+
+mamba deactivate
+EOF
+
+# Make the script executable
+chmod +x $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
+
+# Create the SLURM batch job script
+cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
+#!/bin/bash
+#SBATCH --job-name=$SBATCH_JOB_NAME
+#SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --mem=$SBATCH_MEM
+#SBATCH --time=$SBATCH_TIME
+#SBATCH --mail-type=$SBATCH_MAILTYPE
+#SBATCH --mail-user=$SBATCH_MAILUSER
+#SBATCH --output=${SBATCH_JOB_NAME}_%A_%a.out
+#SBATCH --error=${SBATCH_JOB_NAME}_%A_%a.err
+
+source ~/.bashrc
+mamba activate monopogen
+
+echo "$VERSION_NAME"
+echo "version $VERSION ($VERSION_DATE)"
+echo ""
+echo "These are the settings:"
+echo "  Input file................: $INPUT_FILE"
+echo "  Output file...............: $OUTPUT_FILE"
+echo ""
+echo "  SLURM job name............: $SBATCH_JOB_NAME"
+echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM memory..............: $SBATCH_MEM"
+echo "  SLURM time................: $SBATCH_TIME"
+echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
+echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo ""
+echo "  Verbosity.................: $VERBOSE"
+echo "  Version...................: $VERSION ($VERSION_DATE)"
+echo ""
+echo "Running $VERSION_NAME..."
+
 echo "> Concatenate and index the processed BCF files..."
 if [ "\$SLURM_ARRAY_TASK_ID" -eq "$CHUNK_SIZE" ]; then
   bcftools concat -O z -o $OUTPUT_FILE.vcf.gz $BASE_NAME_INPUT_DIR/chunk*_processed.bcf
   bcftools index $OUTPUT_FILE.vcf.gz
 fi
-
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
@@ -258,12 +304,20 @@ mamba deactivate
 EOF
 
 # Make the script executable
-chmod +x $SBATCH_SCRIPT
+chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
-# Submit the job to SLURM
-# JOB_ID=$(sbatch $SBATCH_SCRIPT | awk '{print $4}')
-# echo "Job submitted with ID: $JOB_ID"
+# Submit the array job to SLURM
+# ARRAY_JOB_ID=$(sbatch --array=1-$CHUNK_SIZE $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
+# echo "Job submitted with ID: $ARRAY_JOB_ID"
+
+# Submit a concatenation job that depends on the completion of the array job
+# sbatch --dependency=afterok:$ARRAY_JOB_ID SBATCH_SCRIPT_CONCATINDEX
+# echo "Concatenation job submitted with ID: $CONCAT_JOB_ID"
 
 echo ""
 print_version
 ### END OF SCRIPT ###
+
+
+
+
