@@ -296,7 +296,7 @@ echo ""
 echo "Making converting haploid genotypes to diploid genotypes."
 
 echo "> Extract the region for this SLURM task (# \$SLURM_ARRAY_TASK_ID) from the BED file."
-RAW_REGION=$(sed -n "\$SLURM_ARRAY_TASK_IDp" "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed")
+RAW_REGION=$(sed -n \${SLURM_ARRAY_TASK_ID}p "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed")
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: $RAW_REGION"
 fi
