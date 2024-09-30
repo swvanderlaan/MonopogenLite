@@ -294,8 +294,17 @@ echo ""
 echo "Making converting haploid genotypes to diploid genotypes."
 
 echo "> Extract the region for this SLURM task from the BED file."
-# REGION=$(sed -n "${SLURM_ARRAY_TASK_ID}p" $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed | awk '{print $1 ":" $2 "-" $3}')
-REGION=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed" | awk '{print $1 ":" $2 "-" $3}')
+RAW_REGION=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed")
+if [[ "$DEBUG" -eq 1 ]]; then
+    echo "DEBUG: Extracted raw region: $RAW_REGION"
+fi
+REGION=$(echo "$RAW_REGION" | awk '{print $1 ":" $2 "-" $3}')
+
+if [[ -z "$REGION" ]]; then
+  echo "Error: No region found for SLURM_ARRAY_TASK_ID ${SLURM_ARRAY_TASK_ID}."
+  exit 1
+fi
+
 
 echo "> Processing region $REGION..."
 
@@ -384,11 +393,12 @@ chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
 # Submit the array job, dependent on the BED creation job
 if [[ $DRY_RUN -eq 1 ]]; then
-    echo "DRY-RUN: sbatch $CHUNK_JOB_ID $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
+    echo "DRY-RUN: sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
 else
-    ARRAY_JOB_ID=$(sbatch $CHUNK_JOB_ID $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
+    ARRAY_JOB_ID=$(sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
     echo ">> Array job submitted with ID: $ARRAY_JOB_ID."
 fi
+
 
 # Submit the concatenation job, dependent on the array job completion
 if [[ $DRY_RUN -eq 1 ]]; then
