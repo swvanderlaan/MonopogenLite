@@ -296,10 +296,13 @@ echo ""
 echo "Making converting haploid genotypes to diploid genotypes."
 
 echo "> Extract the region for this SLURM task (# \$SLURM_ARRAY_TASK_ID) from the BED file."
+
+# Get the chunk number from the SLURM array task ID and the bed file
 CHUNK_NUMBER_RAW=\$SLURM_ARRAY_TASK_ID # SLURM array task ID
 CHUNK_NUMBER=\${CHUNK_NUMBER_RAW}p  # adding p to the number
 BED_FILE="$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed" # BED file with chunks
 
+# Debugs
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracting chunk number: \$CHUNK_NUMBER from \$CHUNK_NUMBER_RAW"
 fi
@@ -307,10 +310,12 @@ if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracting region from BED file: \$BED_FILE"
 fi
 
+# Extract the region from the BED file
 RAW_REGION=$(sed -n \${CHUNK_NUMBER} \${BED_FILE})
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
-    echo "DEBUG: Extracted raw region: $RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
+    echo "DEBUG: Extracted raw region: \$RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
 fi
+# Prepare the region for bcftools
 REGION=$(echo "$RAW_REGION" | awk '{print $1 ":" $2 "-" $3}')
 
 if [[ -z "$REGION" ]]; then
