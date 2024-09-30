@@ -444,18 +444,19 @@ if [[ \$DEBUG_FLAG -eq 1 ]]; then
     printf "%s\n" "\$VCF_LIST"
 fi
 
-bcftools concat -Ou -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.bcf \$VCF_LIST
+# bcftools concat -Ou -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.bcf \$VCF_LIST
+bcftools concat -Oz -o $OUTPUT_FILE \$VCF_LIST
 if [ $? -ne 0 ]; then
     echo "ERROR: Concatenation failed."
     exit 1
 fi
 
-echo "> Sorting the concatenated VCF file..."
-bcftools sort -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.bcf
-if [ $? -ne 0 ]; then
-    echo "ERROR: Sorting failed."
-    exit 1
-fi
+# echo "> Sorting the concatenated VCF file..."
+# bcftools sort -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.bcf
+# if [ $? -ne 0 ]; then
+#     echo "ERROR: Sorting failed."
+#     exit 1
+# fi
 
 echo "> Index the concatenated VCF file..."
 tabix -fp vcf $OUTPUT_FILE
