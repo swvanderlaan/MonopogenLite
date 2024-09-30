@@ -314,17 +314,17 @@ CHUNK_NUMBER=\${CHUNK_NUMBER_RAW}p  # adding p to the number
 BED_FILE="$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed" # BED file with chunks
 
 # Debugs
-if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
+if [[ \$DEBUG_FLAG -eq 1 ]]; then
     echo "DEBUG: Extracting chunk number: \$CHUNK_NUMBER from \$CHUNK_NUMBER_RAW"
 fi
-if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
+if [[ \$DEBUG_FLAG -eq 1 ]]; then
     echo "DEBUG: Extracting region from BED file: \$BED_FILE"
 fi
 
 echo "  - Extract the region from the BED file..."
 RAW_REGION=\$(sed -n "\$CHUNK_NUMBER" "\$BED_FILE")
 RAW_REGION=\$(echo "\$RAW_REGION" | sed 's/^ *//;s/ *\$//')  # Clean up leading/trailing whitespace
-if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
+if [[ \$DEBUG_FLAG -eq 1 ]]; then
     echo "DEBUG: Extracted raw region: '\$RAW_REGION' (chunk #: \$CHUNK_NUMBER of $CHUNK_SIZE for job \$CHUNK_NUMBER_RAW)"
 fi
 echo "  - Check if a valid region was extracted -- should be '\$RAW_REGION'..."
@@ -385,8 +385,8 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
 #SBATCH --job-name=concatdiploidmalesX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
-#SBATCH --mem=$SBATCH_MEM
-#SBATCH --time=$SBATCH_TIME
+#SBATCH --mem=128G
+#SBATCH --time=02:00:00
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
 #SBATCH --output=concatdiploidmalesX_%j.out
@@ -439,7 +439,7 @@ for CHUNK in \$(seq 1 \$CHUNKSIZE); do
     fi
 done
 
-if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
+if [[ \$DEBUG_FLAG -eq 1 ]]; then
     echo "DEBUG: Listed all the processed VCF files:"
     printf "%s\n" "\$VCF_LIST"
 fi
