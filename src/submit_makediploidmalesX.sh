@@ -140,32 +140,39 @@ BASE_NAME_INPUT_DIR=$(dirname "$INPUT_FILE")
 
 # Ensure the input-file directory exists
 if [ ! -d "$BASE_NAME_INPUT_DIR" ]; then
+    echo "Creating input file directory: $BASE_NAME_INPUT_DIR"
     mkdir -vp "$BASE_NAME_INPUT_DIR"
 fi
 # Ensure the output-file directory exists
 if [ ! -d "$(dirname $OUTPUT_FILE)" ]; then
+    echo "Creating output file directory: $(dirname $OUTPUT_FILE)"
     mkdir -vp "$(dirname $OUTPUT_FILE)"
 fi
 
 # Prepare the chunk size -- set to 100 if not provided or smaller than 2
 if [[ -n "$CHUNK_SIZE" && "$CHUNK_SIZE" -ge 2 ]]; then
+    echo "Chunk size is set to $CHUNK_SIZE."
     CHUNK_SIZE=$CHUNK_SIZE
 else
+    echo "Chunk size is set to default ($CHUNK_SIZE_DEFAULT)."
     CHUNK_SIZE=$CHUNK_SIZE_DEFAULT
 fi
 
 # Prepare the changes and reverse options for the Python script
 if [[ -n "$CHANGES_FILE" ]]; then
+    echo "Changes file is set to $CHANGES_FILE."
     CHANGES_FLAG="--changes $CHANGES_FILE"
 fi
 
 if [[ -n "$REVERSE_FILE" ]]; then
+    echo "Reverse file is set to $REVERSE_FILE."
     REVERSE_FLAG="--reverse $REVERSE_FILE"
 fi
 
 # Only add --verbose if VERBOSE is 1
 VERBOSE_FLAG=""
 if [[ "$VERBOSE" -eq 1 ]]; then
+    echo "Verbose mode is enabled."
     VERBOSE_FLAG="--verbose"
 fi
 
