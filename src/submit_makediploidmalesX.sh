@@ -428,13 +428,10 @@ echo "> Concatenate the processed VCF files..."
 echo "  - Construct the ordered list of files."
 VCF_LIST=""
 CHUNKSIZE=$CHUNK_SIZE
-echo $CHUNK_SIZE
-echo \$CHUNKSIZE
 for CHUNK in \$(seq 1 \$CHUNKSIZE); do
-    echo "  - Processing chunk \$CHUNK..."
     FILE="$BASE_NAME_INPUT_DIR/chrX.part\${CHUNK}_processed.vcf.gz"
+    echo "  - Processing chunk \$CHUNK and adding [\$FILE] to the list..."
     if [[ -f "\$FILE" ]]; then
-        echo "  - Adding file \$FILE to the list..."
         VCF_LIST="\$VCF_LIST \$FILE"
     else
         echo "ERROR: File \$FILE does not exist..."
@@ -466,7 +463,6 @@ if [ $? -ne 0 ]; then
     echo "ERROR: Indexing with tabix failed."
     exit 1
 fi
-
 
 if [ \$? -eq 0 ]; then
     echo ""
