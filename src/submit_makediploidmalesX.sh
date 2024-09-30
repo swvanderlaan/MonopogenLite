@@ -337,8 +337,8 @@ echo "  - Prepare the region for bcftools..."
 REGION=\$(echo "\$RAW_REGION" | awk '{print \$1 ":" \$2 "-" \$3}')
 echo "  - Check if the region (\$REGION) was successfully extracted..."
 if [[ -z "\$REGION" ]]; then
-  echo "DEBUG: RAW_REGION was: '\$RAW_REGION'"
-  echo "Error: No region found for SLURM_ARRAY_TASK_ID \$SLURM_ARRAY_TASK_ID."
+  echo "ERROR: RAW_REGION was: '\$RAW_REGION'"
+  echo "ERROR: No region found for SLURM_ARRAY_TASK_ID \$SLURM_ARRAY_TASK_ID."
   exit 1
 fi
 
@@ -395,6 +395,8 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 source ~/.bashrc
 mamba activate monopogen
 
+DEBUG_FLAG=$DEBUG
+
 echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
 echo ""
@@ -423,7 +425,21 @@ echo ""
 echo "Concatenating processed VCF files."
 
 echo "> Concatenate the processed VCF files..."
-bcftools concat -Oz -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz $BASE_NAME_INPUT_DIR/chrX.part*_processed.vcf.gz
+echo "  - Construct the ordered list of files."
+VCF_LIST=""
+for i in $(seq 1 $CHUNK_SIZE); do
+    FILE="$BASE_NAME_INPUT_DIR/chrX.part${i}_processed.vcf.gz"
+    if [[ -f "\$FILE" ]]; then
+        VCF_LIST="\$VCF_LIST \$FILE"
+    else
+        echo "WARNING: File \$FILE does not exist, skipping..."
+    fi
+done
+if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
+    echo "DEBUG: Listed all the processed VCF files:\n \$VCF_LIST"
+fi
+
+bcftools concat -Oz -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz \$VCF_LIST
 if [ $? -ne 0 ]; then
     echo "ERROR: Concatenation failed."
     exit 1
