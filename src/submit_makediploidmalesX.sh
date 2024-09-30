@@ -317,7 +317,7 @@ if [[ -n "$REVERSE_FILE" ]]; then
 fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
-echo "  SLURM Array ID............: $SLURM_ARRAY_TASK_ID (of $CHUNK_SIZE)"
+echo "  SLURM Array ID............: \$SLURM_ARRAY_TASK_ID (of $CHUNK_SIZE)"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
