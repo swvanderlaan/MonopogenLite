@@ -429,13 +429,13 @@ echo "  - Construct the ordered list of files."
 VCF_LIST=""
 CHUNKSIZE=$CHUNK_SIZE
 echo $CHUNK_SIZE
-echo $CHUNKSIZE
+echo \$CHUNKSIZE
 for CHUNK in \$(seq 1 \$CHUNKSIZE); do
     echo "  - Processing chunk \$CHUNK..."
     FILE="$BASE_NAME_INPUT_DIR/chrX.part\${CHUNK}_processed.vcf.gz"
-    if [[ -f "$FILE" ]]; then
+    if [[ -f "\$FILE" ]]; then
         echo "  - Adding file \$FILE to the list..."
-        VCF_LIST="$VCF_LIST $FILE"
+        VCF_LIST="\$VCF_LIST \$FILE"
     else
         echo "ERROR: File \$FILE does not exist..."
         exit 1
