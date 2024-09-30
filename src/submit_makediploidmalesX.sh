@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.1.1 2024-09-30: Fixed an issue where the chunking and processing jobs were not properly linked. Added a --dry-run argument to test the script without submitting jobs.
 # * v1.1.0 2024-09-27: Added a --chunk-size argument to specify the number of chunks to process in one go thus speeding up the process.
 # * v1.0.6 2024-09-27: Fixed an issue where the script was always using --verbose, even if it was not passed.
 # * v1.0.5 2024-09-27: Changed default values for SLURM.
@@ -11,8 +12,8 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.1.0'
-VERSION_DATE='2024-09-27'
+VERSION='1.1.1'
+VERSION_DATE='2024-09-30'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -37,7 +38,6 @@ Reference: http://opensource.org.
 '''
 
 # Default values
-SBATCH_JOB_NAME="makediploidmalesX"
 SBATCH_CPUS=4
 SBATCH_MEM="16G"
 SBATCH_TIME="01:00:00"
@@ -47,6 +47,7 @@ VERBOSE=0  # Set to 0 by default (not verbose)
 CHUNK_SIZE_DEFAULT=100 # Default number of chunks to process in one go
 CHANGES_FILE="" # Default changes file, none
 REVERSE_FILE="" # Default reverse file, none
+DRY_RUN=0  # Set to 0 by default (not a dry run)
 
 # MonopogenLite location
 MPG="/hpc/local/Rocky8/dhl_ec/software/MonopogenLite"
@@ -66,12 +67,12 @@ print_help() {
     echo "  --chunk-size    The number of chunks to process in one go. Default is 100. Optional."
     echo "  --changes       Gzipped file to save the list of changes (optional)."
     echo "  --reverse       Gzipped file with list of changes to reverse (optional)."
-    echo "  --job-name      The name of the SLURM job."
     echo "  --cpus          The number of CPUs to use."
     echo "  --mem           The amount of memory to use."
     echo "  --time          The maximum time to run the job."
     echo "  --mail          The type of mail to send."
     echo "  --user          The email address to send the mail to."
+    echo "  --dry-run       Perform a dry run without submitting the job."
     echo "  --verbose       Enable verbose output."
     echo "  --help          Show this help message and exit."
     echo "  --version       Display version information and exit."
@@ -107,12 +108,12 @@ while [[ "$#" -gt 0 ]]; do
         --chunk-size) CHUNK_SIZE="$2"; shift ;;
         --changes) CHANGES_FILE="$2"; shift ;;
         --reverse) REVERSE_FILE="$2"; shift ;;
-        --job-name) SBATCH_JOB_NAME="$2"; shift ;;
         --cpus) SBATCH_CPUS="$2"; shift ;;
         --mem) SBATCH_MEM="$2"; shift ;;
         --time) SBATCH_TIME="$2"; shift ;;
         --mail) SBATCH_MAILTYPE="$2"; shift ;;
         --user) SBATCH_MAILUSER="$2"; shift ;;
+        --dry-run) DRY_RUN=1 ;;  # Set dry run to 1 if --dry-run is passed
         --verbose) VERBOSE=1 ;;  # Set verbose to 1 if --verbose is passed
         --version) print_version ;;
         --help) print_help ;;
@@ -169,6 +170,7 @@ if [[ "$VERBOSE" -eq 1 ]]; then
 fi
 
 # Create the SLURM batch job script
+SBATCH_SCRIPT_CHUNKHAPLOIDMALESX="$MPG/submit_chunkhaploidmalesX.sbatch"
 SBATCH_SCRIPT_MAKEDIPLOIDMALESX="$MPG/submit_makediploidmalesX.sbatch"
 SBATCH_SCRIPT_CONCATINDEX="$MPG/submit_concatindexdiploidmalesX.sbatch"
 
@@ -186,22 +188,21 @@ echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo "  Dry run mod...............: $DRY_RUN"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 
-# Create the SLURM batch job script
-cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
+cat << EOF >> $SBATCH_SCRIPT_CHUNKHAPLOIDMALESX
 #!/bin/bash
-#SBATCH --job-name=$SBATCH_JOB_NAME
-#SBATCH --array=1-$CHUNK_SIZE
-#SBATCH --cpus-per-task=$SBATCH_CPUS
-#SBATCH --mem=$SBATCH_MEM
-#SBATCH --time=$SBATCH_TIME
+#SBATCH --job-name=chunkhaploidX
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=8G
+#SBATCH --time=01:00:00
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
-#SBATCH --output=${SBATCH_JOB_NAME}_%A_%a.out
-#SBATCH --error=${SBATCH_JOB_NAME}_%A_%a.err
+#SBATCH --output=chunkhaploidX_%j.out
+#SBATCH --error=chunkhaploidX_%j.err
 
 source ~/.bashrc
 mamba activate monopogen
@@ -212,35 +213,96 @@ echo ""
 echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
+echo "  Chunk size................: $CHUNK_SIZE"
 echo "  Changes file..............: $CHANGES_FILE"
 echo "  Reverse file..............: $REVERSE_FILE"
 echo ""
-echo "  SLURM job name............: $SBATCH_JOB_NAME"
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
 echo ""
+echo "  Dry run mode..............: $DRY_RUN"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
-echo "Running $VERSION_NAME..."
+echo "Creating the necessary number of chunks ($CHUNK_SIZE) to split."
 
-echo "> Chunking into $CHUNK_SIZE variants..."
+echo "> Set chromosome X size."
+CHROM_SIZE=156040895  # Length of chromosome X in GRCh38
+CHUNK_SIZE_NUMBER=$CHUNK_SIZE        # Number of chunks to split into
 
-echo "  - Convert and indexing VCF to BCF..."
-bcftools view -O b -o $BASE_NAME_INPUT_FILE.bcf $INPUT_FILE
-bcftools index $BASE_NAME_INPUT_FILE.bcf
+INTERVAL_SIZE=$((CHROM_SIZE / CHUNK_SIZE_NUMBER))
 
-echo "  - Split BCF file into $CHUNK_SIZE chunks by genomic regions..."
-bcftools split -n $CHUNK_SIZE $BASE_NAME_INPUT_FILE.bcf "$BASE_NAME_INPUT_DIR/chunk%02d.bcf"
+for i in $(seq 1 $CHUNK_SIZE_NUMBER); do
+    echo "  - Creating chunk $i..."
+    START=$(( (i - 1) * INTERVAL_SIZE + 1 ))
+    END=$(( i * INTERVAL_SIZE ))
+    if [[ $i -eq $CHUNK_SIZE_NUMBER ]]; then
+        END=$CHROM_SIZE  # Ensure the last region ends at the chromosome's end
+    fi
+    echo -e "X\t$START\t$END"
+done > $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed
 
-echo "> Set the chunk number ($CHUNK_SIZE) based on the SLURM array task ID..."
-CHUNK=$(printf "chunk%02d.bcf" "\$SLURM_ARRAY_TASK_ID")
+mamba deactivate
 
-echo "> Set the input and output files..."
-python3 $MPG/src/makediploidmalesX.py --input-file "$BASE_NAME_INPUT_DIR/\$CHUNK" --output-file "$BASE_NAME_INPUT_DIR/\$CHUNK"_processed ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
+EOF
+
+# Make the script executable
+chmod +x $SBATCH_SCRIPT_CHUNKHAPLOIDMALESX
+
+# Create the SLURM batch job script
+cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
+#!/bin/bash
+#SBATCH --job-name=makediploidmalesX
+#SBATCH --array=1-$CHUNK_SIZE
+#SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --mem=$SBATCH_MEM
+#SBATCH --time=$SBATCH_TIME
+#SBATCH --mail-type=$SBATCH_MAILTYPE
+#SBATCH --mail-user=$SBATCH_MAILUSER
+#SBATCH --output=makediploidmalesX_%A_%a.out
+#SBATCH --error=makediploidmalesX_%A_%a.err
+
+source ~/.bashrc
+mamba activate monopogen
+
+echo "$VERSION_NAME"
+echo "version $VERSION ($VERSION_DATE)"
+echo ""
+echo "These are the settings:"
+echo "  Input file................: $INPUT_FILE"
+echo "  Output file...............: $OUTPUT_FILE"
+echo "  Chunk size................: $CHUNK_SIZE"
+echo "  Changes file..............: $CHANGES_FILE"
+echo "  Reverse file..............: $REVERSE_FILE"
+echo ""
+echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM memory..............: $SBATCH_MEM"
+echo "  SLURM time................: $SBATCH_TIME"
+echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
+echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo ""
+echo "  Dry run mode..............: $DRY_RUN"
+echo "  Verbosity.................: $VERBOSE"
+echo "  Version...................: $VERSION ($VERSION_DATE)"
+echo ""
+echo "Making converting haploid genotypes to diploid genotypes."
+
+echo "> Extract the region for this SLURM task from the BED file."
+REGION=$(sed -n "${SLURM_ARRAY_TASK_ID}p" $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed | awk '{print $1 ":" $2 "-" $3}')
+
+echo "> Processing region $REGION..."
+
+echo "  - Process the specific region (chunk) using bcftools view..."
+bcftools view -r $REGION $INPUT_FILE -Oz -o $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
+
+echo "  - Index the VCF file..."
+tabix -p vcf $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
+
+echo "  - Fix haploid genotypes in males..."
+python3 $MPG/src/makediploidmalesX.py --input-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz --output-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}_processed.vcf.gz ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
@@ -249,6 +311,7 @@ else
 fi
 
 mamba deactivate
+
 EOF
 
 # Make the script executable
@@ -257,14 +320,14 @@ chmod +x $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 # Create the SLURM batch job script
 cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
-#SBATCH --job-name=$SBATCH_JOB_NAME
+#SBATCH --job-name=concatdiploidmalesX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
 #SBATCH --mem=$SBATCH_MEM
 #SBATCH --time=$SBATCH_TIME
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
-#SBATCH --output=${SBATCH_JOB_NAME}_%A_%a.out
-#SBATCH --error=${SBATCH_JOB_NAME}_%A_%a.err
+#SBATCH --output=concatdiploidmalesX_%j.out
+#SBATCH --error=concatdiploidmalesX_%j.err
 
 source ~/.bashrc
 mamba activate monopogen
@@ -275,24 +338,27 @@ echo ""
 echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
+echo "  Chunk size................: $CHUNK_SIZE"
+echo "  Changes file..............: $CHANGES_FILE"
+echo "  Reverse file..............: $REVERSE_FILE"
 echo ""
-echo "  SLURM job name............: $SBATCH_JOB_NAME"
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
 echo ""
+echo "  Dry run mode..............: $DRY_RUN"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
-echo "Running $VERSION_NAME..."
+echo "Concatenating processed VCF files."
 
-echo "> Concatenate and index the processed BCF files..."
-if [ "\$SLURM_ARRAY_TASK_ID" -eq "$CHUNK_SIZE" ]; then
-  bcftools concat -O z -o $OUTPUT_FILE.vcf.gz $BASE_NAME_INPUT_DIR/chunk*_processed.bcf
-  bcftools index $OUTPUT_FILE.vcf.gz
-fi
+echo "> Concatenate the processed VCF files..."
+bcftools concat -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/chrX.part*_processed.vcf.gz
+
+echo "> Index the concatenated VCF file..."
+bcftools index $OUTPUT_FILE
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
@@ -301,23 +367,36 @@ else
 fi
 
 mamba deactivate
+
 EOF
 
 # Make the script executable
 chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
-# Submit the array job to SLURM
-ARRAY_JOB_ID=$(sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
-echo "Job submitted with ID: $ARRAY_JOB_ID"
+# Submit the chunk job first (BED creation)
+if [[ $DRY_RUN -eq 1 ]]; then
+    echo "DRY-RUN: sbatch $SBATCH_SCRIPT_CHUNKHAPLOIDMALESX"
+else
+    CHUNK_JOB_ID=$(sbatch $SBATCH_SCRIPT_CHUNKHAPLOIDMALESX | awk '{print $4}')
+    echo ">> Chunk creation job submitted with ID: $CHUNK_JOB_ID."
+fi
 
-# Submit a concatenation job that depends on the completion of the array job
-CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
-echo "Concatenation job submitted with ID: $CONCAT_JOB_ID"
+# Submit the array job, dependent on the BED creation job
+if [[ $DRY_RUN -eq 1 ]]; then
+    echo "DRY-RUN: sbatch --dependency=afterok:$CHUNK_JOB_ID $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
+else
+    ARRAY_JOB_ID=$(sbatch --dependency=afterok:$CHUNK_JOB_ID $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
+    echo ">> Array job submitted with ID: $ARRAY_JOB_ID."
+fi
+
+# Submit the concatenation job, dependent on the array job completion
+if [[ $DRY_RUN -eq 1 ]]; then
+    echo "DRY-RUN: sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX"
+else
+    CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
+    echo ">> Concatenation job submitted with ID: $CONCAT_JOB_ID."
+fi
 
 echo ""
 print_version
 ### END OF SCRIPT ###
-
-
-
-
