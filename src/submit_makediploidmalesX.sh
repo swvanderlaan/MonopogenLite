@@ -267,7 +267,7 @@ echo "> Set chromosome X size."
 CHROM_SIZE=156040895  # Length of chromosome X in GRCh38
 CHUNK_SIZE_NUMBER=$CHUNK_SIZE        # Number of chunks to split into
 
-INTERVAL_SIZE=$((CHROM_SIZE / $CHUNK_SIZE_NUMBER))
+INTERVAL_SIZE=$((CHROM_SIZE \/ $CHUNK_SIZE_NUMBER))
 
 for i in $(seq 1 $CHUNK_SIZE_NUMBER); do
     echo "  - Creating chunk $i..."
