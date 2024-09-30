@@ -267,16 +267,15 @@ echo "> Set chromosome X size."
 CHROM_SIZE=156040895  # Length of chromosome X in GRCh38
 CHUNK_SIZE_NUMBER=$CHUNK_SIZE        # Number of chunks to split into
 
-INTERVAL_SIZE=$((CHROM_SIZE / CHUNK_SIZE_NUMBER))
+INTERVAL_SIZE=\$((CHROM_SIZE / $CHUNK_SIZE))
 
-for i in $(seq 1 $CHUNK_SIZE_NUMBER); do
-    echo "  - Creating chunk $i..."
-    START=$(( (i - 1) * INTERVAL_SIZE + 1 ))
-    END=$(( i * INTERVAL_SIZE ))
-    if [[ $i -eq $CHUNK_SIZE_NUMBER ]]; then
-        END=$CHROM_SIZE  # Ensure the last region ends at the chromosome's end
-    fi
-    echo -e "X\t$START\t$END"
+for i in \$(seq 1 $CHUNK_SIZE); do
+  START=\$(( (i - 1) * INTERVAL_SIZE + 1 ))
+  END=\$(( i * INTERVAL_SIZE ))
+  if [[ \$i -eq $CHUNK_SIZE ]]; then
+    END=\$CHROM_SIZE  # Ensure last chunk ends at chromosome end
+  fi
+  echo -e "X\t\$START\t\$END"
 done > $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed
 
 mamba deactivate
