@@ -235,6 +235,7 @@ CHUNK_SIZE_NUMBER=$CHUNK_SIZE        # Number of chunks to split into
 
 INTERVAL_SIZE=$((CHROM_SIZE / $CHUNK_SIZE))
 
+# Create the BED file with the chunks
 for i in $(seq 1 $CHUNK_SIZE); do
     START=$(( (i - 1) * INTERVAL_SIZE + 1 ))
     END=$(( i * INTERVAL_SIZE ))
@@ -244,9 +245,12 @@ for i in $(seq 1 $CHUNK_SIZE); do
     echo -e "X\t$START\t$END"
 done > $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed
 
-echo "> Check the BED file."
-head $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed
-cat $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed | wc -l
+if [[ $DEBUG -eq 1 ]]; then
+    echo "DEBUG: BED file created."
+    echo "DEBUG: > Check the BED file."
+    head $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed
+    echo "DEBUG: > Count the number of lines in the BED file: $(cat $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed | wc -l)."
+fi
 
 echo "Chunking done. Let's process the chunks. This may take a while. Grab a coffee."
 
