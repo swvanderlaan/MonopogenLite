@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.1.5 2024-09-30: Fixed an issue where the concatenated VCF was not sorted prior to indexing.
 # * v1.1.4 2024-09-30: Fixed an issue where the chrX was not written correctlt to the bed file.
 # * v1.1.3 2024-09-30: Fixed an issue where the script was not properly creating the chunks and intermediate variables.
 # * v1.1.2 2024-09-30: Added --debug mode. 
@@ -15,7 +16,7 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.1.4'
+VERSION='1.1.5'
 VERSION_DATE='2024-09-30'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -147,6 +148,7 @@ fi
 # Extract the base name of the input file and its directory
 BASE_NAME_INPUT_FILE=$(basename "$INPUT_FILE" .vcf.gz)
 BASE_NAME_INPUT_DIR=$(dirname "$INPUT_FILE")
+BASE_NAME_OUTPUT_FILE=$(basename "$OUTPUT_FILE" .vcf.gz)
 
 # Ensure the input-file directory exists
 if [ ! -d "$BASE_NAME_INPUT_DIR" ]; then
@@ -421,7 +423,10 @@ echo ""
 echo "Concatenating processed VCF files."
 
 echo "> Concatenate the processed VCF files..."
-bcftools concat -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/chrX.part*_processed.vcf.gz
+bcftools concat -Oz -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz $BASE_NAME_INPUT_DIR/chrX.part*_processed.vcf.gz
+
+echo "> Sorting the concatenated VCF file..."
+bcftools sort -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz
 
 echo "> Index the concatenated VCF file..."
 tabix -fp vcf $OUTPUT_FILE
