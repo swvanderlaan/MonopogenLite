@@ -307,7 +307,7 @@ if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracting region from BED file: \$BED_FILE"
 fi
 
-RAW_REGION=$(sed -n "${CHUNK_NUMBER}" "${BED_FILE}")
+RAW_REGION=$(sed -n \${CHUNK_NUMBER} \${BED_FILE})
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: $RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
 fi
