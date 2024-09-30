@@ -429,17 +429,19 @@ echo "  - Construct the ordered list of files."
 VCF_LIST=""
 for i in $(seq 1 $CHUNK_SIZE); do
     FILE="$BASE_NAME_INPUT_DIR/chrX.part${i}_processed.vcf.gz"
-    if [[ -f "\$FILE" ]]; then
-        VCF_LIST="\$VCF_LIST \$FILE"
+    if [[ -f "$FILE" ]]; then
+        echo "  - Adding file \$FILE to the list..."
+        VCF_LIST="$VCF_LIST $FILE"
     else
-        echo "WARNING: File \$FILE does not exist, skipping..."
+        echo "ERROR: File \$FILE does not exist..."
+        exit 1
     fi
 done
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
-    echo "DEBUG: Listed all the processed VCF files:\n \$VCF_LIST"
+    echo "DEBUG: Listed all the processed VCF files:\n $VCF_LIST"
 fi
 
-bcftools concat -Oz -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz \$VCF_LIST
+bcftools concat -Oz -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz $VCF_LIST
 if [ $? -ne 0 ]; then
     echo "ERROR: Concatenation failed."
     exit 1
