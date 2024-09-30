@@ -251,9 +251,9 @@ if [[ -n "$REVERSE_FILE" ]]; then
     echo "  Reverse file..............: $REVERSE_FILE"
 fi
 echo ""
-echo "  SLURM CPUs................: $SBATCH_CPUS"
-echo "  SLURM memory..............: $SBATCH_MEM"
-echo "  SLURM time................: $SBATCH_TIME"
+echo "  SLURM CPUs................: 1"
+echo "  SLURM memory..............: 8G"
+echo "  SLURM time................: 01:00:00"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
 echo ""
