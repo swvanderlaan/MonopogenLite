@@ -38,6 +38,9 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 Reference: http://opensource.org.
 '''
 
+echo "Starting $VERSION_NAME"
+echo ""
+
 # Default values
 SBATCH_CPUS=4
 SBATCH_MEM="16G"
@@ -126,6 +129,7 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+
 # Check if input and output are provided
 if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" ]]; then
     echo "Error: Both --input and --output arguments are required."
@@ -199,8 +203,6 @@ SBATCH_SCRIPT_CHUNKHAPLOIDMALESX="$MPG/submit_chunkhaploidmalesX.sbatch"
 SBATCH_SCRIPT_MAKEDIPLOIDMALESX="$MPG/submit_makediploidmalesX.sbatch"
 SBATCH_SCRIPT_CONCATINDEX="$MPG/submit_concatindexdiploidmalesX.sbatch"
 
-echo "Starting $VERSION_NAME"
-echo ""
 echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
