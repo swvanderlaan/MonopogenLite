@@ -149,14 +149,14 @@ BASE_NAME_INPUT_DIR=$(dirname "$INPUT_FILE")
 # Ensure the input-file directory exists
 if [ ! -d "$BASE_NAME_INPUT_DIR" ]; then
     if [[ "$DEBUG" -eq 1 ]]; then
-        echo "Creating input file directory: $BASE_NAME_INPUT_DIR"
+        echo "DEBUG: Creating input file directory: $BASE_NAME_INPUT_DIR"
     fi
     mkdir -vp "$BASE_NAME_INPUT_DIR"
 fi
 # Ensure the output-file directory exists
 if [ ! -d "$(dirname $OUTPUT_FILE)" ]; then
     if [[ "$DEBUG" -eq 1 ]]; then
-        echo "Creating output file directory: $(dirname $OUTPUT_FILE)"
+        echo "DEBUG: Creating output file directory: $(dirname $OUTPUT_FILE)"
     fi
     mkdir -vp "$(dirname $OUTPUT_FILE)"
 fi
@@ -164,12 +164,12 @@ fi
 # Prepare the chunk size -- set to 100 if not provided or smaller than 2
 if [[ -n "$CHUNK_SIZE" && "$CHUNK_SIZE" -ge 2 ]]; then
     if [[ "$DEBUG" -eq 1 ]]; then
-        echo "Chunk size is set to $CHUNK_SIZE."
+        echo "DEBUG: Chunk size is set to $CHUNK_SIZE."
     fi
     CHUNK_SIZE=$CHUNK_SIZE
 else
     if [[ "$DEBUG" -eq 1 ]]; then
-        echo "Chunk size is set to default ($CHUNK_SIZE_DEFAULT)."
+        echo "DEBUG: Chunk size is set to default ($CHUNK_SIZE_DEFAULT)."
     fi
     CHUNK_SIZE=$CHUNK_SIZE_DEFAULT
 fi
@@ -177,14 +177,14 @@ fi
 # Prepare the changes and reverse options for the Python script
 if [[ -n "$CHANGES_FILE" ]]; then
     if [[ "$DEBUG" -eq 1 ]]; then
-        echo "Changes file is set to $CHANGES_FILE."
+        echo "DEBUG: Changes file is set to $CHANGES_FILE."
     fi
     CHANGES_FLAG="--changes $CHANGES_FILE"
 fi
 
 if [[ -n "$REVERSE_FILE" ]]; then
     if [[ "$DEBUG" -eq 1 ]]; then
-        echo "Reverse file is set to $REVERSE_FILE."
+        echo "DEBUG: Reverse file is set to $REVERSE_FILE."
     fi
     REVERSE_FLAG="--reverse $REVERSE_FILE"
 fi
@@ -193,7 +193,7 @@ fi
 VERBOSE_FLAG=""
 if [[ "$VERBOSE" -eq 1 ]]; then
     if [[ "$DEBUG" -eq 1 ]]; then
-        echo "Verbose mode is enabled."
+        echo "DEBUG: Verbose mode is enabled."
     fi
     VERBOSE_FLAG="--verbose"
 fi
