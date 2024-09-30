@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.1.3 2024-09-30: Fixed an issue where the script was not properly creating the chunks and intermediate variables.
 # * v1.1.2 2024-09-30: Added --debug mode. 
 # * v1.1.1 2024-09-30: Fixed an issue where the chunking and processing jobs were not properly linked. Added a --dry-run argument to test the script without submitting jobs.
 # * v1.1.0 2024-09-27: Added a --chunk-size argument to specify the number of chunks to process in one go thus speeding up the process.
@@ -13,7 +14,7 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.1.2'
+VERSION='1.1.3'
 VERSION_DATE='2024-09-30'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -350,68 +351,69 @@ EOF
 # Make the script executable
 chmod +x $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 
-# # Create the SLURM batch job script
-# cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
-# #!/bin/bash
-# #SBATCH --job-name=concatdiploidmalesX
-# #SBATCH --cpus-per-task=$SBATCH_CPUS
-# #SBATCH --mem=$SBATCH_MEM
-# #SBATCH --time=$SBATCH_TIME
-# #SBATCH --mail-type=$SBATCH_MAILTYPE
-# #SBATCH --mail-user=$SBATCH_MAILUSER
-# #SBATCH --output=concatdiploidmalesX_%j.out
-# #SBATCH --error=concatdiploidmalesX_%j.err
+# Create the SLURM batch job script
+cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
+#!/bin/bash
+#SBATCH --job-name=concatdiploidmalesX
+#SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --mem=$SBATCH_MEM
+#SBATCH --time=$SBATCH_TIME
+#SBATCH --mail-type=$SBATCH_MAILTYPE
+#SBATCH --mail-user=$SBATCH_MAILUSER
+#SBATCH --output=concatdiploidmalesX_%j.out
+#SBATCH --error=concatdiploidmalesX_%j.err
 
-# source ~/.bashrc
-# mamba activate monopogen
+source ~/.bashrc
+mamba activate monopogen
 
-# echo "$VERSION_NAME"
-# echo "version $VERSION ($VERSION_DATE)"
-# echo ""
-# echo "These are the settings:"
-# echo "  Input file................: $INPUT_FILE"
-# echo "  Output file...............: $OUTPUT_FILE"
-# echo "  Chunk size................: $CHUNK_SIZE"
-# if [[ -n "$CHANGES_FILE" ]]; then
-#     echo "  Changes file..............: $CHANGES_FILE"
-# fi
-# if [[ -n "$REVERSE_FILE" ]]; then
-#     echo "  Reverse file..............: $REVERSE_FILE"
-# fi
-# echo ""
-# echo "  SLURM CPUs................: $SBATCH_CPUS"
-# echo "  SLURM memory..............: $SBATCH_MEM"
-# echo "  SLURM time................: $SBATCH_TIME"
-# echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
-# echo "  SLURM mail user...........: $SBATCH_MAILUSER"
-# echo ""
-# echo "  Dry run mode..............: $DRY_RUN"
-# echo "  Debug mode................: $DEBUG"
-# echo "  Verbosity.................: $VERBOSE"
-# echo "  Version...................: $VERSION ($VERSION_DATE)"
-# echo ""
-# echo "Concatenating processed VCF files."
+echo "$VERSION_NAME"
+echo "version $VERSION ($VERSION_DATE)"
+echo ""
+echo "These are the settings:"
+echo "  Input file................: $INPUT_FILE"
+echo "  Output file...............: $OUTPUT_FILE"
+echo "  Chunk size................: $CHUNK_SIZE"
+if [[ -n "$CHANGES_FILE" ]]; then
+    echo "  Changes file..............: $CHANGES_FILE"
+fi
+if [[ -n "$REVERSE_FILE" ]]; then
+    echo "  Reverse file..............: $REVERSE_FILE"
+fi
+echo ""
+echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM memory..............: $SBATCH_MEM"
+echo "  SLURM time................: $SBATCH_TIME"
+echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
+echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo ""
+echo "  Dry run mode..............: $DRY_RUN"
+echo "  Debug mode................: $DEBUG"
+echo "  Verbosity.................: $VERBOSE"
+echo "  Version...................: $VERSION ($VERSION_DATE)"
+echo ""
+echo "Concatenating processed VCF files."
 
-# echo "> Concatenate the processed VCF files..."
-# bcftools concat -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/chrX.part*_processed.vcf.gz
+echo "> Concatenate the processed VCF files..."
+bcftools concat -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/chrX.part*_processed.vcf.gz
 
-# echo "> Index the concatenated VCF file..."
-# bcftools index $OUTPUT_FILE
+echo "> Index the concatenated VCF file..."
+bcftools index $OUTPUT_FILE
 
-# if [ \$? -eq 0 ]; then
-#   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
-# else
-#   echo "$VERSION_NAME encountered an error."
-# fi
+if [ \$? -eq 0 ]; then
+  echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
+else
+  echo "$VERSION_NAME encountered an error."
+fi
 
-# mamba deactivate
+mamba deactivate
 
-# EOF
+EOF
 
-# # Make the script executable
-# chmod +x $SBATCH_SCRIPT_CONCATINDEX
+# Make the script executable
+chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
-# Submit the array job, dependent on the BED creation job
+echo ""
+echo "> Submit the array job, dependent on the BED creation job."
 if [[ $DRY_RUN -eq 1 ]]; then
     echo "DRY-RUN: sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
 else
@@ -419,14 +421,13 @@ else
     echo ">> Array job submitted with ID: $ARRAY_JOB_ID."
 fi
 
-
-# # Submit the concatenation job, dependent on the array job completion
-# if [[ $DRY_RUN -eq 1 ]]; then
-#     echo "DRY-RUN: sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX"
-# else
-#     CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
-#     echo ">> Concatenation job submitted with ID: $CONCAT_JOB_ID."
-# fi
+echo "> Submit the concatenation job, dependent on the array job completion."
+if [[ $DRY_RUN -eq 1 ]]; then
+    echo "DRY-RUN: sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX"
+else
+    CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
+    echo ">> Concatenation job submitted with ID: $CONCAT_JOB_ID."
+fi
 
 echo ""
 print_version
