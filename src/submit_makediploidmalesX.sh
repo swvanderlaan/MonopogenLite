@@ -317,9 +317,13 @@ if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
 fi
 
 # Prepare the region for bcftools
+echo ">> fixing \$RAW_REGION"
 RAW_REGION=\$(echo "\$RAW_REGION" | sed 's/^ *//;s/ *\$//')  # Clean up leading/trailing whitespace
+echo ">> showing \$RAW_REGION"
 echo "\$RAW_REGION"
+echo ">> fixing \$RAW_REGION"
 REGION=\$(echo "\$RAW_REGION" | awk '{print \$1 ":" \$2 "-" \$3}')
+echo ">> showing \$REGION"
 echo "\$REGION"
 # Check if REGION was successfully extracted
 if [[ -z "\$REGION" ]]; then
