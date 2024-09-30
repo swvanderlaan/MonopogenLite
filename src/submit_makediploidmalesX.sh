@@ -322,25 +322,25 @@ echo "  - Extract the region from the BED file..."
 RAW_REGION=\$(sed -n "\$CHUNK_NUMBER" "\$BED_FILE")
 RAW_REGION=\$(echo "\$RAW_REGION" | sed 's/^ *//;s/ *\$//')  # Clean up leading/trailing whitespace
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
-    echo "DEBUG: Extracted raw region: \$RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
+    echo "DEBUG: Extracted raw region: '\$RAW_REGION' (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
 fi
 
 echo "  - Prepare the region for bcftools..."
 REGION=\$(echo "\$RAW_REGION" | awk '{print \$1 ":" \$2 "-" \$3}')
-echo "  - Check if REGION was successfully extracted..."
+echo "  - Check if the region (\$REGION) was successfully extracted..."
 if [[ -z "\$REGION" ]]; then
   echo "DEBUG: RAW_REGION was: '\$RAW_REGION'"
   echo "Error: No region found for SLURM_ARRAY_TASK_ID \$SLURM_ARRAY_TASK_ID."
   exit 1
 fi
 
-echo "> Processing region \$REGION..."
+echo "> Processing region '\$REGION'..."
 
 echo "  - Process the specific region (chunk) using bcftools view..."
 bcftools view -r \$REGION $INPUT_FILE -Oz -o $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
 
 echo "  - Index the VCF file..."
-tabix -p vcf $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
+tabix -fp vcf $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
 
 echo "  - Fix haploid genotypes in males..."
 python3 $MPG/src/makediploidmalesX.py --input-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz --output-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}_processed.vcf.gz ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
@@ -410,7 +410,7 @@ echo "> Concatenate the processed VCF files..."
 bcftools concat -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/chrX.part*_processed.vcf.gz
 
 echo "> Index the concatenated VCF file..."
-bcftools index $OUTPUT_FILE
+tabix -fp vcf $OUTPUT_FILE
 
 if [ \$? -eq 0 ]; then
     echo ""
