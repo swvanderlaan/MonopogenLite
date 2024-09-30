@@ -322,7 +322,12 @@ echo "  - Extract the region from the BED file..."
 RAW_REGION=\$(sed -n "\$CHUNK_NUMBER" "\$BED_FILE")
 RAW_REGION=\$(echo "\$RAW_REGION" | sed 's/^ *//;s/ *\$//')  # Clean up leading/trailing whitespace
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
-    echo "DEBUG: Extracted raw region: '\$RAW_REGION' (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
+    echo "DEBUG: Extracted raw region: '\$RAW_REGION' (chunk #: \$CHUNK_NUMBER of $CHUNK_SIZE for job \$CHUNK_NUMBER_RAW)"
+fi
+echo "  - Check if a valid region was extracted -- should be '\$RAW_REGION'..."
+if [[ -z "$RAW_REGION" ]]; then
+  echo "ERROR: No valid region extracted for chunk #${SLURM_ARRAY_TASK_ID} from $BED_FILE."
+  exit 1
 fi
 
 echo "  - Prepare the region for bcftools..."
@@ -336,14 +341,20 @@ fi
 
 echo "> Processing region '\$REGION'..."
 
-echo "  - Process the specific region (chunk) using bcftools view..."
-bcftools view -r \$REGION $INPUT_FILE -Oz -o $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
+echo "  - Process the specific region (chunk# \$CHUNK_NUMBER_RAW) using bcftools view..."
+bcftools view -r \$REGION $INPUT_FILE -Oz -o $BASE_NAME_INPUT_DIR/chrX.part${CHUNK_NUMBER_RAW}.vcf.gz
 
 echo "  - Index the VCF file..."
-tabix -fp vcf $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
+tabix -fp vcf $BASE_NAME_INPUT_DIR/chrX.part${CHUNK_NUMBER_RAW}.vcf.gz
+
+# Debugs
+if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
+    echo "DEBUG: Check if the VCF file was successfully processed..."
+    bcftools view $BASE_NAME_INPUT_DIR/chrX.part${CHUNK_NUMBER_RAW}.vcf.gz | head
+fi
 
 echo "  - Fix haploid genotypes in males..."
-python3 $MPG/src/makediploidmalesX.py --input-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz --output-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}_processed.vcf.gz ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
+python3 $MPG/src/makediploidmalesX.py --input-file $BASE_NAME_INPUT_DIR/chrX.part${CHUNK_NUMBER_RAW}.vcf.gz --output-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}_processed.vcf.gz ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
 
 if [ \$? -eq 0 ]; then
     echo ""
@@ -448,7 +459,12 @@ else
 fi
 
 echo ""
-echo "All jobs submitted, this will take a while. Let's have a beer, buddy!"
+if [[ $DRY_RUN -eq 1 ]]; then
+    echo "DRY-RUN completed. No jobs were submitted."
+else
+    echo "All jobs submitted, this will take a while. Let's have a beer, buddy!"
+fi
+
 echo ""
 print_version
 ### END OF SCRIPT ###
