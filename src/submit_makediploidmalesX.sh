@@ -316,7 +316,7 @@ if [[ -n "$REVERSE_FILE" ]]; then
 fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
-echo "  SLURM Array ID.............: \$SLURM_ARRAY_TASK_ID (of $CHUNK_SIZE)"
+echo "  SLURM Array ID............: $SLURM_ARRAY_TASK_ID (of $CHUNK_SIZE)"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
@@ -328,30 +328,6 @@ echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 echo "Making converting haploid genotypes to diploid genotypes."
-
-if [[ "$DEBUG" -eq 1 ]]; then
-    # Check if BED file exists
-    if [[ ! -f "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed" ]]; then
-        echo "Error: BED file $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed not found."
-        exit 1
-    fi
-
-    # Debugging SLURM_ARRAY_TASK_ID
-    echo "SLURM_ARRAY_TASK_ID: $SLURM_ARRAY_TASK_ID"
-
-    # Fetch and validate region
-    REGION_LINE=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed")
-    echo "Region line: $REGION_LINE"
-    REGION=$(echo "$REGION_LINE" | awk '{print $1 ":" $2 "-" $3}')
-
-    # Validate REGION value
-    if [[ -z "$REGION" ]]; then
-        echo "Error: No region found for SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID"
-        exit 1
-    fi
-
-    echo "Processing region: $REGION"
-fi
 
 echo "> Extract the region for this SLURM task from the BED file."
 REGION=$(sed -n "${SLURM_ARRAY_TASK_ID}p" $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed | awk '{print $1 ":" $2 "-" $3}')
