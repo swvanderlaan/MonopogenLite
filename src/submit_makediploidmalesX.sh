@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.1.2 2024-09-30: Added --debug mode. 
 # * v1.1.1 2024-09-30: Fixed an issue where the chunking and processing jobs were not properly linked. Added a --dry-run argument to test the script without submitting jobs.
 # * v1.1.0 2024-09-27: Added a --chunk-size argument to specify the number of chunks to process in one go thus speeding up the process.
 # * v1.0.6 2024-09-27: Fixed an issue where the script was always using --verbose, even if it was not passed.
@@ -12,7 +13,7 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.1.1'
+VERSION='1.1.2'
 VERSION_DATE='2024-09-30'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -44,6 +45,7 @@ SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 VERBOSE=0  # Set to 0 by default (not verbose)
+DEBUG=0  # Set to 0 by default (not debug)
 CHUNK_SIZE_DEFAULT=100 # Default number of chunks to process in one go
 CHANGES_FILE="" # Default changes file, none
 REVERSE_FILE="" # Default reverse file, none
@@ -74,6 +76,7 @@ print_help() {
     echo "  --user          The email address to send the mail to."
     echo "  --dry-run       Perform a dry run without submitting the job."
     echo "  --verbose       Enable verbose output."
+    echo "  --debug         Enable debug mode."
     echo "  --help          Show this help message and exit."
     echo "  --version       Display version information and exit."
     echo ""
@@ -115,6 +118,7 @@ while [[ "$#" -gt 0 ]]; do
         --user) SBATCH_MAILUSER="$2"; shift ;;
         --dry-run) DRY_RUN=1 ;;  # Set dry run to 1 if --dry-run is passed
         --verbose) VERBOSE=1 ;;  # Set verbose to 1 if --verbose is passed
+        --debug) DEBUG=1 ;;  # Set debug to 1 if --debug is passed
         --version) print_version ;;
         --help) print_help ;;
         *) echo "Unknown parameter passed: $1"; print_help ;;
@@ -140,39 +144,53 @@ BASE_NAME_INPUT_DIR=$(dirname "$INPUT_FILE")
 
 # Ensure the input-file directory exists
 if [ ! -d "$BASE_NAME_INPUT_DIR" ]; then
-    echo "Creating input file directory: $BASE_NAME_INPUT_DIR"
+    if [[ "$DEBUG" -eq 1 ]]; then
+        echo "Creating input file directory: $BASE_NAME_INPUT_DIR"
+    fi
     mkdir -vp "$BASE_NAME_INPUT_DIR"
 fi
 # Ensure the output-file directory exists
 if [ ! -d "$(dirname $OUTPUT_FILE)" ]; then
-    echo "Creating output file directory: $(dirname $OUTPUT_FILE)"
+    if [[ "$DEBUG" -eq 1 ]]; then
+        echo "Creating output file directory: $(dirname $OUTPUT_FILE)"
+    fi
     mkdir -vp "$(dirname $OUTPUT_FILE)"
 fi
 
 # Prepare the chunk size -- set to 100 if not provided or smaller than 2
 if [[ -n "$CHUNK_SIZE" && "$CHUNK_SIZE" -ge 2 ]]; then
-    echo "Chunk size is set to $CHUNK_SIZE."
+    if [[ "$DEBUG" -eq 1 ]]; then
+        echo "Chunk size is set to $CHUNK_SIZE."
+    fi
     CHUNK_SIZE=$CHUNK_SIZE
 else
-    echo "Chunk size is set to default ($CHUNK_SIZE_DEFAULT)."
+    if [[ "$DEBUG" -eq 1 ]]; then
+        echo "Chunk size is set to default ($CHUNK_SIZE_DEFAULT)."
+    fi
     CHUNK_SIZE=$CHUNK_SIZE_DEFAULT
 fi
 
 # Prepare the changes and reverse options for the Python script
 if [[ -n "$CHANGES_FILE" ]]; then
-    echo "Changes file is set to $CHANGES_FILE."
+    if [[ "$DEBUG" -eq 1 ]]; then
+        echo "Changes file is set to $CHANGES_FILE."
+    fi
     CHANGES_FLAG="--changes $CHANGES_FILE"
 fi
 
 if [[ -n "$REVERSE_FILE" ]]; then
-    echo "Reverse file is set to $REVERSE_FILE."
+    if [[ "$DEBUG" -eq 1 ]]; then
+        echo "Reverse file is set to $REVERSE_FILE."
+    fi
     REVERSE_FLAG="--reverse $REVERSE_FILE"
 fi
 
 # Only add --verbose if VERBOSE is 1
 VERBOSE_FLAG=""
 if [[ "$VERBOSE" -eq 1 ]]; then
-    echo "Verbose mode is enabled."
+    if [[ "$DEBUG" -eq 1 ]]; then
+        echo "Verbose mode is enabled."
+    fi
     VERBOSE_FLAG="--verbose"
 fi
 
