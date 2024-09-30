@@ -252,9 +252,12 @@ if [[ $DEBUG -eq 1 ]]; then
     echo "DEBUG: > Count the number of lines in the BED file: $(cat $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed | wc -l)."
 fi
 
-echo "Chunking done. Let's process the chunks. This may take a while. Grab a coffee."
+echo "> Chunking done."
+echo ""
 
 # Create the SLURM batch job script
+echo "> Create the SLURM batch job script for chunking haploid genotypes in given VCF file."
+
 cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #!/bin/bash
 #SBATCH --job-name=makediploidmalesX
@@ -353,9 +356,11 @@ mamba deactivate
 EOF
 
 # Make the script executable
+echo "> Make the script executable."
 chmod +x $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 
 # Create the SLURM batch job script
+echo "> Create the SLURM batch job script for concatenating the processed VCF files."
 cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
 #SBATCH --job-name=concatdiploidmalesX
@@ -414,6 +419,7 @@ mamba deactivate
 EOF
 
 # Make the script executable
+echo "> Make the script executable."
 chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
 echo ""
@@ -433,6 +439,8 @@ else
     echo ">> Concatenation job submitted with ID: $CONCAT_JOB_ID."
 fi
 
+echo ""
+echo "All done! All jobs submitted, this will take a while. Let's grab a beer, buddy!"
 echo ""
 print_version
 ### END OF SCRIPT ###
