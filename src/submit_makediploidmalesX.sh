@@ -265,6 +265,8 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 source ~/.bashrc
 mamba activate monopogen
 
+DEBUG_FLAG=$DEBUG
+
 echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
 echo ""
@@ -295,7 +297,7 @@ echo "Making converting haploid genotypes to diploid genotypes."
 
 echo "> Extract the region for this SLURM task from the BED file."
 RAW_REGION=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed")
-if [[ "$DEBUG" -eq 1 ]]; then
+if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: $RAW_REGION"
 fi
 REGION=$(echo "$RAW_REGION" | awk '{print $1 ":" $2 "-" $3}')
