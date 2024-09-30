@@ -316,7 +316,7 @@ if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: \$RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
 fi
 # Prepare the region for bcftools
-REGION=\$(echo "\$RAW_REGION" | awk '{print $1 ":" $2 "-" $3}')
+REGION=\$(echo \$RAW_REGION | awk '{print $1 ":" $2 "-" $3}')
 
 if [[ -z \$REGION ]]; then
   echo "Error: No region found for SLURM_ARRAY_TASK_ID \$SLURM_ARRAY_TASK_ID."
