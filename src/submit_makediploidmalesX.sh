@@ -295,18 +295,17 @@ echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 echo "Making converting haploid genotypes to diploid genotypes."
 
-echo "> Extract the region for this SLURM task from the BED file."
-RAW_REGION=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed")
+echo "> Extract the region for this SLURM task (# \$SLURM_ARRAY_TASK_ID) from the BED file."
+RAW_REGION=$(sed -n "\$SLURM_ARRAY_TASK_IDp" "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed")
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: $RAW_REGION"
 fi
 REGION=$(echo "$RAW_REGION" | awk '{print $1 ":" $2 "-" $3}')
 
 if [[ -z "$REGION" ]]; then
-  echo "Error: No region found for SLURM_ARRAY_TASK_ID ${SLURM_ARRAY_TASK_ID}."
+  echo "Error: No region found for SLURM_ARRAY_TASK_ID \$SLURM_ARRAY_TASK_ID."
   exit 1
 fi
-
 
 echo "> Processing region $REGION..."
 
