@@ -325,7 +325,7 @@ if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: '\$RAW_REGION' (chunk #: \$CHUNK_NUMBER of $CHUNK_SIZE for job \$CHUNK_NUMBER_RAW)"
 fi
 echo "  - Check if a valid region was extracted -- should be '\$RAW_REGION'..."
-if [[ -z "$RAW_REGION" ]]; then
+if [[ -z "\$RAW_REGION" ]]; then
   echo "ERROR: No valid region extracted for chunk # \$SLURM_ARRAY_TASK_ID (or \$CHUNK_NUMBER_RAW) from \$BED_FILE."
   exit 1
 fi
