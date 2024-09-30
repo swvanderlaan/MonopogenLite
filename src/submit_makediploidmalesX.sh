@@ -225,68 +225,29 @@ echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 
-cat << EOF >> $SBATCH_SCRIPT_CHUNKHAPLOIDMALESX
-#!/bin/bash
-#SBATCH --job-name=chunkhaploidX
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=8G
-#SBATCH --time=01:00:00
-#SBATCH --mail-type=$SBATCH_MAILTYPE
-#SBATCH --mail-user=$SBATCH_MAILUSER
-#SBATCH --output=chunkhaploidX_%j.out
-#SBATCH --error=chunkhaploidX_%j.err
-
-source ~/.bashrc
-mamba activate monopogen
-
-echo "$VERSION_NAME"
-echo "version $VERSION ($VERSION_DATE)"
-echo ""
-echo "These are the settings:"
-echo "  Input file................: $INPUT_FILE"
-echo "  Output file...............: $OUTPUT_FILE"
-echo "  Chunk size................: $CHUNK_SIZE"
-if [[ -n "$CHANGES_FILE" ]]; then
-    echo "  Changes file..............: $CHANGES_FILE"
-fi
-if [[ -n "$REVERSE_FILE" ]]; then
-    echo "  Reverse file..............: $REVERSE_FILE"
-fi
-echo ""
-echo "  SLURM CPUs................: 1"
-echo "  SLURM memory..............: 8G"
-echo "  SLURM time................: 01:00:00"
-echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
-echo "  SLURM mail user...........: $SBATCH_MAILUSER"
-echo ""
-echo "  Dry run mode..............: $DRY_RUN"
-echo "  Debug mode................: $DEBUG"
-echo "  Verbosity.................: $VERBOSE"
-echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 echo "Creating the necessary number of chunks ($CHUNK_SIZE) to split."
 
-echo "> Set chromosome X size."
+echo "> Set chromosome X size (default: 156040895 in GRCh38)."
 CHROM_SIZE=156040895  # Length of chromosome X in GRCh38
 CHUNK_SIZE_NUMBER=$CHUNK_SIZE        # Number of chunks to split into
 
 INTERVAL_SIZE=\$((CHROM_SIZE / $CHUNK_SIZE))
 
 for i in \$(seq 1 $CHUNK_SIZE); do
-  START=\$(( (i - 1) * INTERVAL_SIZE + 1 ))
-  END=\$(( i * INTERVAL_SIZE ))
-  if [[ \$i -eq $CHUNK_SIZE ]]; then
-    END=\$CHROM_SIZE  # Ensure last chunk ends at chromosome end
-  fi
-  echo -e "X\t\$START\t\$END"
+    START=\$(( (i - 1) * INTERVAL_SIZE + 1 ))
+    END=\$(( i * INTERVAL_SIZE ))
+    if [[ \$i -eq $CHUNK_SIZE ]]; then
+        END=\$CHROM_SIZE  # Ensure last chunk ends at chromosome end
+    fi
+    echo -e "X\t\$START\t\$END"
 done > $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed
 
-mamba deactivate
+echo "> Check the BED file."
+head $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed
+cat $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed | wc -l
 
-EOF
-
-# Make the script executable
-chmod +x $SBATCH_SCRIPT_CHUNKHAPLOIDMALESX
+echo "Chunking done. Let's process the chunks. This may take a while. Grab a coffee."
 
 # Create the SLURM batch job script
 cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
@@ -421,19 +382,11 @@ EOF
 # Make the script executable
 chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
-# Submit the chunk job first (BED creation)
-if [[ $DRY_RUN -eq 1 ]]; then
-    echo "DRY-RUN: sbatch $SBATCH_SCRIPT_CHUNKHAPLOIDMALESX"
-else
-    CHUNK_JOB_ID=$(sbatch $SBATCH_SCRIPT_CHUNKHAPLOIDMALESX | awk '{print $4}')
-    echo ">> Chunk creation job submitted with ID: $CHUNK_JOB_ID."
-fi
-
 # Submit the array job, dependent on the BED creation job
 if [[ $DRY_RUN -eq 1 ]]; then
-    echo "DRY-RUN: sbatch --dependency=afterok:$CHUNK_JOB_ID $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
+    echo "DRY-RUN: sbatch $CHUNK_JOB_ID $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
 else
-    ARRAY_JOB_ID=$(sbatch --dependency=afterok:$CHUNK_JOB_ID $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
+    ARRAY_JOB_ID=$(sbatch $CHUNK_JOB_ID $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
     echo ">> Array job submitted with ID: $ARRAY_JOB_ID."
 fi
 
