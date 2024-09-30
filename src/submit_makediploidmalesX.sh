@@ -352,6 +352,8 @@ tabix -fp vcf $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Check if the VCF file was successfully processed..."
     bcftools view $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz | head
+    # bcftools stats $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz | grep -E 'number of records:|number of samples:'
+    bcftools stats $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz
 fi
 
 echo "  - Fix haploid genotypes in males..."
