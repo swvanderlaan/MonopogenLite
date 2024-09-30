@@ -444,10 +444,10 @@ done
 
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Listed all the processed VCF files:"
-    printf "%s\n" "$VCF_LIST"
+    printf "%s\n" "\$VCF_LIST"
 fi
 
-bcftools concat -Oz -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz $VCF_LIST
+bcftools concat -Oz -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz \$VCF_LIST
 if [ $? -ne 0 ]; then
     echo "ERROR: Concatenation failed."
     exit 1
