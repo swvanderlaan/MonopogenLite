@@ -298,11 +298,16 @@ echo "Making converting haploid genotypes to diploid genotypes."
 echo "> Extract the region for this SLURM task (# \$SLURM_ARRAY_TASK_ID) from the BED file."
 CHUNK_NUMBER_RAW=\$SLURM_ARRAY_TASK_ID
 CHUNK_NUMBER=${CHUNK_NUMBER_RAW}p  # adding p to the number
+BED_FILE="$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed"
+
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
-    echo "DEBUG: Extracted chunk number: \$CHUNK_NUMBER from \$CHUNK_NUMBER_RAW"
+    echo "DEBUG: Extracting chunk number: \$CHUNK_NUMBER from \$CHUNK_NUMBER_RAW"
+fi
+if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
+    echo "DEBUG: Extracting region from BED file: \$BED_FILE"
 fi
 # RAW_REGION=\$(sed -n "${CHUNK_NUMBER}p" "${BASE_NAME_INPUT_DIR}/chrX_${CHUNK_SIZE}pieces.bed")
-RAW_REGION=$(sed -n ${CHUNK_NUMBER} ${BASE_NAME_INPUT_DIR}/chrX_${CHUNK_SIZE}pieces.bed)
+RAW_REGION=$(sed -n ${CHUNK_NUMBER} ${BED_FILE})
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: $RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
 fi
