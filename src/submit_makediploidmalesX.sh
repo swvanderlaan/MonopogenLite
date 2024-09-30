@@ -302,7 +302,7 @@ if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
 fi
 RAW_REGION=$(sed -n "${CHUNK_NUMBER}p" "$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed")
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
-    echo "DEBUG: Extracted raw region: $RAW_REGION"
+    echo "DEBUG: Extracted raw region: $RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
 fi
 REGION=$(echo "$RAW_REGION" | awk '{print $1 ":" $2 "-" $3}')
 
