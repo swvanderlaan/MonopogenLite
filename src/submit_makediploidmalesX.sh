@@ -428,7 +428,9 @@ echo "> Concatenate the processed VCF files..."
 echo "  - Construct the ordered list of files."
 VCF_LIST=""
 CHUNKSIZE=$CHUNK_SIZE
-for CHUNK in $(seq 1 \$CHUNKSIZE); do
+echo $CHUNK_SIZE
+echo $CHUNKSIZE
+for CHUNK in \$(seq 1 \$CHUNKSIZE); do
     echo "  - Processing chunk \$CHUNK..."
     FILE="$BASE_NAME_INPUT_DIR/chrX.part\${CHUNK}_processed.vcf.gz"
     if [[ -f "$FILE" ]]; then
