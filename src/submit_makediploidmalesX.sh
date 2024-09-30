@@ -385,6 +385,7 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
 #SBATCH --job-name=concatdiploidmalesX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --tmp=64G # Use 64GB of tmp space
 #SBATCH --mem=$SBATCH_MEM
 #SBATCH --time=$SBATCH_TIME
 #SBATCH --mail-type=$SBATCH_MAILTYPE
@@ -394,6 +395,9 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 
 source ~/.bashrc
 mamba activate monopogen
+
+# Set TMPDIR to the allocated temporary directory
+export TMPDIR=$SLURM_TMPDIR  # SLURM_TMPDIR is set by SLURM when --tmp is used
 
 echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
@@ -424,12 +428,25 @@ echo "Concatenating processed VCF files."
 
 echo "> Concatenate the processed VCF files..."
 bcftools concat -Oz -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz $BASE_NAME_INPUT_DIR/chrX.part*_processed.vcf.gz
+if [ $? -ne 0 ]; then
+    echo "ERROR: Concatenation failed."
+    exit 1
+fi
 
 echo "> Sorting the concatenated VCF file..."
 bcftools sort -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.vcf.gz
+if [ $? -ne 0 ]; then
+    echo "ERROR: Sorting failed."
+    exit 1
+fi
 
 echo "> Index the concatenated VCF file..."
 tabix -fp vcf $OUTPUT_FILE
+if [ $? -ne 0 ]; then
+    echo "ERROR: Indexing with tabix failed."
+    exit 1
+fi
+
 
 if [ \$? -eq 0 ]; then
     echo ""
