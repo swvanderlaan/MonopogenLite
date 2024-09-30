@@ -467,19 +467,20 @@ echo "> Make the script executable."
 chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
 echo ""
-echo "> Submit the array job, dependent on the BED creation job."
-if [[ $DRY_RUN -eq 1 ]]; then
-    echo "DRY-RUN: sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
-else
-    ARRAY_JOB_ID=$(sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
-    echo ">> Array job submitted with ID: $ARRAY_JOB_ID."
-fi
+# echo "> Submit the array job, dependent on the BED creation job."
+# if [[ $DRY_RUN -eq 1 ]]; then
+#     echo "DRY-RUN: sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
+# else
+#     ARRAY_JOB_ID=$(sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
+#     echo ">> Array job submitted with ID: $ARRAY_JOB_ID."
+# fi
 
 echo "> Submit the concatenation job, dependent on the array job completion."
 if [[ $DRY_RUN -eq 1 ]]; then
     echo "DRY-RUN: sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX"
 else
-    CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
+    # CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
+    CONCAT_JOB_ID=$(sbatch $ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
     echo ">> Concatenation job submitted with ID: $CONCAT_JOB_ID."
 fi
 
