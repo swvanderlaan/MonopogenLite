@@ -342,19 +342,19 @@ fi
 echo "> Processing region '\$REGION'..."
 
 echo "  - Process the specific region (chunk# \$CHUNK_NUMBER_RAW) using bcftools view..."
-bcftools view -r \$REGION $INPUT_FILE -Oz -o $BASE_NAME_INPUT_DIR/chrX.part${CHUNK_NUMBER_RAW}.vcf.gz
+bcftools view -r \$REGION $INPUT_FILE -Oz -o $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz
 
 echo "  - Index the VCF file..."
-tabix -fp vcf $BASE_NAME_INPUT_DIR/chrX.part${CHUNK_NUMBER_RAW}.vcf.gz
+tabix -fp vcf $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz
 
 # Debugs
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Check if the VCF file was successfully processed..."
-    bcftools view $BASE_NAME_INPUT_DIR/chrX.part${CHUNK_NUMBER_RAW}.vcf.gz | head
+    bcftools view $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz | head
 fi
 
 echo "  - Fix haploid genotypes in males..."
-python3 $MPG/src/makediploidmalesX.py --input-file $BASE_NAME_INPUT_DIR/chrX.part${CHUNK_NUMBER_RAW}.vcf.gz --output-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}_processed.vcf.gz ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
+python3 $MPG/src/makediploidmalesX.py --input-file $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz --output-file $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}_processed.vcf.gz ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
 
 if [ \$? -eq 0 ]; then
     echo ""
