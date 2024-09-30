@@ -180,15 +180,18 @@ echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
 echo "  Chunk size................: $CHUNK_SIZE"
-echo "  Changes file..............: $CHANGES_FILE"
-echo "  Reverse file..............: $REVERSE_FILE"
-echo "  SLURM job name............: $SBATCH_JOB_NAME"
+if [[ -n "$CHANGES_FILE" ]]; then
+    echo "  Changes file..............: $CHANGES_FILE"
+fi
+if [[ -n "$REVERSE_FILE" ]]; then
+    echo "  Reverse file..............: $REVERSE_FILE"
+fi
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
-echo "  Dry run mod...............: $DRY_RUN"
+echo "  Dry run mode..............: $DRY_RUN"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
@@ -214,8 +217,12 @@ echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
 echo "  Chunk size................: $CHUNK_SIZE"
-echo "  Changes file..............: $CHANGES_FILE"
-echo "  Reverse file..............: $REVERSE_FILE"
+if [[ -n "$CHANGES_FILE" ]]; then
+    echo "  Changes file..............: $CHANGES_FILE"
+fi
+if [[ -n "$REVERSE_FILE" ]]; then
+    echo "  Reverse file..............: $REVERSE_FILE"
+fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
@@ -233,7 +240,7 @@ echo "> Set chromosome X size."
 CHROM_SIZE=156040895  # Length of chromosome X in GRCh38
 CHUNK_SIZE_NUMBER=$CHUNK_SIZE        # Number of chunks to split into
 
-INTERVAL_SIZE=$((CHROM_SIZE / CHUNK_SIZE_NUMBER))
+INTERVAL_SIZE=$((CHROM_SIZE / $CHUNK_SIZE_NUMBER))
 
 for i in $(seq 1 $CHUNK_SIZE_NUMBER); do
     echo "  - Creating chunk $i..."
@@ -275,8 +282,12 @@ echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
 echo "  Chunk size................: $CHUNK_SIZE"
-echo "  Changes file..............: $CHANGES_FILE"
-echo "  Reverse file..............: $REVERSE_FILE"
+if [[ -n "$CHANGES_FILE" ]]; then
+    echo "  Changes file..............: $CHANGES_FILE"
+fi
+if [[ -n "$REVERSE_FILE" ]]; then
+    echo "  Reverse file..............: $REVERSE_FILE"
+fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
@@ -339,8 +350,12 @@ echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
 echo "  Chunk size................: $CHUNK_SIZE"
-echo "  Changes file..............: $CHANGES_FILE"
-echo "  Reverse file..............: $REVERSE_FILE"
+if [[ -n "$CHANGES_FILE" ]]; then
+    echo "  Changes file..............: $CHANGES_FILE"
+fi
+if [[ -n "$REVERSE_FILE" ]]; then
+    echo "  Reverse file..............: $REVERSE_FILE"
+fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
