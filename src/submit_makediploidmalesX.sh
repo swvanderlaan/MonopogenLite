@@ -317,7 +317,8 @@ if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
 fi
 
 # Prepare the region for bcftools
-REGION=\$(cat "\$RAW_REGION" | awk '{print \$1 ":" \$2 "-" \$3}')
+echo "\$RAW_REGION"
+REGION=\$(echo "\$RAW_REGION" | awk '{print \$1 ":" \$2 "-" \$3}')
 
 # Check if REGION was successfully extracted
 if [[ -z "\$REGION" ]]; then
