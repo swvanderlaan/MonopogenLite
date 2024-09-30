@@ -346,9 +346,13 @@ echo "  - Fix haploid genotypes in males..."
 python3 $MPG/src/makediploidmalesX.py --input-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz --output-file $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}_processed.vcf.gz ${CHANGES_FLAG} ${REVERSE_FLAG} ${VERBOSE_FLAG}
 
 if [ \$? -eq 0 ]; then
-  echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
+    echo ""
+    echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
+    echo ""
 else
-  echo "$VERSION_NAME encountered an error."
+    echo ""
+    echo "ERROR: $VERSION_NAME encountered an error."
+    echo ""
 fi
 
 mamba deactivate
@@ -409,9 +413,13 @@ echo "> Index the concatenated VCF file..."
 bcftools index $OUTPUT_FILE
 
 if [ \$? -eq 0 ]; then
-  echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
+    echo ""
+    echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
+    echo ""
 else
-  echo "$VERSION_NAME encountered an error."
+    echo ""
+    echo "ERROR: $VERSION_NAME encountered an error."
+    echo ""
 fi
 
 mamba deactivate
@@ -440,7 +448,7 @@ else
 fi
 
 echo ""
-echo "All done! All jobs submitted, this will take a while. Let's grab a beer, buddy!"
+echo "All jobs submitted, this will take a while. Let's have a beer, buddy!"
 echo ""
 print_version
 ### END OF SCRIPT ###
