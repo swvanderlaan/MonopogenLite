@@ -312,13 +312,12 @@ fi
 
 # Extract the region from the BED file
 RAW_REGION=\$(sed -n "\$CHUNK_NUMBER" "\$BED_FILE")
-RAW_REGION=\$(echo "\$RAW_REGION" | sed 's/^ *//;s/ *\$//')  # Clean up leading/trailing whitespace
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: \$RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
 fi
 
 # Prepare the region for bcftools
-REGION=\$(echo "\$RAW_REGION" | awk '{print \$1 ":" \$2 "-" \$3}')
+REGION=\$(cat "\$RAW_REGION" | awk '{print \$1 ":" \$2 "-" \$3}')
 
 # Check if REGION was successfully extracted
 if [[ -z "\$REGION" ]]; then
