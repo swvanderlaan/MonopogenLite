@@ -11,6 +11,7 @@ import pysam
 
 # Version information
 # Change log:
+# * v1.2.2 (2024-09-30): Fixed some logging issues.
 # * v1.2.1 (2024-09-27): Fixed an issue where the genotypes were not correctly (g/g instead of g|g) set to diploid.
 # * v1.2.0 (2024-09-27): Speed-gain by using pysam instead of manual parsing.
 # * v1.1.3 (2024-09-26): Fixed an issue where the gzipped VCF file was not recognized correctly.
@@ -19,8 +20,8 @@ import pysam
 # * v1.1.0 (2024-09-25): Fix the issue where the haploid genotypes were removed instead of made diploid. Added the option to reverse changes based on a list of variants and samples. Added a logger to log the changes and reversals.
 # * v1.0.0 (2024-09-24): Initial version.
 VERSION_NAME = 'MakeDiploidMalesX'
-VERSION = '1.2.1'
-VERSION_DATE = '2024-09-27'
+VERSION = '1.2.2'
+VERSION_DATE = '2024-09-30'
 COPYRIGHT = 'Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -79,11 +80,11 @@ def setup_logger(script_name, verbose):
 def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logger=None):
     """Modify male genotypes on chromosome X or reverse the changes based on the input lists."""
     
-    logger.info(f"Processing input VCF: {input_vcf}")
+    logger.info(f"Processing input VCF: [{input_vcf}]")
     changes = []
 
     if reverse_file:
-        logger.info(f"Reversing changes based on: {reverse_file}")
+        logger.info(f"Reversing changes based on: [{reverse_file}].")
         # Load reverse information from the reverse file
         with gzip.open(reverse_file, 'rt') as rev_file:
             reverse_changes = set(tuple(line.strip().split(',')) for line in rev_file)
@@ -91,7 +92,6 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
         reverse_changes = None
 
     # Open the VCF/BCF file using pysam
-    # with pysam.VariantFile(input_vcf, 'r') as infile, pysam.VariantFile(output_vcf, 'w', header=infile.header) as outfile:
     with pysam.VariantFile(input_vcf) as infile, pysam.VariantFile(output_vcf, 'w', header=infile.header) as outfile:
 
         for record in infile:
@@ -105,7 +105,7 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
                         original_genotype = genotype[0]
                         record.samples[sample]["GT"] = (original_genotype,) if original_genotype in [0, 1] else genotype
                         record.samples[sample].phased = True  # Ensure phased flag is set
-                        logger.debug(f"Reversed genotype at {variant_id} for sample {sample}")
+                        logger.debug(f"Reversed genotype at {variant_id} for sample {sample}.")
                 else:
                     if genotype == (0,) or genotype == (1,):
                         new_genotype = (genotype[0], genotype[0]) # This produces a tuple with the same value twice like 0/0 or 1/1
@@ -113,35 +113,35 @@ def modify_vcf(input_vcf, output_vcf, changes_file=None, reverse_file=None, logg
                         record.samples[sample]["GT"] = new_genotype
                         record.samples[sample].phased = True  # Enforce phasing (0|0 or 1|1)
                         changes.append((variant_id, i))
-                        logger.debug(f"Modified {genotype} to {new_genotype} at {variant_id} for sample {sample}")
+                        logger.debug(f"Modified {genotype} to {new_genotype} at {variant_id} for sample {sample}.")
 
             # Write the modified record to the output VCF
             outfile.write(record)
 
     # Write changes if not in reverse mode
     if not reverse_file and changes_file:
-        logger.info(f"Saving changes to: {changes_file}")
+        logger.info(f"Saving changes to: [{changes_file}].")
         try:
             with gzip.open(changes_file, 'wt') as ch_file:
                 for change in changes:
                     ch_file.write(f"{change[0]},{change[1]}\n")
-            logger.info(f"Changes saved successfully to {changes_file}")
+            logger.info(f"Changes saved successfully to [{changes_file}].")
         except Exception as e:
-            logger.error(f"Error saving changes to {changes_file}: {e}")
+            logger.error(f"Error saving changes to [{changes_file}]: {e}.")
             raise
 
-    logger.info(f"Modifications completed. Output written to: {output_vcf}")
+    logger.info(f"Modifications completed. Output written to: [{output_vcf}].")
 
 # Index the output VCF file using pysam's tabix_index
 def index_vcf(output_vcf, logger):
     """Index the output VCF file using bgzip and tabix."""
-    logger.info(f"Indexing VCF file: {output_vcf}")
+    logger.info(f"Indexing VCF file: [{output_vcf}].")
 
     try:
         pysam.tabix_index(output_vcf, preset="vcf", force=True)
-        logger.info(f"Indexing completed for {output_vcf}")
+        logger.info(f"Indexing completed for [{output_vcf}].")
     except Exception as e:
-        logger.error(f"Error during tabix indexing: {e}")
+        logger.error(f"Error during tabix indexing: {e}.")
         exit(1)
 
 # Main function
@@ -188,25 +188,25 @@ Example to reverse:
 
     # Check if the input file exists
     if not os.path.exists(args.input_file):
-        print(f"Error: Input file does not exist: {args.input_file}")
+        print(f"Error: Input file does not exist: [{args.input_file}].")
         exit(1)
     
     # Check if the reverse changes file exists (only when --reverse is provided)
     if args.reverse and not os.path.exists(args.reverse):
-        print(f"Error: Reverse file does not exist: {args.reverse}")
+        print(f"Error: Reverse file does not exist: [{args.reverse}].")
         exit(1)
     
     # List the arguments and version through the logger
     logger = setup_logger(script_name, args.verbose)
     logger.info(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE})")
-    logger.info(f"Settings:")
-    logger.info(f"Input file: {args.input_file}")
-    logger.info(f"Output file: {args.output_file}")
+    logger.info(f"Settings")
+    logger.info(f"Input file.........: {args.input_file}")
+    logger.info(f"Output file........: {args.output_file}")
     if args.changes:
-        logger.info(f"Changes file: {args.changes}")
+        logger.info(f"Changes file.......: {args.changes}")
     if args.reverse:
-        logger.info(f"Reverse file: {args.reverse}")
-    logger.info(f"Verbose: {args.verbose}")
+        logger.info(f"Reverse file.......: {args.reverse}")
+    logger.info(f"Verbose............: {args.verbose}\n")
 
     # Call the modify function
     modify_vcf(args.input_file, args.output_file, changes_file=args.changes, reverse_file=args.reverse, logger=logger)

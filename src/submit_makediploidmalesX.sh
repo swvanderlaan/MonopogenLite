@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.1.4 2024-09-30: Fixed an issue where the chrX was not written correctlt to the bed file.
 # * v1.1.3 2024-09-30: Fixed an issue where the script was not properly creating the chunks and intermediate variables.
 # * v1.1.2 2024-09-30: Added --debug mode. 
 # * v1.1.1 2024-09-30: Fixed an issue where the chunking and processing jobs were not properly linked. Added a --dry-run argument to test the script without submitting jobs.
@@ -14,7 +15,7 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.1.3'
+VERSION='1.1.4'
 VERSION_DATE='2024-09-30'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -242,7 +243,7 @@ for i in $(seq 1 $CHUNK_SIZE); do
     if [[ $i -eq $CHUNK_SIZE ]]; then
         END=$CHROM_SIZE  # Ensure last chunk ends at chromosome end
     fi
-    echo -e "X\t$START\t$END"
+    echo -e "chrX\t$START\t$END"
 done > $BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed
 
 if [[ $DEBUG -eq 1 ]]; then
