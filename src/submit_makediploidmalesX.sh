@@ -300,9 +300,9 @@ CHUNK_NUMBER=\$SLURM_ARRAY_TASK_ID
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted chunk number: \$CHUNK_NUMBER"
 fi
-RAW_REGION=$(sed -n "${CHUNK_NUMBER}p" "${BASE_NAME_INPUT_DIR}/chrX_${CHUNK_SIZE}pieces.bed")
+RAW_REGION=\$(sed -n "${CHUNK_NUMBER}p" "${BASE_NAME_INPUT_DIR}/chrX_${CHUNK_SIZE}pieces.bed")
 echo "check 1"
-$(sed -n "${CHUNK_NUMBER}p" "${BASE_NAME_INPUT_DIR}/chrX_${CHUNK_SIZE}pieces.bed")
+\$(sed -n "${CHUNK_NUMBER}p" "${BASE_NAME_INPUT_DIR}/chrX_${CHUNK_SIZE}pieces.bed")
 echo "check 2"
 sed -n "${CHUNK_NUMBER}p" "${BASE_NAME_INPUT_DIR}/chrX_${CHUNK_SIZE}pieces.bed"
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
