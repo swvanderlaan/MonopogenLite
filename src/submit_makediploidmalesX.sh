@@ -385,7 +385,6 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
 #SBATCH --job-name=concatdiploidmalesX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
-#SBATCH --tmp=64G # Use 64GB of tmp space
 #SBATCH --mem=$SBATCH_MEM
 #SBATCH --time=$SBATCH_TIME
 #SBATCH --mail-type=$SBATCH_MAILTYPE
@@ -395,9 +394,6 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 
 source ~/.bashrc
 mamba activate monopogen
-
-# Set TMPDIR to the allocated temporary directory
-export TMPDIR=$SLURM_TMPDIR  # SLURM_TMPDIR is set by SLURM when --tmp is used
 
 echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
