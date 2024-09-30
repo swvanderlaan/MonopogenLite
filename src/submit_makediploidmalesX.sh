@@ -297,7 +297,7 @@ echo "Making converting haploid genotypes to diploid genotypes."
 
 echo "> Extract the region for this SLURM task (# \$SLURM_ARRAY_TASK_ID) from the BED file."
 
-# Get the chunk number from the SLURM array task ID and the bed file
+echo "  - Get the chunk number from the SLURM array task ID and the bed file..."
 CHUNK_NUMBER_RAW=\$SLURM_ARRAY_TASK_ID # SLURM array task ID
 CHUNK_NUMBER=\${CHUNK_NUMBER_RAW}p  # adding p to the number
 BED_FILE="$BASE_NAME_INPUT_DIR/chrX_${CHUNK_SIZE}pieces.bed" # BED file with chunks
@@ -310,32 +310,26 @@ if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracting region from BED file: \$BED_FILE"
 fi
 
-# Extract the region from the BED file
+echo "  - Extract the region from the BED file..."
 RAW_REGION=\$(sed -n "\$CHUNK_NUMBER" "\$BED_FILE")
+RAW_REGION=\$(echo "\$RAW_REGION" | sed 's/^ *//;s/ *\$//')  # Clean up leading/trailing whitespace
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Extracted raw region: \$RAW_REGION (chunk number: \$CHUNK_NUMBER of $CHUNK_SIZE)"
 fi
 
-# Prepare the region for bcftools
-echo ">> fixing \$RAW_REGION"
-RAW_REGION=\$(echo "\$RAW_REGION" | sed 's/^ *//;s/ *\$//')  # Clean up leading/trailing whitespace
-echo ">> showing \$RAW_REGION"
-echo "\$RAW_REGION"
-echo ">> fixing \$RAW_REGION"
+echo "  - Prepare the region for bcftools..."
 REGION=\$(echo "\$RAW_REGION" | awk '{print \$1 ":" \$2 "-" \$3}')
-echo ">> showing \$REGION"
-echo "\$REGION"
-# Check if REGION was successfully extracted
+echo "  - Check if REGION was successfully extracted..."
 if [[ -z "\$REGION" ]]; then
   echo "DEBUG: RAW_REGION was: '\$RAW_REGION'"
   echo "Error: No region found for SLURM_ARRAY_TASK_ID \$SLURM_ARRAY_TASK_ID."
   exit 1
 fi
 
-echo "> Processing region $REGION..."
+echo "> Processing region \$REGION..."
 
 echo "  - Process the specific region (chunk) using bcftools view..."
-bcftools view -r $REGION $INPUT_FILE -Oz -o $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
+bcftools view -r \$REGION $INPUT_FILE -Oz -o $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
 
 echo "  - Index the VCF file..."
 tabix -p vcf $BASE_NAME_INPUT_DIR/chrX.part${SLURM_ARRAY_TASK_ID}.vcf.gz
