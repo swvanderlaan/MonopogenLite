@@ -69,7 +69,7 @@ def setup_logger(script_name, verbose):
     return logger
 
 # Run bcftools stats
-def run_bcftools_stats(input_vcf, output_stats, verbose=False):
+def run_bcftools_stats(input_vcf, output_stats, logger, verbose=False):
     """Run bcftools stats to generate statistics from the VCF file."""
     command = ['bcftools', 'stats', input_vcf, '-o', output_stats]
     
@@ -77,7 +77,7 @@ def run_bcftools_stats(input_vcf, output_stats, verbose=False):
     subprocess.run(command, check=True)
 
 # Run bcftools plot-vcfstats
-def run_bcftools_plot(stats_file, output_prefix, verbose=False):
+def run_bcftools_plot(stats_file, output_prefix, logger, verbose=False):
     """Run bcftools plot-vcfstats to generate plots from the stats file."""
     command = ['bcftools', 'plot-vcfstats', stats_file, '--prefix', output_prefix]
     
@@ -85,7 +85,7 @@ def run_bcftools_plot(stats_file, output_prefix, verbose=False):
     subprocess.run(command, check=True)
 
 # Generate custom plots
-def generate_plots(input_vcf, output_dir, verbose=False):
+def generate_plots(input_vcf, output_dir, logger, verbose=False):
     """Generate custom plots using cmcrameri color maps."""
     logger.info(f"Generating custom plots with cmcrameri color maps in {output_dir}...")
 
@@ -155,10 +155,10 @@ Example:
     logger.info(f"")
     
     # Run bcftools stats
-    run_bcftools_stats(input_vcf, output_stats, args.verbose)
+    run_bcftools_stats(input_vcf, output_stats, logger, args.verbose)
     
     # Run bcftools plot-vcfstats
-    run_bcftools_plot(output_stats, output_prefix, args.verbose)
+    run_bcftools_plot(output_stats, output_prefix, logger, args.verbose)
     
     # Generate additional custom plots
     # generate_plots(input_vcf, output_dir, args.verbose)
