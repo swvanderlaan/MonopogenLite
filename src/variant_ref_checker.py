@@ -68,13 +68,17 @@ def setup_logger(script_name, verbose):
 
     return logger
 
-# Run bcftools stats
+# Run bcftools stats -- cannot run shell-directions '>', '<', etc.
 def run_bcftools_stats(input_vcf, output_stats, logger, verbose=False):
     """Run bcftools stats to generate statistics from the VCF file."""
-    command = ['bcftools', 'stats', input_vcf, '>', output_stats]
+    command = ['bcftools', 'stats', input_vcf]
     
     logger.info(f"Running bcftools stats on {input_vcf}...")
-    subprocess.run(command, check=True)
+
+    with open(output_stats, 'w') as outfile:
+        subprocess.run(command, check=True, stdout=outfile)
+
+    logger.info(f"bcftools stats output saved to {output_stats}")
 
 # Run bcftools plot-vcfstats
 def run_bcftools_plot(stats_file, output_dir, logger, verbose=False):
