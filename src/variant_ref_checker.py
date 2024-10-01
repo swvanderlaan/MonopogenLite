@@ -117,7 +117,7 @@ def run_bcftools_plot(stats_file, output_prefix, chromosome, logger, verbose=Fal
     result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode != 0:
         logger.error(f"Error running [{command}]: {result.stderr.decode('utf-8')}.")
-        raise RuntimeError(f"Oh oh, `bcftools plot-vcfstats` failed for [{input_vcf}].")
+        raise RuntimeError(f"Oh oh, `bcftools plot-vcfstats` failed for [{stats_file}].")
 
     # Move the stats file to the output directory
     logger.debug(f"> Moving stats-file to output directory [{output_dir}].")
