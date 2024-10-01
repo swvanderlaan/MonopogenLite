@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.1.6 2024-09-30: Fixed an issue where the concatenated VCF was not done in order.
 # * v1.1.5 2024-09-30: Fixed an issue where the concatenated VCF was not sorted prior to indexing.
 # * v1.1.4 2024-09-30: Fixed an issue where the chrX was not written correctlt to the bed file.
 # * v1.1.3 2024-09-30: Fixed an issue where the script was not properly creating the chunks and intermediate variables.
@@ -16,7 +17,7 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.1.5'
+VERSION='1.1.6'
 VERSION_DATE='2024-09-30'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
@@ -354,7 +355,6 @@ tabix -fp vcf $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz
 if [[ \$DEBUG_FLAG -eq "$DEBUG" ]]; then
     echo "DEBUG: Check if the VCF file was successfully processed..."
     bcftools view $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz | head
-    # bcftools stats $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz | grep -E 'number of records:|number of samples:'
     bcftools stats $BASE_NAME_INPUT_DIR/chrX.part\${CHUNK_NUMBER_RAW}.vcf.gz
 fi
 
@@ -444,19 +444,11 @@ if [[ \$DEBUG_FLAG -eq 1 ]]; then
     printf "%s\n" "\$VCF_LIST"
 fi
 
-# bcftools concat -Ou -o $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.bcf \$VCF_LIST
 bcftools concat -Oz -o $OUTPUT_FILE \$VCF_LIST
 if [ $? -ne 0 ]; then
     echo "ERROR: Concatenation failed."
     exit 1
 fi
-
-# echo "> Sorting the concatenated VCF file..."
-# bcftools sort -Oz -o $OUTPUT_FILE $BASE_NAME_INPUT_DIR/$BASE_NAME_OUTPUT_FILE.unsorted.bcf
-# if [ $? -ne 0 ]; then
-#     echo "ERROR: Sorting failed."
-#     exit 1
-# fi
 
 echo "> Index the concatenated VCF file..."
 tabix -fp vcf $OUTPUT_FILE
@@ -464,6 +456,13 @@ if [ $? -ne 0 ]; then
     echo "ERROR: Indexing with tabix failed."
     exit 1
 fi
+
+echo "> Removing the processed VCF files..."
+for CHUNK in \$(seq 1 \$CHUNKSIZE); do
+    FILE="$BASE_NAME_INPUT_DIR/chrX.part\${CHUNK}_processed.vcf.gz"
+    echo "  - Removing processed VCF file: \$FILE"
+    rm -v \$FILE
+done
 
 if [ \$? -eq 0 ]; then
     echo ""
@@ -484,20 +483,19 @@ echo "> Make the script executable."
 chmod +x $SBATCH_SCRIPT_CONCATINDEX
 
 echo ""
-# echo "> Submit the array job, dependent on the BED creation job."
-# if [[ $DRY_RUN -eq 1 ]]; then
-#     echo "DRY-RUN: sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
-# else
-#     ARRAY_JOB_ID=$(sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
-#     echo ">> Array job submitted with ID: $ARRAY_JOB_ID."
-# fi
+echo "> Submit the array job, dependent on the BED creation job."
+if [[ $DRY_RUN -eq 1 ]]; then
+    echo "DRY-RUN: sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX"
+else
+    ARRAY_JOB_ID=$(sbatch $SBATCH_SCRIPT_MAKEDIPLOIDMALESX | awk '{print $4}')
+    echo ">> Array job submitted with ID: $ARRAY_JOB_ID."
+fi
 
 echo "> Submit the concatenation job, dependent on the array job completion."
 if [[ $DRY_RUN -eq 1 ]]; then
     echo "DRY-RUN: sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX"
 else
-    # CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
-    CONCAT_JOB_ID=$(sbatch $ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
+    CONCAT_JOB_ID=$(sbatch --dependency=afterok:$ARRAY_JOB_ID $SBATCH_SCRIPT_CONCATINDEX | awk '{print $4}')
     echo ">> Concatenation job submitted with ID: $CONCAT_JOB_ID."
 fi
 
