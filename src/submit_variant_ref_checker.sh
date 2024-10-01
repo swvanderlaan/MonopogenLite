@@ -220,7 +220,7 @@ if [[ ! -f "\$CHR_VCF" ]]; then
 fi
 
 echo "> Run the Python script for the specified chromosome..."
-python3 $MPG/src/variant_ref_checker.py --input "\$CHR_VCF" $( [[ $VERBOSE -eq 1 ]] && echo "--verbose" )
+python3 $MPG/src/variant_ref_checker.py --input "\$CHR_VCF" --chr \$CHR $( [[ $VERBOSE -eq 1 ]] && echo "--verbose" )
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
