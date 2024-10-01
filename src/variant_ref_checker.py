@@ -265,7 +265,6 @@ Example:
     
     # Set up logger
     logger = setup_logger("variant_ref_checker", args.verbose)
-    logger.info(f"{'='*100}\n")
     logger.info(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE})\n")
     logger.info(f"Settings")
     logger.info(f"Input file..........: {input_vcf}")
@@ -298,10 +297,8 @@ Example:
     logger.info(f"Log file saved as {datetime.now().strftime('%Y%m%d')}.variant_ref_checker.log")
     logger.info(f"Output files saved in {output_dir}.\n")
 
-    logger.info("All done. Let's have a beer, buddy!")
-    logger.info(f"{'='*100}\n")
+    logger.info("All done. Let's have a beer, buddy!\n")
     logger.info(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE}) | {COPYRIGHT}.\n")
-    logger.info(f"{'='*100}\n")
 # Run the main function
 if __name__ == "__main__":
     main()
