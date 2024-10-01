@@ -4,6 +4,7 @@
 import argparse
 import os
 import subprocess
+import shutil
 import matplotlib.pyplot as plt
 import cmcrameri.cm as cmc # needed for custom color maps generate_plots function
 import logging
@@ -81,12 +82,22 @@ def run_bcftools_stats(input_vcf, output_stats, logger, verbose=False):
     logger.info(f"bcftools stats output saved to {output_stats}")
 
 # Run bcftools plot-vcfstats
-def run_bcftools_plot(stats_file, output_dir, logger, verbose=False):
+def run_bcftools_plot(stats_file, output_dir, output_prefix, logger, verbose=False):
     """Run bcftools plot-vcfstats to generate plots from the stats file."""
     command = ['plot-vcfstats', '--prefix', output_dir, stats_file]
     
     logger.info(f"Running bcftools plot-vcfstats with prefix {output_dir}...")
     subprocess.run(command, check=True)
+
+    # Rename the default summary.pdf to something more meaningful
+    summary_pdf = os.path.join(output_dir, 'summary.pdf')
+    new_pdf = f"{output_prefix}.pdf"
+    
+    if os.path.exists(summary_pdf):
+        logger.info(f"Renaming {summary_pdf} to {new_pdf}")
+        shutil.move(summary_pdf, new_pdf)
+    else:
+        logger.warning(f"Expected summary.pdf not found in {output_dir}")
 
 # Generate custom plots
 def generate_plots(input_vcf, output_dir, logger, verbose=False):
@@ -162,7 +173,7 @@ Example:
     run_bcftools_stats(input_vcf, output_stats, logger, args.verbose)
     
     # Run bcftools plot-vcfstats
-    run_bcftools_plot(output_stats, output_dir, logger, args.verbose)
+    run_bcftools_plot(output_stats, output_dir, output_prefix, logger, args.verbose)
     
     # Generate additional custom plots
     # generate_plots(input_vcf, output_dir, args.verbose)
