@@ -31,6 +31,7 @@ from pysam import VariantFile # handle VCF files
 from germline import *
 
 # Change log:
+# * v1.2.4, 2024-10-01: Fixed the hardcoded reference to the imputation panel.
 # * v1.2.3, 2024-09-19: Added more information the the runGermline scripts.
 # * v1.2.2, 2024-09-18: Updated germline.py to properly account for the 'RG' header given different platforms. 
 # * v1.2.1, 2024-09-18: Added a separate script to count overlapping variants between input (derived from bam-files) and output VCF files.
@@ -39,8 +40,8 @@ from germline import *
 # * v1.0.0, 2024-09-19: Initial version. MonoPogenLite is a light-version fork of Monopogen. It only includes the germline-variant-calling pipeline.
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.2.3'
-VERSION_DATE = '2024-09-19'
+VERSION = '1.2.4'
+VERSION_DATE = '2024-10-01'
 COPYRIGHT = 'Copyright 1979-2024. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -164,11 +165,9 @@ def germline(args):
 			if args.verbose:
 				print(f"  - Checking the imputation panel file: [{args.imputation_panel}].")
 			if record[0] == "chrX":
-				# imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.v2.vcf.gz"
-				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4." + record[0] + ".vcf.gz"
+				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid." + record[0] + ".vcf.gz"
 			elif record[0] in [f"chr{n}" for n in range(1, 23)]:
-				# imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina." + record[0] + ".filtered.SNV_INDEL_SV_phased_panel.vcf.gz"
-				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.norm.filtered_af_5e4." + record[0] + ".vcf.gz"
+				imputation_vcf = args.imputation_panel + "1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid." + record[0] + ".vcf.gz"
 			else: 
 				print(f"ERROR: The chromosome {record[0]} is not supported!")
 				sys.exit(1)
