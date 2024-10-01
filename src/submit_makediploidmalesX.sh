@@ -133,7 +133,6 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-
 # Check if input and output are provided
 if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" ]]; then
     echo "Error: Both --input and --output arguments are required."
