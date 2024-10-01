@@ -145,7 +145,7 @@ def run_bcftools_plot(stats_file, output_prefix, chromosome, logger, verbose=Fal
     main_title = f"Summary chr{chromosome}"
 
     # Run plot-vcfstats with the directory we just created as the output and pass the main title
-    command = ['plot-vcfstats', '--prefix', os.path.join(output_dir, '_plots'), '--main-title', main_title, stats_file]
+    command = ['plot-vcfstats', '--prefix', output_dir, '--main-title', main_title, stats_file]
     
     logger.debug(f"> Running `bcftools plot-vcfstats` with output directory [{output_dir}].")
     
@@ -156,7 +156,7 @@ def run_bcftools_plot(stats_file, output_prefix, chromosome, logger, verbose=Fal
         logger.error(f"Error running [{command}]: {result.stderr.decode('utf-8')}.")
         raise RuntimeError(f"Oh oh, `bcftools plot-vcfstats` failed for [{stats_file}].")
 
-    # # Move the stats file to the output directory -- we are not moving as this causes issues with the parse_allele_frequency script
+    # # Move the stats file to the output directory
     # logger.debug(f"> Moving stats-file to output directory [{output_dir}].")
     # new_stats_file = os.path.join(output_dir, os.path.basename(stats_file))
     # shutil.move(stats_file, new_stats_file)
@@ -194,8 +194,20 @@ def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefi
     
     logger.debug(f"> Plotting allele frequency histogram for [{len(allele_frequencies)}] entries.")
     
+    # Create a new figure
     plt.figure(figsize=(10, 6))
 
+    # Map chromosome 'X' to 23 and 'Y' to 24, 'XY' to 25, and 'MT' to 26, and use the Utrecht color scheme
+    if chromosome == 'X':
+        chromosome_int = 23
+    elif chromosome == 'Y':
+        chromosome_int = 24
+    elif chromosome == 'XY':
+        chromosome_int = 25
+    elif chromosome == 'MT':
+        chromosome_int = 26
+    else:
+        chromosome_int = int(chromosome)  # For numeric chromosomes
     # Get the color for the given chromosome from the Utrecht color scheme
     chromosome_color = UTRECHT_COLOR_SCHEME.get(int(chromosome), "#000000")  # Default to black if not found
     
@@ -207,12 +219,15 @@ def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefi
     plt.xlabel(f'allele frequency')
     plt.ylabel(f'number of variants')
 
-    # Save the plot
-    logger.debug(f"> Saving allele frequency histogram as PNG and PDF.")
-    histogram_file = f"{output_prefix}_allele_frequency_histogram.png"
+    # Save the plot to the output_prefix_plots directory
+    output_dir = f"{output_prefix}_plots"
+    
+    logger.debug(f"> Saving allele frequency histogram as PNG and PDF in [{output_dir}].")
+    histogram_file = os.path.join(output_dir, f"{output_prefix}.AF_histogram.png")
     plt.savefig(histogram_file)
-    histogram_file_pdf = f"{output_prefix}_allele_frequency_histogram.pdf"
+    histogram_file_pdf = os.path.join(output_dir, f"{output_prefix}.AF_histogram.pdf")
     plt.savefig(histogram_file_pdf)
+    # Close the plot
     plt.close()
     
     logger.debug(f"> Allele frequency histogram saved as [{histogram_file} and {histogram_file_pdf}].")
@@ -287,8 +302,8 @@ Example:
     run_bcftools_plot(output_stats, output_prefix, chromosome, logger, args.verbose)
 
     # Parse the stats file for allele frequency data
-    logger.info(f"Parsing allele frequency data from {output_stats}...")
-    allele_frequencies, snp_counts = parse_allele_frequency(output_stats, logger, args.verbose)
+    logger.info(f"Parsing allele frequency data from {output_stats_af}...")
+    allele_frequencies, snp_counts = parse_allele_frequency(output_stats_af, logger, args.verbose)
     
     # Plot the allele frequency distribution
     logger.info(f"Plotting allele frequency histogram...")
