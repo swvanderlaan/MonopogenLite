@@ -460,8 +460,16 @@ fi
 echo "> Removing the processed VCF files..."
 for CHUNK in \$(seq 1 \$CHUNKSIZE); do
     FILE="$BASE_NAME_INPUT_DIR/chrX.part\${CHUNK}_processed.vcf.gz"
+    FILE_TBI="$BASE_NAME_INPUT_DIR/chrX.part\${CHUNK}_processed.vcf.gz.tbi"
+    FILE_RAW="$BASE_NAME_INPUT_DIR/chrX.part\${CHUNK}.vcf.gz"
+    FILE_RAW_TBI="$BASE_NAME_INPUT_DIR/chrX.part\${CHUNK}.vcf.gz.tbi"
     echo "  - Removing processed VCF file: \$FILE"
     rm -v \$FILE
+    echo "  - Removing processed VCF file: \$FILE_TBI"
+    rm -v \$FILE_TBI
+    echo "  - Removing raw VCF file: \$FILE_RAW"
+    rm -v \$FILE_RAW
+    echo "  - Removing raw VCF file: \$FILE_RAW_TBI"
 done
 
 if [ \$? -eq 0 ]; then
