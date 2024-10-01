@@ -302,8 +302,8 @@ Example:
     run_bcftools_plot(output_stats, output_prefix, chromosome, logger, args.verbose)
 
     # Parse the stats file for allele frequency data
-    logger.info(f"Parsing allele frequency data from {output_stats_af}...")
-    allele_frequencies, snp_counts = parse_allele_frequency(output_stats_af, logger, args.verbose)
+    logger.info(f"Parsing allele frequency data from {output_stats}...")
+    allele_frequencies, snp_counts = parse_allele_frequency(output_stats, logger, args.verbose)
     
     # Plot the allele frequency distribution
     logger.info(f"Plotting allele frequency histogram...")
