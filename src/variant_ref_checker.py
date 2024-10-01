@@ -225,7 +225,7 @@ Example:
     
     # Generate the stats file and plot prefixes
     base_name = os.path.basename(input_vcf).replace(".vcf.gz", "")
-    output_stats = os.path.join(output_dir, f'{base_name}_vcf_stats.txt')
+    output_stats = os.path.join(output_dir, f'{base_name}.vcf.stats.txt')
     output_prefix = os.path.join(output_dir, base_name)
 
     # Ensure the input file is a .vcf.gz file
