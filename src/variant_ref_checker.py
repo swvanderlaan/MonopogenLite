@@ -209,7 +209,7 @@ def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefi
     else:
         chromosome_int = int(chromosome)  # For numeric chromosomes
     # Get the color for the given chromosome from the Utrecht color scheme
-    chromosome_color = UTRECHT_COLOR_SCHEME.get(int(chromosome), "#000000")  # Default to black if not found
+    chromosome_color = UTRECHT_COLOR_SCHEME.get(int(chromosome_int), "#000000")  # Default to black if not found
     
     # Create bar plot with the specified color for the chromosome
     plt.bar(allele_frequencies, snp_counts, width=0.0005, color=chromosome_color, edgecolor='black')
