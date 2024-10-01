@@ -222,10 +222,13 @@ def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefi
     # Save the plot to the output_prefix_plots directory
     output_dir = f"{output_prefix}_plots"
     
+    # Extract the base name of output_prefix (without any directory components)
+    output_base_name = os.path.basename(output_prefix)
+
     logger.debug(f"> Saving allele frequency histogram as PNG and PDF in [{output_dir}].")
-    histogram_file = os.path.join(output_dir, f"{output_prefix}.AF_histogram.png")
+    histogram_file = os.path.join(output_dir, f"{output_base_name}.AF_histogram.png")
     plt.savefig(histogram_file)
-    histogram_file_pdf = os.path.join(output_dir, f"{output_prefix}.AF_histogram.pdf")
+    histogram_file_pdf = os.path.join(output_dir, f"{output_base_name}.AF_histogram.pdf")
     plt.savefig(histogram_file_pdf)
     # Close the plot
     plt.close()
