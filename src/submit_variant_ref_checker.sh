@@ -205,13 +205,13 @@ echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 echo "Running $VERSION_NAME..."
 
-echo "> Chromosome mapping for SLURM array task ID # \$SLURM_ARRAY_TASK_ID..."
+echo "> Chromosome mapping for SLURM array task ID # [\$SLURM_ARRAY_TASK_ID]..."
 CHR_LIST=($(seq 1 22) "X")
 
 echo "> Set the chromosome based on the array task ID..."
 CHR=\${CHR_LIST[\$SLURM_ARRAY_TASK_ID - 1]}
 
-echo "  - Construct the input VCF file for the current chromosome..."
+echo "  - Construct the input VCF file for the current chromosome # [\$CHR]..."
 CHR_VCF="${VCF_DIR}/${PREFIX}.chr\${CHR}.vcf.gz"
 
 echo "> Check if the file exists..."
