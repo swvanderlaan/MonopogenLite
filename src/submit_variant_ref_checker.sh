@@ -1,11 +1,12 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.1 2024-09-30: Fixed references. Fixed array-submission. Added --dry-run, --debug modes.
 # * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
-VERSION_NAME='Variant Reference Creator'
-VERSION='1.0.0'
-VERSION_DATE='2024-09-25'
+VERSION_NAME='Variant Reference Checker'
+VERSION='1.0.1'
+VERSION_DATE='2024-09-30'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -219,7 +220,7 @@ if [[ ! -f "\$CHR_VCF" ]]; then
 fi
 
 echo "> Run the Python script for the specified chromosome..."
-python3 $MPG/variant_ref_checker.py --input "\$CHR_VCF" $( [[ $VERBOSE -eq 1 ]] && echo "--verbose" )
+python3 $MPG/src/variant_ref_checker.py --input "\$CHR_VCF" $( [[ $VERBOSE -eq 1 ]] && echo "--verbose" )
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"
