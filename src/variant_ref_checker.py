@@ -127,7 +127,7 @@ Example:
         formatter_class=argparse.RawTextHelpFormatter)
     
     parser.add_argument('-i', '--input', required=True, help="Path to the input VCF file (vcf.gz format). Required.")
-    parser.add_argument('-v', '--verbose', action='store_true', help="Enable verbose output.")
+    parser.add_argument('-v', '--verbose', action='store_true', help="Enable verbose output. Optional.")
     parser.add_argument('-V', '--version', action='version', version=f'{VERSION_NAME} {VERSION} ({VERSION_DATE})')
     
     args = parser.parse_args()
