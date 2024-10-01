@@ -63,10 +63,10 @@ mamba activate monopogen
 echo ""
 
 # Default values for optional parameters
-SBATCH_JOB_NAME="makediploidmalesX"
+SBATCH_JOB_NAME="variant_ref_checker"
 SBATCH_CPUS=1
-SBATCH_MEM="4G"
-SBATCH_TIME="00:30:00"
+SBATCH_MEM="8G"
+SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 VERBOSE=0
@@ -108,20 +108,6 @@ fi
 # Create the SLURM batch job script
 SBATCH_SCRIPT="$MPG/submit_makediploidmalesX.sbatch"
 
-echo "Starting $VERSION_NAME"
-echo ""
-echo "These are the settings:"
-echo "  Input file................: $INPUT_VCF"
-echo "  SLURM job name............: $SBATCH_JOB_NAME"
-echo "  SLURM CPUs................: $SBATCH_CPUS"
-echo "  SLURM memory..............: $SBATCH_MEM"
-echo "  SLURM time................: $SBATCH_TIME"
-echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
-echo "  SLURM mail user...........: $SBATCH_MAILUSER"
-echo "  Verbosity.................: $VERBOSE"
-echo "  Version...................: $VERSION ($VERSION_DATE)"
-echo ""
-
 # Extract directory and base file name
 VCF_DIR=$(dirname "$INPUT_VCF")
 BASE_NAME=$(basename "$INPUT_VCF")
@@ -134,11 +120,31 @@ if [[ -z "$PREFIX" ]]; then
     exit 1
 fi
 
+echo "Starting $VERSION_NAME"
+echo ""
+echo "These are the settings:"
+echo "  Input file................: $INPUT_VCF"
+echo "  VCF directory.............: $VCF_DIR"
+echo "  VCF file prefix...........: $PREFIX"
+echo ""
+echo "  SLURM job name............: $SBATCH_JOB_NAME"
+echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM memory..............: $SBATCH_MEM"
+echo "  SLURM time................: $SBATCH_TIME"
+echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
+echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo ""
+echo "  Verbosity.................: $VERBOSE"
+echo "  Version...................: $VERSION ($VERSION_DATE)"
+echo ""
+
+
 # Submit the SLURM job array
 cat << EOF > $SBATCH_SCRIPT
 #!/bin/bash
 
 #SBATCH --job-name=$SBATCH_JOB_NAME
+#SBATCH --array=1-23
 #SBATCH --cpus-per-task=$SBATCH_CPUS
 #SBATCH --mem=$SBATCH_MEM
 #SBATCH --time=$SBATCH_TIME
@@ -146,7 +152,6 @@ cat << EOF > $SBATCH_SCRIPT
 #SBATCH --mail-user=$SBATCH_MAILUSER
 #SBATCH --output=${SBATCH_JOB_NAME}_%A_%a.out
 #SBATCH --error=${SBATCH_JOB_NAME}_%A_%a.err
-#SBATCH --array=1-23
 
 source ~/.bashrc
 mamba activate monopogen
@@ -171,13 +176,13 @@ echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 echo "Running $VERSION_NAME..."
 
-echo "> Chromosome mapping for SLURM array task ID 23..."
+echo "> Chromosome mapping for SLURM array task ID # \$SLURM_ARRAY_TASK_ID..."
 CHR_LIST=($(seq 1 22) "X")
 
 echo "> Set the chromosome based on the array task ID..."
 CHR=\${CHR_LIST[\$SLURM_ARRAY_TASK_ID - 1]}
 
-echo "Construct the input VCF file for the current chromosome..."
+echo "  - Construct the input VCF file for the current chromosome..."
 CHR_VCF="${VCF_DIR}/${PREFIX}.chr\${CHR}.vcf.gz"
 
 echo "> Check if the file exists..."
@@ -187,7 +192,7 @@ if [[ ! -f "\$CHR_VCF" ]]; then
 fi
 
 echo "> Run the Python script for the specified chromosome..."
-python3 bcftools_stats_plot.py --input "\$CHR_VCF" $( [[ $VERBOSE -eq 1 ]] && echo "--verbose" )
+python3 $MPG/variant_ref_checker.py --input "\$CHR_VCF" $( [[ $VERBOSE -eq 1 ]] && echo "--verbose" )
 
 if [ \$? -eq 0 ]; then
   echo "$VERSION_NAME finished successfully. Let's have a beer, buddy!"

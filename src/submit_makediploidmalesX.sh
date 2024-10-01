@@ -470,6 +470,7 @@ for CHUNK in \$(seq 1 \$CHUNKSIZE); do
     echo "  - Removing raw VCF file: [\$FILE_RAW]"
     rm -v \$FILE_RAW
     echo "  - Removing raw VCF file: [\$FILE_RAW_TBI]"
+    rm -v \$FILE_RAW_TBI
 done
 
 if [ \$? -eq 0 ]; then
