@@ -71,6 +71,16 @@ def setup_logger(script_name, verbose):
 
     return logger
 
+# Check if bcftools is installed
+def check_tool_availability(tool_name, logger):
+    """Check if a required tool is available on the system."""
+    logger.debug(f"> Checking if tool '{tool_name}' is available.")
+    if shutil.which(tool_name) is None:
+        logger.error(f"> Required tool '{tool_name}' is not available on the system.")
+        raise RuntimeError(f"> Required tool '{tool_name}' is missing.")
+    else:
+        logger.debug(f">> Tool '{tool_name}' is available.")
+
 # Run bcftools stats -- cannot run shell-directions '>', '<', etc.
 def run_bcftools_stats(input_vcf, output_stats, logger, verbose=False):
     """Run `bcftools stats` to generate statistics from the VCF file."""
@@ -176,33 +186,6 @@ def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefi
     
     logger.debug(f"> Allele frequency histogram saved as [{histogram_file} and {histogram_file_pdf}].")
 
-# Generate custom plots
-def generate_plots(input_vcf, output_dir, logger, verbose=False):
-    """Generate custom plots using cmcrameri color maps."""
-
-    logger.debug(f"> Generating custom plots with cmcrameri color maps in [{output_dir}].")
-
-    # Example: Generating a color map plot with cmcrameri
-    x = [i for i in range(10)]
-    y = [i**2 for i in range(10)]
-
-    plt.scatter(x, y, c=y, cmap=cmc.batlow)
-    plt.colorbar(label='Color scale: batlow')
-    
-    plt.title('Sample Plot')
-    plt.xlabel('X-axis')
-    plt.ylabel('Y-axis')
-
-    # Create the base name by removing the .vcf.gz suffix from the input VCF file
-    base_name = os.path.basename(input_vcf).replace(".vcf.gz", "")
-    
-    # Save as PNG and PDF with appropriate file names
-    logger.debug(f"> Saving plot as PNG and PDF in [{output_dir}].")
-    plt.savefig(os.path.join(output_dir, f"{base_name}_sample_plot.png"))
-    plt.savefig(os.path.join(output_dir, f"{base_name}_sample_plot.pdf"))
-
-    logger.debug(f"> Plots saved as PNG and PDF in {output_dir}.")
-
 # Main function
 def main():
     parser = argparse.ArgumentParser(description=f"""
@@ -255,6 +238,11 @@ Example:
     logger.info(f"Output stats file...: {output_stats}")
     logger.info(f"Verbose.............: {args.verbose}\n")
     
+    # Check if required tools are available
+    logger.info(f"> Checking availability of required tools.")
+    check_tool_availability("bcftools", logger)
+    check_tool_availability("plot-vcfstats", logger)
+    
     # Run bcftools stats
     logger.info(f"Calculating statistics for chromosome {chromosome}...")
     run_bcftools_stats(input_vcf, output_stats, logger, args.verbose)
@@ -270,9 +258,6 @@ Example:
     # Plot the allele frequency distribution
     logger.info("Plotting allele frequency histogram...")
     plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefix, chromosome, logger, args.verbose)
-    
-    # Generate additional custom plots
-    # generate_plots(input_vcf, output_dir, args.verbose)
 
     logger.info(f"Log file saved as {datetime.now().strftime('%Y%m%d')}.variant_ref_checker.log")
     logger.info(f"Output files saved in {output_dir}.\n")
