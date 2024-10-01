@@ -156,12 +156,6 @@ def run_bcftools_plot(stats_file, output_prefix, chromosome, logger, verbose=Fal
         logger.error(f"Error running [{command}]: {result.stderr.decode('utf-8')}.")
         raise RuntimeError(f"Oh oh, `bcftools plot-vcfstats` failed for [{stats_file}].")
 
-    # # Move the stats file to the output directory
-    # logger.debug(f"> Moving stats-file to output directory [{output_dir}].")
-    # new_stats_file = os.path.join(output_dir, os.path.basename(stats_file))
-    # shutil.move(stats_file, new_stats_file)
-    
-    # logger.debug(f"> Moved stats file to [{new_stats_file}].")
     logger.debug(f"> Output files generated and saved in [{output_dir}].")
 
 # Parse the allele frequency data
@@ -276,6 +270,7 @@ Example:
     base_name = os.path.basename(input_vcf).replace(".vcf.gz", "")
     output_stats = os.path.join(output_dir, f'{base_name}.vcf.stats.txt')
     output_prefix = os.path.join(output_dir, base_name)
+    plots_dir = f"{output_prefix}_plots"  # Directory where plots and stats will be saved
 
     # Ensure the input file is a .vcf.gz file
     if not input_vcf.endswith(".vcf.gz"):
@@ -312,11 +307,19 @@ Example:
     logger.info(f"Plotting allele frequency histogram...")
     plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefix, chromosome, logger, args.verbose)
 
+    # Finish up
+    # Move the stats file to the _plots directory
+    logger.debug(f"> Moving stats-file to output directory [{plots_dir}].")
+    new_stats_file = os.path.join(plots_dir, os.path.basename(output_stats))
+    shutil.move(output_stats, new_stats_file)
+    logger.debug(f"> Moved stats file to [{new_stats_file}].")
+    
     logger.info(f"Log file saved as {datetime.now().strftime('%Y%m%d')}.variant_ref_checker.log")
     logger.info(f"Output files saved in {output_dir}.\n")
 
     logger.info("All done. Let's have a beer, buddy!\n")
     logger.info(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE}) | {COPYRIGHT}.\n")
+
 # Run the main function
 if __name__ == "__main__":
     main()
