@@ -41,6 +41,43 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 Reference: http://opensource.org.
 '''
 
+# Define the UtrechtSciencePark color scheme as a dictionary
+# Website to convert HEX to RGB: http://hex.colorrrs.com.
+# For some functions you should divide these numbers by 255.
+UTRECHT_COLOR_SCHEME = {
+    1: "#FBB820",   # yellow
+    2: "#F59D10",   # gold
+    3: "#E55738",   # salmon
+    4: "#DB003F",   # darkpink
+    5: "#E35493",   # lightpink
+    6: "#D5267B",   # pink
+    7: "#CC0071",   # hardpink
+    8: "#A8448A",   # lightpurple
+    9: "#9A3480",   # purple
+    10: "#8D5B9A",  # lavendel
+    11: "#705296",  # bluepurple
+    12: "#686AA9",  # purpleblue
+    13: "#6173AD",  # lightpurpleblue
+    14: "#4C81BF",  # seablue
+    15: "#2F8BC9",  # skyblue
+    16: "#1290D9",  # azurblue
+    17: "#1396D8",  # lightazurblue
+    18: "#15A6C1",  # greenblue
+    19: "#5EB17F",  # seaweedgreen
+    20: "#86B833",  # yellowgreen
+    21: "#C5D220",  # lightmossgreen
+    22: "#9FC228",  # mossgreen
+    23: "#78B113",  # lightgreen (for X chromosome)
+    24: "#49A01D",  # green (for Y chromosome)
+    25: "#595A5C",  # grey (for XY)
+    26: "#A2A3A4",  # lightgrey (for MT)
+    # Additional colors if needed
+    27: "#D7D8D7",  # midgrey
+    28: "#ECECEC",  # very lightgrey
+    29: "#FFFFFF",  # white
+    30: "#000000"   # black
+}
+
 # Set up logging
 def setup_logger(script_name, verbose):
     """Setup the logger to log to a file with the date and script name, and also log to the console."""
@@ -149,42 +186,32 @@ def parse_allele_frequency(stats_file, logger, verbose=False):
     logger.debug(f"> Extracted allele frequencies.")
     return allele_frequencies, snp_counts
 
-# Plot the allele frequency histogram using cmcrameri colormap
 def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefix, chromosome, logger, verbose=False):
-    """Plot the allele frequency distribution as a histogram using cmcrameri colormap."""
+    """Plot the allele frequency distribution as a histogram using UtrechtSciencePark color scheme."""
     if not allele_frequencies or not snp_counts:
-        logger.warning("Oh oh. No data available for plotting allele frequency histogram.")
+        logger.warning("No data available for plotting allele frequency histogram.")
         return
     
     logger.debug(f"> Plotting allele frequency histogram for [{len(allele_frequencies)}] entries.")
     
     plt.figure(figsize=(10, 6))
+
+    # Get the color for the given chromosome from the Utrecht color scheme
+    chromosome_color = UTRECHT_COLOR_SCHEME.get(int(chromosome), "#000000")  # Default to black if not found
     
-    # Use cmcrameri colormap for the bar colors
-    cmap = cmc.lipari
-    norm = plt.Normalize(vmin=min(allele_frequencies), vmax=max(allele_frequencies))
-    colors = cmap(norm(allele_frequencies))
+    # Create bar plot with the specified color for the chromosome
+    plt.bar(allele_frequencies, snp_counts, width=0.0005, color=chromosome_color, edgecolor='black')
 
-    # Create bar plot
-    plt.bar(allele_frequencies, snp_counts, width=0.0005, color=colors, edgecolor='black')
-
+    # Title and labels
     plt.title(f'Allele frequency chromosome {chromosome}')
     plt.xlabel(f'allele frequency')
     plt.ylabel(f'number of variants')
 
-    # Add a scatter plot to provide a color mapping for the colorbar
-    scatter = plt.scatter(allele_frequencies, snp_counts, c=allele_frequencies, cmap=cmap, norm=norm, alpha=0)
-    
-    # Add colorbar to show the color mapping
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm.set_array([])
-    plt.colorbar(sm, label='Allele Frequency')
-    
     # Save the plot
     logger.debug(f"> Saving allele frequency histogram as PNG and PDF.")
-    histogram_file = f"{output_prefix}.AF_histogram.png"
+    histogram_file = f"{output_prefix}_allele_frequency_histogram.png"
     plt.savefig(histogram_file)
-    histogram_file_pdf = f"{output_prefix}.AF_histogram.pdf"
+    histogram_file_pdf = f"{output_prefix}_allele_frequency_histogram.pdf"
     plt.savefig(histogram_file_pdf)
     plt.close()
     
@@ -253,11 +280,11 @@ Example:
     check_tool_availability("plot-vcfstats", logger)
     
     # Run bcftools stats
-    logger.info(f"Calculating statistics for chromosome {chromosome}...")
+    logger.info(f"Calculating statistics...")
     run_bcftools_stats(input_vcf, output_stats, logger, args.verbose)
     
     # Run bcftools plot-vcfstats
-    logger.info(f"Generating plots for chromosome {chromosome}...")
+    logger.info(f"Generating summary plots...")
     run_bcftools_plot(output_stats, output_prefix, chromosome, logger, args.verbose)
 
     # Parse the stats file for allele frequency data
@@ -265,7 +292,7 @@ Example:
     allele_frequencies, snp_counts = parse_allele_frequency(output_stats, logger, args.verbose)
     
     # Plot the allele frequency distribution
-    logger.info("Plotting allele frequency histogram...")
+    logger.info(f"Plotting allele frequency histogram...")
     plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefix, chromosome, logger, args.verbose)
 
     logger.info(f"Log file saved as {datetime.now().strftime('%Y%m%d')}.variant_ref_checker.log")
