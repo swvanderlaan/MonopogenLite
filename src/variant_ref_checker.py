@@ -77,7 +77,7 @@ def check_tool_availability(tool_name, logger):
     logger.debug(f"> Checking if tool '{tool_name}' is available.")
     if shutil.which(tool_name) is None:
         logger.error(f"> Required tool '{tool_name}' is not available on the system.")
-        raise RuntimeError(f"> Required tool '{tool_name}' is missing.")
+        raise RuntimeError(f"Oh oh, required tool '{tool_name}' is missing.")
     else:
         logger.debug(f">> Tool '{tool_name}' is available.")
 
@@ -119,12 +119,12 @@ def run_bcftools_plot(stats_file, output_prefix, chromosome, logger, verbose=Fal
         logger.error(f"Error running [{command}]: {result.stderr.decode('utf-8')}.")
         raise RuntimeError(f"Oh oh, `bcftools plot-vcfstats` failed for [{stats_file}].")
 
-    # Move the stats file to the output directory
-    logger.debug(f"> Moving stats-file to output directory [{output_dir}].")
-    new_stats_file = os.path.join(output_dir, os.path.basename(stats_file))
-    shutil.move(stats_file, new_stats_file)
+    # # Move the stats file to the output directory -- we are not moving as this causes issues with the parse_allele_frequency script
+    # logger.debug(f"> Moving stats-file to output directory [{output_dir}].")
+    # new_stats_file = os.path.join(output_dir, os.path.basename(stats_file))
+    # shutil.move(stats_file, new_stats_file)
     
-    logger.debug(f"> Moved stats file to [{new_stats_file}].")
+    # logger.debug(f"> Moved stats file to [{new_stats_file}].")
     logger.debug(f"> Output files generated and saved in [{output_dir}].")
 
 # Parse the allele frequency data
@@ -153,7 +153,7 @@ def parse_allele_frequency(stats_file, logger, verbose=False):
 def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefix, chromosome, logger, verbose=False):
     """Plot the allele frequency distribution as a histogram using cmcrameri colormap."""
     if not allele_frequencies or not snp_counts:
-        logger.warning("No data available for plotting allele frequency histogram.")
+        logger.warning("Oh oh. No data available for plotting allele frequency histogram.")
         return
     
     logger.debug(f"> Plotting allele frequency histogram for [{len(allele_frequencies)}] entries.")
@@ -217,7 +217,7 @@ Example:
     # Check if the --input and --chr are provided
     if not args.input or not args.chr:
         logger.error("Please provide both the input VCF file (`--input`) and the chromosome (`--chr`).")
-        raise ValueError("Please provide both the input VCF file and the chromosome.")
+        raise ValueError("Oh, oh. Please provide both the input VCF file and the chromosome.")
 
     input_vcf = args.input
     chromosome = args.chr
@@ -230,7 +230,7 @@ Example:
 
     # Ensure the input file is a .vcf.gz file
     if not input_vcf.endswith(".vcf.gz"):
-        raise ValueError("Input file must be a .vcf.gz file.")
+        raise ValueError("Oh oh. Input file must be a .vcf.gz file.")
     
     # Set up logger
     logger = setup_logger("variant_ref_checker", args.verbose)
