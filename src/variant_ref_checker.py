@@ -165,12 +165,16 @@ def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefi
     norm = plt.Normalize(vmin=min(allele_frequencies), vmax=max(allele_frequencies))
     colors = cmap(norm(allele_frequencies))
 
+    # Create bar plot
     plt.bar(allele_frequencies, snp_counts, width=0.0005, color=colors, edgecolor='black')
 
     plt.title(f'Allele frequency chromosome {chromosome}')
     plt.xlabel(f'allele frequency')
     plt.ylabel(f'number of variants')
 
+    # Add a scatter plot to provide a color mapping for the colorbar
+    scatter = plt.scatter(allele_frequencies, snp_counts, c=allele_frequencies, cmap=cmap, norm=norm, alpha=0)
+    
     # Add colorbar to show the color mapping
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm.set_array([])
