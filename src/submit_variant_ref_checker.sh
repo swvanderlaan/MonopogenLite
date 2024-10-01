@@ -31,16 +31,20 @@ Reference: http://opensource.org.
 
 # Argument parsing function
 print_help() {
-    echo "Usage: $0 --input <full-path-to-input.vcf.gz> [--verbose] [--help] [--version] [--mem <memory>] [--time <time>] [--mailtype <mail type>] [--mailuser <email>]"
+    echo "Usage: $0 --input <full-path-to-input.vcf.gz> [--dry-run] [--verbose] [--help] [--version] [--job-name <variant_ref_checker>] [--cpus <1>] [--mem <memory>] [--time <time>] [--mailtype <mail type>] [--mailuser <email>]"
     echo
-    echo "  --input         Full path to the input VCF file (including .vcf.gz)."
-    echo "  --verbose       Enable verbose output (optional)."
+    echo "  --input         Full path to the input VCF file (including .vcf.gz). Required."
+    echo "  --job-name      SLURM job name (default: variant_ref_checker). Optional."
+    echo "  --cpus          Number of CPUs per task (default: 1). Optional."
+    echo "  --mem           Memory per task (default: 8G). Optional."
+    echo "  --time          Time limit per task (default: 01:00:00). Optional."
+    echo "  --mailtype      Mail type for SLURM (default: FAIL). Optional."
+    echo "  --mailuser      Email for SLURM notifications (default: s.w.vanderlaan-2@umcutrecht.nl). Optional."
+    echo "  --dry-run       Perform a dry run without submitting the job. Optional."
+    echo "  --verbose       Enable verbose output. Optional."
+    echo "  --debug         Enable debug output. Optional."
     echo "  --help          Show this help message and exit."
     echo "  --version       Show the script version and exit."
-    echo "  --mem           Memory per task (default: 4G)."
-    echo "  --time          Time limit per task (default: 00:30:00)."
-    echo "  --mailtype      Mail type for SLURM (default: FAIL)."
-    echo "  --mailuser      Email for SLURM notifications (default: s.w.vanderlaan-2@umcutrecht.nl)."
     exit 0
 }
 
@@ -70,11 +74,14 @@ SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 VERBOSE=0
+DEBUG=0
+DRY_RUN=0
 
 # MonopogenLite location
 MPG="/hpc/local/Rocky8/dhl_ec/software/MonopogenLite"
 
 # Parse command line arguments
+echo "> Parsing command line arguments."
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --input) INPUT_VCF="$2"; shift ;;
@@ -84,7 +91,9 @@ while [[ "$#" -gt 0 ]]; do
         --time) SBATCH_TIME="$2"; shift ;;
         --mailtype) SBATCH_MAILTYPE="$2"; shift ;;
         --mailuser) SBATCH_MAILUSER="$2"; shift ;;
+        --dry-run) DRY_RUN=1 ;;
         --verbose) VERBOSE=1 ;;
+        --debug) DEBUG=1 ;;
         --version) print_version ;;
         --help) print_help ;;
         *) echo "Unknown parameter passed: $1"; print_help ;;
@@ -93,6 +102,9 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Check mandatory parameters
+if [[ "$DEBUG" -eq 1 ]]; then
+    echo "> Checking mandatory parameters."
+fi
 if [[ -z "$INPUT_VCF" ]]; then
     echo "Error: --input is required."
     print_help
@@ -100,19 +112,28 @@ if [[ -z "$INPUT_VCF" ]]; then
 fi
 
 # Check if input file exists
+if [[ "$DEBUG" -eq 1 ]]; then
+    echo "> Checking if input file exists."
+fi
 if [[ ! -f "$INPUT_VCF" ]]; then
     echo "Error: Input file '$INPUT_VCF' does not exist."
     exit 1
 fi
 
 # Create the SLURM batch job script
-SBATCH_SCRIPT="$MPG/submit_makediploidmalesX.sbatch"
+SBATCH_SCRIPT="$MPG/submit_variant_ref_checker.sbatch"
 
 # Extract directory and base file name
+if [[ "$DEBUG" -eq 1 ]]; then
+    echo "> Extracting the directory and base file name from the input VCF file."
+fi
 VCF_DIR=$(dirname "$INPUT_VCF")
 BASE_NAME=$(basename "$INPUT_VCF")
 
 # Get the part of the file name before ".chr#."
+if [[ "$DEBUG" -eq 1 ]]; then
+    echo "> Extracting the base prefix from the input VCF file name."
+fi
 PREFIX=$(echo "$BASE_NAME" | sed -r 's/\.chr[0-9XY]+\.vcf\.gz//')
 
 if [[ -z "$PREFIX" ]]; then
@@ -134,12 +155,15 @@ echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
 echo ""
+echo "  Dry run mode..............: $DRY_RUN"
+echo "  Debug mode................: $DEBUG"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
 
+# Create the SLURM job array
+echo "> Creating the SLURM job array script."
 
-# Submit the SLURM job array
 cat << EOF > $SBATCH_SCRIPT
 #!/bin/bash
 
@@ -165,12 +189,15 @@ echo "  VCF directory.............: $VCF_DIR"
 echo "  VCF file prefix...........: $PREFIX"
 echo ""
 echo "  SLURM job name............: $SBATCH_JOB_NAME"
+echo "  SLURM Array ID............: \$SLURM_ARRAY_TASK_ID"
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
 echo ""
+echo "  Dry run mode..............: $DRY_RUN"
+echo "  Debug mode................: $DEBUG"
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
 echo ""
@@ -205,11 +232,26 @@ mamba deactivate
 EOF
 
 # Make the script executable
+echo "> Make the script executable."
 chmod +x $SBATCH_SCRIPT
 
 # Submit the job to SLURM
-JOB_ID=$(sbatch $SBATCH_SCRIPT | awk '{print $4}')
-echo "Job submitted with ID: $JOB_ID"
+echo ""
+echo "Submitting the job to SLURM..."
+if [[ $DRY_RUN -eq 1 ]]; then
+    echo "DRY-RUN: sbatch $SBATCH_SCRIPT"
+    exit 0
+else 
+    JOB_ID=$(sbatch $SBATCH_SCRIPT | awk '{print $4}')
+    echo ">> Job submitted with ID: $JOB_ID"
+fi
+
+echo ""
+if [[ $DRY_RUN -eq 1 ]]; then
+    echo "DRY-RUN completed. No jobs were submitted."
+else
+    echo "All jobs submitted, this will take a while. Let's have a beer, buddy!"
+fi
 
 echo ""
 print_version
