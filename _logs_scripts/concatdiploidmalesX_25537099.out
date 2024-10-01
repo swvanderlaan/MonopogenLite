@@ -1,0 +1,829 @@
+Submit MakeDiploidMalesX
+version 1.1.6 (2024-09-30)
+
+These are the settings:
+  Input file................: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrX.vcf.gz
+  Output file...............: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.makediploid.chrX.vcf.gz
+  Chunk size................: 100
+
+  SLURM CPUs................: 4
+  SLURM memory..............: 16G
+  SLURM time................: 01:00:00
+  SLURM mail type...........: FAIL
+  SLURM mail user...........: s.w.vanderlaan-2@umcutrecht.nl
+
+  Dry run mode..............: 0
+  Debug mode................: 1
+  Verbosity.................: 0
+  Version...................: 1.1.6 (2024-09-30)
+
+Concatenating processed VCF files.
+> Concatenate the processed VCF files...
+  - Construct the ordered list of files.
+  - Processing chunk 1 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1_processed.vcf.gz] to the list...
+  - Processing chunk 2 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2_processed.vcf.gz] to the list...
+  - Processing chunk 3 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz] to the list...
+  - Processing chunk 4 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4_processed.vcf.gz] to the list...
+  - Processing chunk 5 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5_processed.vcf.gz] to the list...
+  - Processing chunk 6 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6_processed.vcf.gz] to the list...
+  - Processing chunk 7 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7_processed.vcf.gz] to the list...
+  - Processing chunk 8 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8_processed.vcf.gz] to the list...
+  - Processing chunk 9 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9_processed.vcf.gz] to the list...
+  - Processing chunk 10 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10_processed.vcf.gz] to the list...
+  - Processing chunk 11 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11_processed.vcf.gz] to the list...
+  - Processing chunk 12 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12_processed.vcf.gz] to the list...
+  - Processing chunk 13 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13_processed.vcf.gz] to the list...
+  - Processing chunk 14 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14_processed.vcf.gz] to the list...
+  - Processing chunk 15 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15_processed.vcf.gz] to the list...
+  - Processing chunk 16 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16_processed.vcf.gz] to the list...
+  - Processing chunk 17 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17_processed.vcf.gz] to the list...
+  - Processing chunk 18 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18_processed.vcf.gz] to the list...
+  - Processing chunk 19 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19_processed.vcf.gz] to the list...
+  - Processing chunk 20 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20_processed.vcf.gz] to the list...
+  - Processing chunk 21 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21_processed.vcf.gz] to the list...
+  - Processing chunk 22 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22_processed.vcf.gz] to the list...
+  - Processing chunk 23 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23_processed.vcf.gz] to the list...
+  - Processing chunk 24 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24_processed.vcf.gz] to the list...
+  - Processing chunk 25 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25_processed.vcf.gz] to the list...
+  - Processing chunk 26 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26_processed.vcf.gz] to the list...
+  - Processing chunk 27 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27_processed.vcf.gz] to the list...
+  - Processing chunk 28 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28_processed.vcf.gz] to the list...
+  - Processing chunk 29 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29_processed.vcf.gz] to the list...
+  - Processing chunk 30 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30_processed.vcf.gz] to the list...
+  - Processing chunk 31 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31_processed.vcf.gz] to the list...
+  - Processing chunk 32 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32_processed.vcf.gz] to the list...
+  - Processing chunk 33 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33_processed.vcf.gz] to the list...
+  - Processing chunk 34 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34_processed.vcf.gz] to the list...
+  - Processing chunk 35 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35_processed.vcf.gz] to the list...
+  - Processing chunk 36 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36_processed.vcf.gz] to the list...
+  - Processing chunk 37 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37_processed.vcf.gz] to the list...
+  - Processing chunk 38 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38_processed.vcf.gz] to the list...
+  - Processing chunk 39 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39_processed.vcf.gz] to the list...
+  - Processing chunk 40 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40_processed.vcf.gz] to the list...
+  - Processing chunk 41 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41_processed.vcf.gz] to the list...
+  - Processing chunk 42 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42_processed.vcf.gz] to the list...
+  - Processing chunk 43 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43_processed.vcf.gz] to the list...
+  - Processing chunk 44 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44_processed.vcf.gz] to the list...
+  - Processing chunk 45 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45_processed.vcf.gz] to the list...
+  - Processing chunk 46 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46_processed.vcf.gz] to the list...
+  - Processing chunk 47 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47_processed.vcf.gz] to the list...
+  - Processing chunk 48 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48_processed.vcf.gz] to the list...
+  - Processing chunk 49 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49_processed.vcf.gz] to the list...
+  - Processing chunk 50 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50_processed.vcf.gz] to the list...
+  - Processing chunk 51 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51_processed.vcf.gz] to the list...
+  - Processing chunk 52 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52_processed.vcf.gz] to the list...
+  - Processing chunk 53 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53_processed.vcf.gz] to the list...
+  - Processing chunk 54 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54_processed.vcf.gz] to the list...
+  - Processing chunk 55 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55_processed.vcf.gz] to the list...
+  - Processing chunk 56 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56_processed.vcf.gz] to the list...
+  - Processing chunk 57 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57_processed.vcf.gz] to the list...
+  - Processing chunk 58 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58_processed.vcf.gz] to the list...
+  - Processing chunk 59 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59_processed.vcf.gz] to the list...
+  - Processing chunk 60 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60_processed.vcf.gz] to the list...
+  - Processing chunk 61 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61_processed.vcf.gz] to the list...
+  - Processing chunk 62 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62_processed.vcf.gz] to the list...
+  - Processing chunk 63 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63_processed.vcf.gz] to the list...
+  - Processing chunk 64 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64_processed.vcf.gz] to the list...
+  - Processing chunk 65 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65_processed.vcf.gz] to the list...
+  - Processing chunk 66 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66_processed.vcf.gz] to the list...
+  - Processing chunk 67 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67_processed.vcf.gz] to the list...
+  - Processing chunk 68 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68_processed.vcf.gz] to the list...
+  - Processing chunk 69 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69_processed.vcf.gz] to the list...
+  - Processing chunk 70 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70_processed.vcf.gz] to the list...
+  - Processing chunk 71 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71_processed.vcf.gz] to the list...
+  - Processing chunk 72 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72_processed.vcf.gz] to the list...
+  - Processing chunk 73 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73_processed.vcf.gz] to the list...
+  - Processing chunk 74 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74_processed.vcf.gz] to the list...
+  - Processing chunk 75 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75_processed.vcf.gz] to the list...
+  - Processing chunk 76 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76_processed.vcf.gz] to the list...
+  - Processing chunk 77 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77_processed.vcf.gz] to the list...
+  - Processing chunk 78 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78_processed.vcf.gz] to the list...
+  - Processing chunk 79 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79_processed.vcf.gz] to the list...
+  - Processing chunk 80 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80_processed.vcf.gz] to the list...
+  - Processing chunk 81 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81_processed.vcf.gz] to the list...
+  - Processing chunk 82 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82_processed.vcf.gz] to the list...
+  - Processing chunk 83 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83_processed.vcf.gz] to the list...
+  - Processing chunk 84 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84_processed.vcf.gz] to the list...
+  - Processing chunk 85 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85_processed.vcf.gz] to the list...
+  - Processing chunk 86 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86_processed.vcf.gz] to the list...
+  - Processing chunk 87 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87_processed.vcf.gz] to the list...
+  - Processing chunk 88 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88_processed.vcf.gz] to the list...
+  - Processing chunk 89 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89_processed.vcf.gz] to the list...
+  - Processing chunk 90 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90_processed.vcf.gz] to the list...
+  - Processing chunk 91 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91_processed.vcf.gz] to the list...
+  - Processing chunk 92 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92_processed.vcf.gz] to the list...
+  - Processing chunk 93 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93_processed.vcf.gz] to the list...
+  - Processing chunk 94 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94_processed.vcf.gz] to the list...
+  - Processing chunk 95 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95_processed.vcf.gz] to the list...
+  - Processing chunk 96 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96_processed.vcf.gz] to the list...
+  - Processing chunk 97 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97_processed.vcf.gz] to the list...
+  - Processing chunk 98 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98_processed.vcf.gz] to the list...
+  - Processing chunk 99 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99_processed.vcf.gz] to the list...
+  - Processing chunk 100 and adding [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100_processed.vcf.gz] to the list...
+DEBUG: Listed all the processed VCF files:
+ /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99_processed.vcf.gz /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100_processed.vcf.gz
+> Index the concatenated VCF file...
+> Removing the processed VCF files...
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part1.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part2.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part4.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part5.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part6.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part7.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part8.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part9.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part10.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part11.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part12.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part13.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part14.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part15.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part16.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part17.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part18.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part19.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part20.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part21.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part22.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part23.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part24.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part25.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part26.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part27.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part28.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part29.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part30.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part31.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part32.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part33.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part34.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part35.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part36.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part37.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part38.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part40.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part41.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part42.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part43.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part44.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part45.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part46.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part47.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part48.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part49.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part50.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part51.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part52.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part53.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part54.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part55.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part56.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part57.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part58.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part59.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part60.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part61.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part62.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part63.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part64.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part65.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part66.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part67.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part68.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part69.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part70.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part71.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part72.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part73.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part74.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part75.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part76.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part77.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part78.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part79.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part80.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part81.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part82.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part83.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part84.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part85.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part86.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part87.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part88.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part89.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part90.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part91.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part92.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part93.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part94.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part95.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part96.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part97.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part98.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part99.vcf.gz.tbi]
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100_processed.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100_processed.vcf.gz'
+  - Removing processed VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100_processed.vcf.gz.tbi]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100_processed.vcf.gz.tbi'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100.vcf.gz]
+removed '/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100.vcf.gz'
+  - Removing raw VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part100.vcf.gz.tbi]
+
+Submit MakeDiploidMalesX finished successfully. Let's have a beer, buddy!
+

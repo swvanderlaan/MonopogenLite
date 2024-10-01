@@ -160,6 +160,8 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Example bam-files
 example/4432_UMC-DE-037_HYJWFBGX9.bam.lst
 example/Bam/4432_UMC-DE-037_HYJWFBGX9_chr1.filter.bam
 example/Bam/4432_UMC-DE-037_HYJWFBGX9_chr1.filter.bam.bai
@@ -237,6 +239,12 @@ example/germline/chrX.gl.vcf.gz
 example/scripts/runGermline_chr22.sh
 example/scripts/runGermline_chrX.sh
 example/germline/
-chr22.gl.non_overlapping_variants.txt
+
+# non_overlapping variants
+*.gl.non_overlapping_variants.txt
+# excluding vcf-files from repository
 *.vcf.gz*
 resources/_logs/*
+resources/*vcf.gz*
+
+

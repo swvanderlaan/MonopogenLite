@@ -1,0 +1,28 @@
+Variant Reference Checker
+version 1.0.2 (2024-10-01)
+
+These are the settings:
+  Input file................: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr1.vcf.gz
+  VCF directory.............: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources
+  VCF file prefix...........: 1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid
+
+  SLURM job name............: variant_ref_checker
+  SLURM Array ID............: 22
+  SLURM CPUs................: 1
+  SLURM memory..............: 8G
+  SLURM time................: 01:00:00
+  SLURM mail type...........: FAIL
+  SLURM mail user...........: s.w.vanderlaan-2@umcutrecht.nl
+
+  Dry run mode..............: 0
+  Debug mode................: 0
+  Verbosity.................: 1
+  Version...................: 1.0.2 (2024-10-01)
+
+Running Variant Reference Checker...
+> Chromosome mapping for SLURM array task ID # [22]...
+> Set the chromosome based on the array task ID...
+  - Construct the input VCF file for the current chromosome # [22]...
+> Check if the file exists...
+> Run the Python script for the specified chromosome...
+Variant Reference Checker finished successfully. Let's have a beer, buddy!
