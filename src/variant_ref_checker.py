@@ -178,9 +178,9 @@ def plot_allele_frequency_histogram(allele_frequencies, snp_counts, output_prefi
     
     # Save the plot
     logger.debug(f"> Saving allele frequency histogram as PNG and PDF.")
-    histogram_file = f"{output_prefix}_allele_frequency_histogram.png"
+    histogram_file = f"{output_prefix}.AF_histogram.png"
     plt.savefig(histogram_file)
-    histogram_file_pdf = f"{output_prefix}_allele_frequency_histogram.pdf"
+    histogram_file_pdf = f"{output_prefix}.AF_histogram.pdf"
     plt.savefig(histogram_file_pdf)
     plt.close()
     
