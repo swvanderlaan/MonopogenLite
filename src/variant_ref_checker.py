@@ -89,7 +89,7 @@ def run_bcftools_stats(input_vcf, output_stats, logger, verbose=False):
     logger.debug(f"> Calculating statistics on [{input_vcf}].")
 
     with open(output_stats, 'w') as outfile:
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(command, stdout=outfile, stderr=subprocess.PIPE)
         if result.returncode != 0:
             logger.error(f"Error running [{command}]: {result.stderr.decode('utf-8')}.")
             raise RuntimeError(f"Oh oh, `bcftools stats` failed for [{input_vcf}].")
@@ -108,13 +108,13 @@ def run_bcftools_plot(stats_file, output_prefix, chromosome, logger, verbose=Fal
     main_title = f"Summary chr{chromosome}"
 
     # Run plot-vcfstats with the directory we just created as the output and pass the main title
-    command = ['plot-vcfstats', '--prefix', os.path.join(output_dir, 'plot'), '--main-title', main_title, stats_file]
+    command = ['plot-vcfstats', '--prefix', os.path.join(output_dir, '_plots'), '--main-title', main_title, stats_file]
     
     logger.debug(f"> Running `bcftools plot-vcfstats` with output directory [{output_dir}].")
     
     # Run the command
     # subprocess.run(command, check=True)
-    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result = subprocess.run(command, stderr=subprocess.PIPE)
     if result.returncode != 0:
         logger.error(f"Error running [{command}]: {result.stderr.decode('utf-8')}.")
         raise RuntimeError(f"Oh oh, `bcftools plot-vcfstats` failed for [{stats_file}].")
