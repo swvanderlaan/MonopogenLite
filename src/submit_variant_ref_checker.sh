@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.2 2024-10-01: Added the --chr flag. 
 # * v1.0.1 2024-09-30: Fixed references. Fixed array-submission. Added --dry-run, --debug modes.
 # * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
 VERSION_NAME='Variant Reference Checker'
-VERSION='1.0.1'
-VERSION_DATE='2024-09-30'
+VERSION='1.0.2'
+VERSION_DATE='2024-10-01'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
