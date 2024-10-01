@@ -89,7 +89,7 @@ def run_bcftools_stats(input_vcf, output_stats, logger, verbose=False):
     logger.debug(f"> Calculating statistics on [{input_vcf}].")
 
     with open(output_stats, 'w') as outfile:
-        result = subprocess.run(command, stdout=outfile, stderr=subprocess.PIPE)
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode != 0:
             logger.error(f"Error running [{command}]: {result.stderr.decode('utf-8')}.")
             raise RuntimeError(f"Oh oh, `bcftools stats` failed for [{input_vcf}].")
@@ -114,7 +114,7 @@ def run_bcftools_plot(stats_file, output_prefix, chromosome, logger, verbose=Fal
     
     # Run the command
     # subprocess.run(command, check=True)
-    result = subprocess.run(command, stdout=outfile, stderr=subprocess.PIPE)
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if result.returncode != 0:
         logger.error(f"Error running [{command}]: {result.stderr.decode('utf-8')}.")
         raise RuntimeError(f"Oh oh, `bcftools plot-vcfstats` failed for [{input_vcf}].")
