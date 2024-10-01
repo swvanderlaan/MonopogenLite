@@ -71,17 +71,17 @@ def setup_logger(script_name, verbose):
 # Run bcftools stats
 def run_bcftools_stats(input_vcf, output_stats, logger, verbose=False):
     """Run bcftools stats to generate statistics from the VCF file."""
-    command = ['bcftools', 'stats', input_vcf, '-o', output_stats]
+    command = ['bcftools', 'stats', input_vcf, '>', output_stats]
     
     logger.info(f"Running bcftools stats on {input_vcf}...")
     subprocess.run(command, check=True)
 
 # Run bcftools plot-vcfstats
-def run_bcftools_plot(stats_file, output_prefix, logger, verbose=False):
+def run_bcftools_plot(stats_file, output_dir, logger, verbose=False):
     """Run bcftools plot-vcfstats to generate plots from the stats file."""
-    command = ['bcftools', 'plot-vcfstats', stats_file, '--prefix', output_prefix]
+    command = ['plot-vcfstats', '--prefix', output_dir, stats_file]
     
-    logger.info(f"Running bcftools plot-vcfstats with prefix {output_prefix}...")
+    logger.info(f"Running bcftools plot-vcfstats with prefix {output_dir}...")
     subprocess.run(command, check=True)
 
 # Generate custom plots
@@ -158,7 +158,7 @@ Example:
     run_bcftools_stats(input_vcf, output_stats, logger, args.verbose)
     
     # Run bcftools plot-vcfstats
-    run_bcftools_plot(output_stats, output_prefix, logger, args.verbose)
+    run_bcftools_plot(output_stats, output_dir, logger, args.verbose)
     
     # Generate additional custom plots
     # generate_plots(input_vcf, output_dir, args.verbose)
