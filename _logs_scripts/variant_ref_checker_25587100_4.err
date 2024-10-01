@@ -1,0 +1,45 @@
+2024-10-01 22:29:01,100 - INFO - Variant Reference Checker v1.0.2 (2024-10-01)
+
+2024-10-01 22:29:01,100 - INFO - Settings
+2024-10-01 22:29:01,100 - INFO - Input file..........: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.vcf.gz
+2024-10-01 22:29:01,100 - INFO - Chromosome..........: 4
+2024-10-01 22:29:01,101 - INFO - Output directory....: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources
+2024-10-01 22:29:01,101 - INFO - Output stats file...: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.vcf.stats.txt
+2024-10-01 22:29:01,101 - INFO - Verbose.............: True
+
+2024-10-01 22:29:01,101 - INFO - > Checking availability of required tools.
+2024-10-01 22:29:01,101 - DEBUG - > Checking if tool 'bcftools' is available.
+2024-10-01 22:29:01,101 - DEBUG - >> Tool 'bcftools' is available.
+2024-10-01 22:29:01,276 - INFO - > bcftools version: bcftools 1.21
+Using htslib 1.21
+Copyright (C) 2024 Genome Research Ltd.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law..
+2024-10-01 22:29:01,276 - DEBUG - > Checking if tool 'plot-vcfstats' is available.
+2024-10-01 22:29:01,276 - DEBUG - >> Tool 'plot-vcfstats' is available.
+2024-10-01 22:29:01,521 - INFO - > plot-vcfstats version: .
+2024-10-01 22:29:01,522 - INFO - Calculating statistics...
+2024-10-01 22:29:01,522 - DEBUG - > Calculating statistics on [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.vcf.gz].
+2024-10-01 22:29:42,765 - DEBUG - > Summary statistics saved to [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.vcf.stats.txt].
+2024-10-01 22:29:42,766 - INFO - Generating summary plots...
+2024-10-01 22:29:42,767 - DEBUG - > Generating main title for chromosome [4].
+2024-10-01 22:29:42,767 - DEBUG - > Running `bcftools plot-vcfstats` with output directory [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4_plots].
+2024-10-01 22:29:44,667 - DEBUG - > Output files generated and saved in [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4_plots].
+2024-10-01 22:29:44,668 - INFO - Parsing allele frequency data from /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.vcf.stats.txt...
+2024-10-01 22:29:44,668 - DEBUG - > Parsing allele frequency data from [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.vcf.stats.txt].
+2024-10-01 22:29:44,671 - DEBUG - > Extracted [3200] allele frequency entries from [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.vcf.stats.txt].
+2024-10-01 22:29:44,671 - DEBUG - > Extracted allele frequencies.
+2024-10-01 22:29:44,671 - INFO - Plotting allele frequency histogram...
+2024-10-01 22:29:44,671 - DEBUG - > Plotting allele frequency histogram for [3200] entries.
+2024-10-01 22:29:46,765 - DEBUG - > Saving allele frequency histogram as PNG and PDF in [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4_plots].
+2024-10-01 22:29:49,848 - DEBUG - > Allele frequency histogram saved as [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4_plots/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.AF_histogram.png and /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4_plots/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.AF_histogram.pdf].
+2024-10-01 22:29:49,848 - DEBUG - > Moving stats-file to output directory [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4_plots].
+2024-10-01 22:29:49,850 - DEBUG - > Moved stats file to [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4_plots/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr4.vcf.stats.txt].
+2024-10-01 22:29:49,850 - INFO - Log file saved as 20241001.variant_ref_checker.log
+2024-10-01 22:29:49,850 - INFO - Output files saved in /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources.
+
+2024-10-01 22:29:49,850 - INFO - All done. Let's have a beer, buddy!
+
+2024-10-01 22:29:49,850 - INFO - Variant Reference Checker v1.0.2 (2024-10-01) | Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.
+

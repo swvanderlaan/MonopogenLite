@@ -1,0 +1,125 @@
+Submit MakeDiploidMalesX
+version 1.1.6 (2024-09-30)
+
+These are the settings:
+  Input file................: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrX.vcf.gz
+  Output file...............: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.makediploid.chrX.vcf.gz
+  Chunk size................: 100
+
+  SLURM CPUs................: 4
+  SLURM Array ID............: 39 (of 100)
+  SLURM memory..............: 16G
+  SLURM time................: 01:00:00
+  SLURM mail type...........: FAIL
+  SLURM mail user...........: s.w.vanderlaan-2@umcutrecht.nl
+
+  Dry run mode..............: 0
+  Debug mode................: 1
+  Verbosity.................: 0
+  Version...................: 1.1.6 (2024-09-30)
+
+Making converting haploid genotypes to diploid genotypes.
+> Extract the region for this SLURM task (# 39) from the BED file.
+  - Get the chunk number from the SLURM array task ID and the bed file...
+DEBUG: Extracting chunk number: 39p from 39
+DEBUG: Extracting region from BED file: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX_100pieces.bed
+  - Extract the region from the BED file...
+DEBUG: Extracted raw region: 'chrX	59295505	60855912' (chunk #: 39p of 100 for job 39)
+  - Check if a valid region was extracted -- should be 'chrX	59295505	60855912'...
+  - Prepare the region for bcftools...
+  - Check if the region (chrX:59295505-60855912) was successfully extracted...
+> Processing region 'chrX:59295505-60855912'...
+  - Process the specific region (chunk# 39) using bcftools view...
+  - Index the VCF file...
+DEBUG: Check if the VCF file was successfully processed...
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##fileDate=29/01/2022 - 14:31:41
+##source=shapeit4.2.2
+##contig=<ID=chr1,length=248956422>
+##contig=<ID=chr2,length=242193529>
+##contig=<ID=chr3,length=198295559>
+##contig=<ID=chr4,length=190214555>
+##contig=<ID=chr5,length=181538259>
+##contig=<ID=chr6,length=170805979>
+# This file was produced by bcftools stats (1.20+htslib-1.20) and can be plotted using plot-vcfstats.
+# The command line was:	bcftools stats  /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39.vcf.gz
+#
+# Definition of sets:
+# ID	[2]id	[3]tab-separated file names
+ID	0	/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part39.vcf.gz
+# SN, Summary numbers:
+#   number of records   .. number of data rows in the VCF
+#   number of no-ALTs   .. reference-only sites, ALT is either "." or identical to REF
+#   number of SNPs      .. number of rows with a SNP
+#   number of MNPs      .. number of rows with a MNP, such as CC>TT
+#   number of indels    .. number of rows with an indel
+#   number of others    .. number of rows with other type, for example a symbolic allele or
+#                          a complex substitution, such as ACT>TCGA
+#   number of multiallelic sites     .. number of rows with multiple alternate alleles
+#   number of multiallelic SNP sites .. number of rows with multiple alternate alleles, all SNPs
+# 
+#   Note that rows containing multiple types will be counted multiple times, in each
+#   counter. For example, a row with a SNP and an indel increments both the SNP and
+#   the indel counter.
+# 
+# SN	[2]id	[3]key	[4]value
+SN	0	number of samples:	3202
+SN	0	number of records:	44
+SN	0	number of no-ALTs:	0
+SN	0	number of SNPs:	44
+SN	0	number of MNPs:	0
+SN	0	number of indels:	0
+SN	0	number of others:	0
+SN	0	number of multiallelic sites:	0
+SN	0	number of multiallelic SNP sites:	0
+# TSTV, transitions/transversions:
+# TSTV	[2]id	[3]ts	[4]tv	[5]ts/tv	[6]ts (1st ALT)	[7]tv (1st ALT)	[8]ts/tv (1st ALT)
+TSTV	0	19	25	0.76	19	25	0.76
+# SiS, Singleton stats:
+# SiS	[2]id	[3]allele count	[4]number of SNPs	[5]number of transitions	[6]number of transversions	[7]number of indels	[8]repeat-consistent	[9]repeat-inconsistent	[10]not applicable
+SiS	0	1	0	0	0	0	0	0	0
+# AF, Stats by non-reference allele frequency:
+# AF	[2]id	[3]allele frequency	[4]number of SNPs	[5]number of transitions	[6]number of transversions	[7]number of indels	[8]repeat-consistent	[9]repeat-inconsistent	[10]not applicable
+AF	0	0.000312	10	4	6	0	0	0	0
+AF	0	0.000625	3	1	2	0	0	0	0
+AF	0	0.000937	10	4	6	0	0	0	0
+AF	0	0.001249	1	1	0	0	0	0	0
+AF	0	0.001562	4	2	2	0	0	0	0
+AF	0	0.001874	2	1	1	0	0	0	0
+AF	0	0.002498	2	1	1	0	0	0	0
+AF	0	0.003435	1	0	1	0	0	0	0
+AF	0	0.004060	1	1	0	0	0	0	0
+AF	0	0.004372	1	0	1	0	0	0	0
+AF	0	0.004685	1	0	1	0	0	0	0
+AF	0	0.005309	3	1	2	0	0	0	0
+AF	0	0.005621	1	1	0	0	0	0	0
+AF	0	0.006558	1	1	0	0	0	0	0
+AF	0	0.006871	1	1	0	0	0	0	0
+AF	0	0.019675	1	0	1	0	0	0	0
+AF	0	0.057776	1	0	1	0	0	0	0
+# QUAL, Stats by quality
+# QUAL	[2]id	[3]Quality	[4]number of SNPs	[5]number of transitions (1st ALT)	[6]number of transversions (1st ALT)	[7]number of indels
+QUAL	0	.	44	19	25	0
+# IDD, InDel distribution:
+# IDD	[2]id	[3]length (deletions negative)	[4]number of sites	[5]number of genotypes	[6]mean VAF
+# ST, Substitution types:
+# ST	[2]id	[3]type	[4]count
+ST	0	A>C	3
+ST	0	A>G	1
+ST	0	A>T	1
+ST	0	C>A	2
+ST	0	C>G	2
+ST	0	C>T	11
+ST	0	G>A	5
+ST	0	G>C	8
+ST	0	G>T	3
+ST	0	T>A	3
+ST	0	T>C	2
+ST	0	T>G	3
+# DP, Depth distribution
+# DP	[2]id	[3]bin	[4]number of genotypes	[5]fraction of genotypes (%)	[6]number of sites	[7]fraction of sites (%)
+  - Fix haploid genotypes in males...
+
+Submit MakeDiploidMalesX finished successfully. Let's have a beer, buddy!
+

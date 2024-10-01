@@ -1,0 +1,10 @@
+2024-10-01 03:36:53,634 - INFO - MakeDiploidMalesX v1.2.2 (2024-09-30)
+2024-10-01 03:36:53,634 - INFO - Settings
+2024-10-01 03:36:53,634 - INFO - Input file.........: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3.vcf.gz
+2024-10-01 03:36:53,634 - INFO - Output file........: /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz
+2024-10-01 03:36:53,634 - INFO - Verbose............: False
+
+2024-10-01 03:36:53,634 - INFO - Processing input VCF: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3.vcf.gz]
+2024-10-01 03:39:57,534 - INFO - Modifications completed. Output written to: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz].
+2024-10-01 03:39:58,842 - INFO - Indexing VCF file: [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz].
+2024-10-01 03:40:00,606 - INFO - Indexing completed for [/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/chrX.part3_processed.vcf.gz].
