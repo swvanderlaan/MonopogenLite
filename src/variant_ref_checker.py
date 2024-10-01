@@ -118,6 +118,15 @@ def check_tool_availability(tool_name, logger):
     else:
         logger.debug(f">> Tool '{tool_name}' is available.")
 
+# Log the versions of tools
+def log_tool_version(tool_name, logger):
+    """Log the version of a tool if available."""
+    try:
+        result = subprocess.run([tool_name, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logger.info(f"> {tool_name} version: {result.stdout.decode('utf-8').strip()}.")
+    except Exception as e:
+        logger.warning(f"Oh oh. Could not determine {tool_name} version: {e}.")
+
 # Run bcftools stats -- cannot run shell-directions '>', '<', etc.
 def run_bcftools_stats(input_vcf, output_stats, logger, verbose=False):
     """Run `bcftools stats` to generate statistics from the VCF file."""
@@ -286,10 +295,13 @@ Example:
     logger.info(f"Output stats file...: {output_stats}")
     logger.info(f"Verbose.............: {args.verbose}\n")
     
-    # Check if required tools are available
+    # Check if required tools are available and log versions
     logger.info(f"> Checking availability of required tools.")
     check_tool_availability("bcftools", logger)
+    log_tool_version("bcftools", logger)
+
     check_tool_availability("plot-vcfstats", logger)
+    log_tool_version("plot-vcfstats", logger)
     
     # Run bcftools stats
     logger.info(f"Calculating statistics...")
