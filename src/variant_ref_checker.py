@@ -214,6 +214,11 @@ Example:
     
     args = parser.parse_args()
     
+    # Check if the --input and --chr are provided
+    if not args.input or not args.chr:
+        logger.error("Please provide both the input VCF file (`--input`) and the chromosome (`--chr`).")
+        raise ValueError("Please provide both the input VCF file and the chromosome.")
+
     input_vcf = args.input
     chromosome = args.chr
     output_dir = os.path.dirname(input_vcf)
