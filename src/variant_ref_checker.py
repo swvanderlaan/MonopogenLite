@@ -5,7 +5,7 @@ import argparse
 import os
 import subprocess
 import matplotlib.pyplot as plt
-import cmcrameri.cm as cmc
+import cmcrameri.cm as cmc # needed for custom color maps generate_plots function
 import logging
 from datetime import datetime
 
