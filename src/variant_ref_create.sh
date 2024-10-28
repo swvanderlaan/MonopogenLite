@@ -111,7 +111,7 @@ echo ""
 echo "Actvating conda environment..."
 source ~/.bashrc
 source ~/.bash_profile
-mamba activate monopogen
+micromamba activate monopogen
 echo ""
 
 # Check if resource directory is provided
