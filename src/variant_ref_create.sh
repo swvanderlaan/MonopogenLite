@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.0.6 2024-10-28: Fixed an issue where a partition can be given when submitting jobs on the UVA RIVANNA cluster.
 # * v1.0.5 2024-09-25: Fixed an issue where the bcftools arguments were not properly given.
 # * v1.0.4 2024-09-25: Fixed an issue where the AF field was not calculated and filtering was not applied. Added option to choose the AF field. Fixed an issue where the AF was dynamically printed in the file name.
 # * v1.0.3 2024-09-25: Fixed an issue where the multi-allelic variants aren't filtered out.
@@ -9,8 +10,8 @@
 # * v1.0.0 2024-09-19: Initial version. 
 # Version and license information 
 VERSION_NAME='Variant Reference Creator'
-VERSION='1.0.5'
-VERSION_DATE='2024-09-25'
+VERSION='1.0.6'
+VERSION_DATE='2024-10-28'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -38,7 +39,7 @@ Reference: http://opensource.org.
 print_help() {
     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
     echo ""
-    echo "Usage: $0 --resource-dir <DIR> [--af-field <AF, AF_EUR, AF_EAS, AF_SAS, AF_AMR, AF_AFR>] [--af <FLOAT>] [--variant-type <TYPE>] [--verbose] [--help] [--version]"
+    echo "Usage: $0 --resource-dir <DIR> [--af-field <AF, AF_EUR, AF_EAS, AF_SAS, AF_AMR, AF_AFR>] [--af <FLOAT>] [--variant-type <TYPE>] [--partition <PARTITION>] [--verbose] [--help] [--version]"
     echo ""
     echo "Description:"
     echo "  This script downloads the phased high-coverage 1000 Genomes VCF files "
@@ -58,6 +59,7 @@ print_help() {
     echo "  --af-field      Allele frequency field (default: AF)."
     echo "  --af            Allele frequency filter, c.q. variants to keep above AF>X (default: 0.0005)."
     echo "  --variant-type  Variant type filter (default: snp)."
+    echo "  --partition     SLURM partition to use (default: cpu)."
     echo "  --verbose       Enable verbose output."
     echo "  --help          Show this help message and exit."
     echo "  --version       Display version information and exit."
@@ -81,6 +83,7 @@ AF_FIELD="AF"  # Default allele frequency field
 AF=0.0005 # 0.5% allele frequency
 # Convert AF to scientific notation (e.g., 0.0005 becomes 5e4)
 AF_SCI=$(printf "%.0e" $AF)
+PARTITION="cpu"
 VERBOSE=0
 
 # Parse arguments
@@ -90,6 +93,7 @@ while [[ "$#" -gt 0 ]]; do
         --af) AF="$2"; AF_SCI=$(printf "%.0e" $AF); shift ;;  # Automatically format AF into scientific notation
         --af-field) AF_FIELD="$2"; shift ;;  # Allow choosing which AF field to use
         --variant-type) VARIANT_TYPE="$2"; shift ;; # Variant type filter
+        --partition) PARTITION="$2"; shift ;; # SLURM partition
         --verbose) VERBOSE=1 ;;
         --help) print_help ;;
         --version) print_version ;;
@@ -106,6 +110,7 @@ echo ""
 # Check if conda is installed
 echo "Actvating conda environment..."
 source ~/.bashrc
+source ~/.bash_profile
 mamba activate monopogen
 echo ""
 
@@ -131,8 +136,8 @@ SBATCH_MAIL="FAIL"
 SBATCH_MAIL_USER="s.w.vanderlaan-2@umcutrecht.nl"
 
 # Setting up the reference genome
-# GRCh38=$(refgenie seek hg38/fasta)
-GRCh38="/hpc/dhl_ec/data/references/fasta/refdata-gex-GRCh38-2024-A/fasta/genome.fa"
+GRCh38=$(refgenie seek hg38/fasta)
+# GRCh38="/hpc/dhl_ec/data/references/fasta/refdata-gex-GRCh38-2024-A/fasta/genome.fa"
 
 echo "Starting $VERSION_NAME"
 echo ""
@@ -155,7 +160,7 @@ echo ""
 if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to download the phased high-coverage 1000 Genomes VCF files."
 fi
-SLURM_DOWNLOAD=$(sbatch --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_DOWNLOAD=$(sbatch --partition=$PARTITION --array=1-23 --job-name=pp_download_vcf --output="$RESOURCE_DIR/pp_download_vcf_%A_%a.out" --error="$RESOURCE_DIR/pp_download_vcf_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 CHR=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHR" == "23" ]]; then
@@ -174,7 +179,7 @@ if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to filter the VCF files."
 fi
 # SLURM_CREATE=$(sbatch --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CREATE=$(sbatch --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CREATE=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
@@ -232,7 +237,7 @@ if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to normalize the filtered VCF files."
 fi
 # SLURM_NORM=$(sbatch --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_NORM=$(sbatch --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_NORM=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
@@ -260,7 +265,7 @@ if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to annotate the normalized data."
 fi
 # SLURM_ANNOTATE=$(sbatch --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate_%A_%a.out" --error="$RESOURCE_DIR/pp_annotate_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_ANNOTATE=$(sbatch --dependency=afterok:$SLURM_NORM_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate_%A_%a.out" --error="$RESOURCE_DIR/pp_annotate_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_ANNOTATE=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_NORM_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate_%A_%a.out" --error="$RESOURCE_DIR/pp_annotate_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
@@ -293,7 +298,7 @@ if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to subset the normalized and annotated data to list only the variants (for cellsnp)."
 fi
 # SLURM_SUBSET_CELLSNP=$(sbatch --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_SUBSET_CELLSNP=$(sbatch --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_SUBSET_CELLSNP=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
@@ -326,7 +331,7 @@ if [[ $VERBOSE -eq 1 ]]; then
     echo "> Submitting job to concatenate the filtered VCF files for cellsnp."
 fi
 # SLURM_CONCAT_CELLSNP=$(sbatch --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
-SLURM_CONCAT_CELLSNP=$(sbatch --dependency=afterok:$SLURM_SUBSET_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=8 --mem=16G --time=02:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
+SLURM_CONCAT_CELLSNP=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_SUBSET_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=8 --mem=16G --time=02:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
 mamba activate monopogen
