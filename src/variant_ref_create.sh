@@ -182,7 +182,9 @@ fi
 SLURM_CREATE=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_DOWNLOAD_JOBID --array=1-23 --job-name=pp_create --output="$RESOURCE_DIR/pp_create_%A_%a.out" --error="$RESOURCE_DIR/pp_create_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=00:30:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
-mamba activate monopogen
+source ~/.bash_profile
+micromamba activate monopogen
+
 CHROM=\${SLURM_ARRAY_TASK_ID}
 
 if [[ "\$CHROM" == "23" ]]; then
@@ -240,7 +242,9 @@ fi
 SLURM_NORM=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_CREATE_JOBID --array=1-23 --job-name=pp_norm --output="$RESOURCE_DIR/pp_norm_%A_%a.out" --error="$RESOURCE_DIR/pp_norm_%A_%a.err" --ntasks=1 --cpus-per-task=1 --mem=8G --time=01:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
-mamba activate monopogen
+source ~/.bash_profile
+micromamba activate monopogen
+
 CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
     CHROM="X"
@@ -268,7 +272,8 @@ fi
 SLURM_ANNOTATE=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_NORM_JOBID --array=1-23 --job-name=pp_annotate --output="$RESOURCE_DIR/pp_annotate_%A_%a.out" --error="$RESOURCE_DIR/pp_annotate_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
-mamba activate monopogen
+source ~/.bash_profile
+micromamba activate monopogen
 
 # setting chromosome 1-22 and X
 CHROM=\${SLURM_ARRAY_TASK_ID}
@@ -301,7 +306,8 @@ fi
 SLURM_SUBSET_CELLSNP=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_ANNOTATE_JOBID --array=1-23 --job-name=pp_subset --output="$RESOURCE_DIR/pp_subset_%A_%a.out" --error="$RESOURCE_DIR/pp_subset_%A_%a.err" --ntasks=1 --cpus-per-task=8 --mem=8G --time=03:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
-mamba activate monopogen
+source ~/.bash_profile
+micromamba activate monopogen
 
 # setting chromosome 1-22 and X
 CHROM=\${SLURM_ARRAY_TASK_ID}
@@ -334,7 +340,8 @@ fi
 SLURM_CONCAT_CELLSNP=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_SUBSET_CELLSNP_JOBID --job-name=pp_concat --output="$RESOURCE_DIR/pp_concat.out" --error="$RESOURCE_DIR/pp_concat.err" --ntasks=1 --cpus-per-task=8 --mem=16G --time=02:00:00 --mail-type="$SBATCH_MAIL" --mail-user="$SBATCH_MAIL_USER" << EOF
 #!/bin/bash
 source ~/.bashrc
-mamba activate monopogen
+source ~/.bash_profile
+micromamba activate monopogen
 
 echo "Concatenating the filtered VCF files for cellsnp"
 # Use shell expansion to capture the files
