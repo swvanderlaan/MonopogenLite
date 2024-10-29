@@ -110,7 +110,7 @@ echo ""
 # Check if conda is installed
 echo "Actvating conda environment..."
 source ~/.bashrc
-micromamba activate monopogen
+mamba activate monopogen
 echo ""
 
 # Check if resource directory is provided
@@ -150,6 +150,7 @@ echo "  Resource directory........: $RESOURCE_DIR"
 echo ""
 echo "  Job mail type.............: $SBATCH_MAIL"
 echo "  Job mail user.............: $SBATCH_MAIL_USER"
+echo "  SLURM partition...........: $PARTITION"
 echo ""
 echo "  Verbosity.................: $VERBOSE"
 echo "  Version...................: $VERSION ($VERSION_DATE)"
@@ -182,7 +183,7 @@ SLURM_CREATE=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_DOWNLOA
 #!/bin/bash
 source ~/.bashrc
 source ~/.bash_profile
-micromamba activate monopogen
+mamba activate monopogen
 
 CHROM=\${SLURM_ARRAY_TASK_ID}
 
@@ -242,7 +243,7 @@ SLURM_NORM=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_CREATE_JO
 #!/bin/bash
 source ~/.bashrc
 source ~/.bash_profile
-micromamba activate monopogen
+mamba activate monopogen
 
 CHROM=\${SLURM_ARRAY_TASK_ID}
 if [[ "\$CHROM" == "23" ]]; then
@@ -272,7 +273,7 @@ SLURM_ANNOTATE=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM_NORM_
 #!/bin/bash
 source ~/.bashrc
 source ~/.bash_profile
-micromamba activate monopogen
+mamba activate monopogen
 
 # setting chromosome 1-22 and X
 CHROM=\${SLURM_ARRAY_TASK_ID}
@@ -306,7 +307,7 @@ SLURM_SUBSET_CELLSNP=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM
 #!/bin/bash
 source ~/.bashrc
 source ~/.bash_profile
-micromamba activate monopogen
+mamba activate monopogen
 
 # setting chromosome 1-22 and X
 CHROM=\${SLURM_ARRAY_TASK_ID}
@@ -340,7 +341,7 @@ SLURM_CONCAT_CELLSNP=$(sbatch --partition=$PARTITION --dependency=afterok:$SLURM
 #!/bin/bash
 source ~/.bashrc
 source ~/.bash_profile
-micromamba activate monopogen
+mamba activate monopogen
 
 echo "Concatenating the filtered VCF files for cellsnp"
 # Use shell expansion to capture the files

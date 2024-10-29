@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.1.7 2024-10-28: Fixed an issue where a partition can be given when submitting jobs on the UVA RIVANNA cluster.
 # * v1.1.6 2024-09-30: Fixed an issue where the concatenated VCF was not done in order.
 # * v1.1.5 2024-09-30: Fixed an issue where the concatenated VCF was not sorted prior to indexing.
 # * v1.1.4 2024-09-30: Fixed an issue where the chrX was not written correctlt to the bed file.
@@ -17,8 +18,8 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.1.6'
-VERSION_DATE='2024-09-30'
+VERSION='1.1.7'
+VERSION_DATE='2024-10-28'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -51,6 +52,7 @@ SBATCH_MEM="16G"
 SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
+PARTITION="cpu"  # Default partition
 VERBOSE=0  # Set to 0 by default (not verbose)
 DEBUG=0  # Set to 0 by default (not debug)
 CHUNK_SIZE_DEFAULT=100 # Default number of chunks to process in one go
@@ -81,6 +83,7 @@ print_help() {
     echo "  --time          The maximum time to run the job."
     echo "  --mail          The type of mail to send."
     echo "  --user          The email address to send the mail to."
+    echo "  --partition     SLURM partition to use (default: cpu)."
     echo "  --dry-run       Perform a dry run without submitting the job."
     echo "  --verbose       Enable verbose output."
     echo "  --debug         Enable debug mode."
@@ -107,6 +110,7 @@ echo ""
 # Check if conda is installed
 echo "Activating conda environment..."
 source ~/.bashrc
+source ~/.bash_profile
 mamba activate monopogen
 echo ""
 
@@ -123,6 +127,7 @@ while [[ "$#" -gt 0 ]]; do
         --time) SBATCH_TIME="$2"; shift ;;
         --mail) SBATCH_MAILTYPE="$2"; shift ;;
         --user) SBATCH_MAILUSER="$2"; shift ;;
+        --partition) PARTITION="$2"; shift ;;
         --dry-run) DRY_RUN=1 ;;  # Set dry run to 1 if --dry-run is passed
         --verbose) VERBOSE=1 ;;  # Set verbose to 1 if --verbose is passed
         --debug) DEBUG=1 ;;  # Set debug to 1 if --debug is passed
@@ -222,6 +227,7 @@ echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo "  SLURM partition...........: $PARTITION"
 echo ""
 echo "  Dry run mode..............: $DRY_RUN"
 echo "  Debug mode................: $DEBUG"
@@ -270,10 +276,12 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #SBATCH --time=$SBATCH_TIME
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
+#SBATCH --partition=$PARTITION
 #SBATCH --output=makediploidmalesX_%A_%a.out
 #SBATCH --error=makediploidmalesX_%A_%a.err
 
 source ~/.bashrc
+source ~/.bash_profile
 mamba activate monopogen
 
 DEBUG_FLAG=$DEBUG
@@ -298,6 +306,7 @@ echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo "  SLURM partition...........: $PARTITION"
 echo ""
 echo "  Dry run mode..............: $DRY_RUN"
 echo "  Debug mode................: $DEBUG"
@@ -388,10 +397,12 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #SBATCH --time=02:00:00
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
+#SBATCH --partition=$PARTITION
 #SBATCH --output=concatdiploidmalesX_%j.out
 #SBATCH --error=concatdiploidmalesX_%j.err
 
 source ~/.bashrc
+source ~/.bash_profile
 mamba activate monopogen
 
 DEBUG_FLAG=$DEBUG
@@ -415,6 +426,7 @@ echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo "  SLURM partition...........: $PARTITION"
 echo ""
 echo "  Dry run mode..............: $DRY_RUN"
 echo "  Debug mode................: $DEBUG"
