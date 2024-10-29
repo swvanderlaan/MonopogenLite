@@ -61,7 +61,8 @@ REVERSE_FILE="" # Default reverse file, none
 DRY_RUN=0  # Set to 0 by default (not a dry run)
 
 # MonopogenLite location
-MPG="/hpc/local/Rocky8/dhl_ec/software/MonopogenLite"
+# MPG="/hpc/local/Rocky8/dhl_ec/software/MonopogenLite"
+MPG="/project/cphg-millerlab/software/MonopogenLite"
 
 # Argument parsing function
 print_help() {
