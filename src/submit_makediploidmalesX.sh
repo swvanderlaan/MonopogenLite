@@ -328,12 +328,12 @@ echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM Array ID............: \$SLURM_ARRAY_TASK_ID (of $CHUNK_SIZE)"
 echo "  SLURM partition...........: $PARTITION"
+echo "  SLURM time................: $SBATCH_TIME"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
 else 
     echo "  SLURM memory..............: $SBATCH_MEM"
-    echo "  SLURM time................: $SBATCH_TIME"
 fi
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
