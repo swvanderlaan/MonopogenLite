@@ -315,7 +315,7 @@ $SBATCH_PARTITION_OPTIONS_MAKEDIPLOID
 
 source ~/.bashrc
 source ~/.bash_profile
-mamba activate monopogen
+micromamba activate monopogen
 
 DEBUG_FLAG=$DEBUG
 
@@ -419,7 +419,7 @@ else
     echo ""
 fi
 
-mamba deactivate
+micromamba deactivate
 
 EOF
 
@@ -457,7 +457,7 @@ $SBATCH_PARTITION_OPTIONS_CONCAT
 
 source ~/.bashrc
 source ~/.bash_profile
-mamba activate monopogen
+micromamba activate monopogen
 
 DEBUG_FLAG=$DEBUG
 
@@ -555,7 +555,7 @@ else
     echo ""
 fi
 
-mamba deactivate
+micromamba deactivate
 
 EOF
 
