@@ -81,8 +81,9 @@ print_help() {
     echo "  This script will submit a job to the SLURM scheduler to make haploid genotypes in males diploid given a VCF file."
     echo ""
     echo "Arguments:"
-    echo "  --input         The input VCF file."
-    echo "  --output        The output VCF file."
+    echo "  --input         The input VCF file. Required."
+    echo "  --output        The output VCF file. Required."
+    echo "  --mpg-dir       The directory where MonopogenLite is installed. Default is $MPG_DIR. Optional."
     echo "  --chunk-size    The number of chunks to process in one go. Default is 100. Optional."
     echo "  --changes       Gzipped file to save the list of changes. Optional."
     echo "  --reverse       Gzipped file with list of changes to reverse. Optional."
@@ -124,6 +125,7 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --input) INPUT_FILE="$2"; shift ;;
         --output) OUTPUT_FILE="$2"; shift ;;
+        --mpg-dir) MPG_DIR="$2"; shift ;;
         --chunk-size) CHUNK_SIZE="$2"; shift ;;
         --changes) CHANGES_FILE="$2"; shift ;;
         --reverse) REVERSE_FILE="$2"; shift ;;
@@ -148,8 +150,8 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Check if input and output are provided
-if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" ]]; then
-    echo "Error: Both --input and --output arguments are required."
+if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" || -z "$MPG_DIR" ]]; then
+    echo "Error: The --input, --output --mpg-dir arguments are required."
     exit 1
 fi
 
@@ -223,6 +225,7 @@ SBATCH_SCRIPT_CONCATINDEX="$MPG/submit_concatindexdiploidmalesX.sbatch"
 echo "These are the settings:"
 echo "  Input file................: $INPUT_FILE"
 echo "  Output file...............: $OUTPUT_FILE"
+echo "  MPG directory.............: $MPG_DIR"
 echo "  Chunk size................: $CHUNK_SIZE"
 if [[ -n "$CHANGES_FILE" ]]; then
     echo "  Changes file..............: $CHANGES_FILE"
