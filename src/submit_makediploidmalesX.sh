@@ -288,25 +288,29 @@ echo ""
 # Create the SLURM batch job script
 echo "> Create the SLURM batch job script for chunking haploid genotypes in given VCF file."
 
+# Define SLURM options based on partition type
+SBATCH_PARTITION_OPTIONS_MAKEDIPLOID=""
+if [[ "$PARTITION" == "gpu" ]]; then
+    SBATCH_PARTITION_OPTIONS_MAKEDIPLOID="#SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
+#SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
+#SBATCH -A $SBATCH_ACCOUNT
+#SBATCH --ntasks=$SBATCH_TASKS 
+#SBATCH --time=$SBATCH_TIME"
+else
+    SBATCH_PARTITION_OPTIONS_MAKEDIPLOID="#SBATCH --cpus-per-task=$SBATCH_CPUS #SBATCH --mem=$SBATCH_MEM
+#SBATCH --time=$SBATCH_TIME"
+fi
+
 cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #!/bin/bash
 #SBATCH --job-name=makediploidmalesX
 #SBATCH --array=1-$CHUNK_SIZE
-#SBATCH --cpus-per-task=$SBATCH_CPUS
 #SBATCH --partition=$PARTITION
-#SBATCH --time=$SBATCH_TIME
-if [[ "$PARTITION" == "gpu" ]]; then
-    #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
-    #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
-    #SBATCH -A $SBATCH_ACCOUNT
-    #SBATCH --ntasks=$SBATCH_TASKS
-else 
-    #SBATCH --mem=$SBATCH_MEM
-fi
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
 #SBATCH --output=makediploidmalesX_%A_%a.out
 #SBATCH --error=makediploidmalesX_%A_%a.err
+$SBATCH_PARTITION_OPTIONS_MAKEDIPLOID
 
 source ~/.bashrc
 source ~/.bash_profile
@@ -424,25 +428,29 @@ chmod +x $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 
 # Create the SLURM batch job script
 echo "> Create the SLURM batch job script for concatenating the processed VCF files."
+
+# Define SLURM options based on partition type
+SBATCH_PARTITION_OPTIONS_CONCAT=""
+if [[ "$PARTITION" == "gpu" ]]; then
+    SBATCH_PARTITION_OPTIONS_CONCAT="#SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
+#SBATCH --mem-per-gpu=128G
+#SBATCH -A $SBATCH_ACCOUNT
+#SBATCH --ntasks=$SBATCH_TASKS 
+#SBATCH --time=02:00:00"
+else
+    SBATCH_PARTITION_OPTIONS_CONCAT="#SBATCH --cpus-per-task=$SBATCH_CPUS #SBATCH --mem=128G
+#SBATCH --time=02:00:00"
+fi
+
 cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
 #SBATCH --job-name=concatdiploidmalesX
-#SBATCH --cpus-per-task=$SBATCH_CPUS
-#SBATCH --ntasks=$SBATCH_TASKS
-#SBATCH --partition=$PARTITION
-#SBATCH --time=02:00:00
-if [[ "$PARTITION" == "gpu" ]]; then
-    #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
-    #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
-    #SBATCH -A $SBATCH_ACCOUNT
-    #SBATCH --ntasks=$SBATCH_TASKS
-else 
-    #SBATCH --mem=128G
-fi
+#SBATCH --partion=$PARTITION
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
 #SBATCH --output=concatdiploidmalesX_%j.out
 #SBATCH --error=concatdiploidmalesX_%j.err
+$SBATCH_PARTITION_OPTIONS_CONCAT
 
 source ~/.bashrc
 source ~/.bash_profile
