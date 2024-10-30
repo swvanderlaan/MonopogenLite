@@ -53,7 +53,7 @@ SBATCH_MEM="16G"
 SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER=""
-SBATCH_ACCOUNT="dhl_ec"
+SBATCH_ACCOUNT="dhl_ec" # Default account
 SBATCH_PARTITION="cpu"  # Default partition
 # GPU settings
 SBATCH_MEM_GPU="16G"
