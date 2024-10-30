@@ -448,7 +448,7 @@ fi
 cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
 #SBATCH --job-name=concatdiploidmalesX
-#SBATCH --partion=$PARTITION
+#SBATCH --partition=$PARTITION
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
 #SBATCH --output=concatdiploidmalesX_%j.out
