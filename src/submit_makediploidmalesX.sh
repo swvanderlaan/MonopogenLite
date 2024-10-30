@@ -66,10 +66,6 @@ CHUNK_SIZE_DEFAULT=100 # Default number of chunks to process in one go
 CHANGES_FILE="" # Default changes file, none
 REVERSE_FILE="" # Default reverse file, none
 DRY_RUN=0  # Set to 0 by default (not a dry run)
-MPG_DIR="/hpc/local/Rocky8/dhl_ec/software/MonopogenLite"
-
-# MonopogenLite location
-MPG=$MPG_DIR
 
 # Argument parsing function
 print_help() {
@@ -154,6 +150,9 @@ if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" || -z "$MPG_DIR" ]]; then
     echo "Error: The --input, --output --mpg-dir arguments are required."
     exit 1
 fi
+
+# MonopogenLite location
+MPG=$MPG_DIR
 
 # Check if input file exists
 if [[ ! -f "$INPUT_FILE" ]]; then
