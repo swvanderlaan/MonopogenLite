@@ -49,7 +49,6 @@ echo ""
 
 # Default values
 SBATCH_CPUS=4
-SBATCH_TASKS=20
 SBATCH_MEM="16G"
 SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
@@ -57,8 +56,10 @@ SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 SBATCH_ACCOUNT="dhl_ec"
 SBATCH_PARTITION="cpu"  # Default partition
 # GPU settings
-SBATCH_MEM_GPU="1000G"
+SBATCH_MEM_GPU="16G"
 SBATCH_GPUS_NODE="1"
+SBATCH_TASKS=1
+# Other default values
 VERBOSE=0  # Set to 0 by default (not verbose)
 DEBUG=0  # Set to 0 by default (not debug)
 CHUNK_SIZE_DEFAULT=100 # Default number of chunks to process in one go
