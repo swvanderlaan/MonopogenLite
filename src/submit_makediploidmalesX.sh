@@ -299,10 +299,10 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 if [[ "$PARTITION" == "gpu" ]]; then
     #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
+    #SBATCH -A $SBATCH_ACCOUNT
 else 
     #SBATCH --mem=$SBATCH_MEM
 fi
-#SBATCH -A $SBATCH_ACCOUNT
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
 #SBATCH --output=makediploidmalesX_%A_%a.out
@@ -336,12 +336,12 @@ echo "  SLURM time................: $SBATCH_TIME"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
+    echo "  SLURM account.............: $SBATCH_ACCOUNT"
 else 
     echo "  SLURM memory..............: $SBATCH_MEM"
 fi
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
-echo "  SLURM account.............: $SBATCH_ACCOUNT"
 echo ""
 echo "  Dry run mode..............: $DRY_RUN"
 echo "  Debug mode................: $DEBUG"
@@ -434,10 +434,10 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 if [[ "$PARTITION" == "gpu" ]]; then
     #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
+    #SBATCH -A $SBATCH_ACCOUNT
 else 
     #SBATCH --mem=128G
 fi
-#SBATCH -A $SBATCH_ACCOUNT
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
 #SBATCH --output=concatdiploidmalesX_%j.out
@@ -470,12 +470,12 @@ echo "  SLURM time................: $SBATCH_TIME"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
+    echo "  SLURM account.............: $SBATCH_ACCOUNT"
 else 
     echo "  SLURM memory..............: $SBATCH_MEM"
 fi
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
-echo "  SLURM account.............: $SBATCH_ACCOUNT"
 echo ""
 echo "  Dry run mode..............: $DRY_RUN"
 echo "  Debug mode................: $DEBUG"
