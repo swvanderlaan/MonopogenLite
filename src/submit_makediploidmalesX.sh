@@ -49,7 +49,7 @@ echo ""
 
 # Default values
 SBATCH_CPUS=4
-SBATCH_TASKS=4
+SBATCH_TASKS=20
 SBATCH_MEM="16G"
 SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
@@ -57,7 +57,7 @@ SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
 SBATCH_ACCOUNT="dhl_ec"
 SBATCH_PARTITION="cpu"  # Default partition
 # GPU settings
-SBATCH_MEM_GPU="16G"
+SBATCH_MEM_GPU="1000G"
 SBATCH_GPUS_NODE="1"
 VERBOSE=0  # Set to 0 by default (not verbose)
 DEBUG=0  # Set to 0 by default (not debug)
@@ -237,11 +237,11 @@ if [[ -n "$REVERSE_FILE" ]]; then
     echo "  Reverse file..............: $REVERSE_FILE"
 fi
 echo "  SLURM CPUs................: $SBATCH_CPUS"
-echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM partition...........: $PARTITION"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
+    echo "  SLURM tasks...............: $SBATCH_TASKS"
 else
     echo "  SLURM memory..............: $SBATCH_MEM"
     echo "  SLURM time................: $SBATCH_TIME"
@@ -293,11 +293,11 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #SBATCH --job-name=makediploidmalesX
 #SBATCH --array=1-$CHUNK_SIZE
 #SBATCH --cpus-per-task=$SBATCH_CPUS
-#SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --partition=$PARTITION
 if [[ $PARTITION == "gpu" ]]; then
     #SBATCH --gres=gpu:$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
+    #SBATCH --ntasks=$SBATCH_TASKS
 else 
     #SBATCH --mem=$SBATCH_MEM
     #SBATCH --time=$SBATCH_TIME
