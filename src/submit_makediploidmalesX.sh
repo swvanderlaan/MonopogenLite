@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Change log:
+# * v1.1.8 2024-10-30: Added options to deal with gpu partitions.
 # * v1.1.7 2024-10-28: Fixed an issue where a partition can be given when submitting jobs on the UVA RIVANNA cluster.
 # * v1.1.6 2024-09-30: Fixed an issue where the concatenated VCF was not done in order.
 # * v1.1.5 2024-09-30: Fixed an issue where the concatenated VCF was not sorted prior to indexing.
@@ -18,8 +19,8 @@
 # * v1.0.0 2024-09-24: Initial version. 
 # Version and license information 
 VERSION_NAME='Submit MakeDiploidMalesX'
-VERSION='1.1.7'
-VERSION_DATE='2024-10-28'
+VERSION='1.1.8'
+VERSION_DATE='2024-10-30'
 COPYRIGHT='Copyright 1979-2024. Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science'
 COPYRIGHT_TEXT='''
 The MIT License (MIT).
@@ -48,11 +49,16 @@ echo ""
 
 # Default values
 SBATCH_CPUS=4
+SBATCH_TASKS=4
 SBATCH_MEM="16G"
 SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER="s.w.vanderlaan-2@umcutrecht.nl"
-PARTITION="cpu"  # Default partition
+SBATCH_ACCOUNT="dhl_ec"
+SBATCH_PARTITION="cpu"  # Default partition
+# GPU settings
+SBATCH_MEM_GPU="16G"
+SBATCH_GPUS_NODE="1"
 VERBOSE=0  # Set to 0 by default (not verbose)
 DEBUG=0  # Set to 0 by default (not debug)
 CHUNK_SIZE_DEFAULT=100 # Default number of chunks to process in one go
@@ -80,11 +86,15 @@ print_help() {
     echo "  --changes       Gzipped file to save the list of changes (optional)."
     echo "  --reverse       Gzipped file with list of changes to reverse (optional)."
     echo "  --cpus          The number of CPUs to use."
+    echo "  --tasks         The number of tasks to use."
     echo "  --mem           The amount of memory to use."
     echo "  --time          The maximum time to run the job."
     echo "  --mail          The type of mail to send."
     echo "  --user          The email address to send the mail to."
     echo "  --partition     SLURM partition to use (default: cpu)."
+    echo "  --mem_gpu       The amount of memory to use on the GPU."
+    echo "  --gpus_node     The number of GPUs per node."
+    echo "  --account       The SLURM account to use."
     echo "  --dry-run       Perform a dry run without submitting the job."
     echo "  --verbose       Enable verbose output."
     echo "  --debug         Enable debug mode."
@@ -124,11 +134,15 @@ while [[ "$#" -gt 0 ]]; do
         --changes) CHANGES_FILE="$2"; shift ;;
         --reverse) REVERSE_FILE="$2"; shift ;;
         --cpus) SBATCH_CPUS="$2"; shift ;;
+        --tasks) SBATCH_TASKS="$2"; shift ;;
         --mem) SBATCH_MEM="$2"; shift ;;
         --time) SBATCH_TIME="$2"; shift ;;
         --mail) SBATCH_MAILTYPE="$2"; shift ;;
         --user) SBATCH_MAILUSER="$2"; shift ;;
         --partition) PARTITION="$2"; shift ;;
+        --mem_gpu) SBATCH_MEM_GPU="$2"; shift ;;
+        --gpus_node) SBATCH_GPUS_NODE="$2"; shift ;;
+        --account) SBATCH_ACCOUNT="$2"; shift ;;
         --dry-run) DRY_RUN=1 ;;  # Set dry run to 1 if --dry-run is passed
         --verbose) VERBOSE=1 ;;  # Set verbose to 1 if --verbose is passed
         --debug) DEBUG=1 ;;  # Set debug to 1 if --debug is passed
@@ -209,7 +223,6 @@ if [[ "$VERBOSE" -eq 1 ]]; then
 fi
 
 # Create the SLURM batch job script
-SBATCH_SCRIPT_CHUNKHAPLOIDMALESX="$MPG/submit_chunkhaploidmalesX.sbatch"
 SBATCH_SCRIPT_MAKEDIPLOIDMALESX="$MPG/submit_makediploidmalesX.sbatch"
 SBATCH_SCRIPT_CONCATINDEX="$MPG/submit_concatindexdiploidmalesX.sbatch"
 
@@ -224,11 +237,17 @@ if [[ -n "$REVERSE_FILE" ]]; then
     echo "  Reverse file..............: $REVERSE_FILE"
 fi
 echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
 echo "  SLURM partition...........: $PARTITION"
+echo "  SLURM account.............: $SBATCH_ACCOUNT"
+if [[ $PARTITION == "gpu" ]]; then
+    echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
+    echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
+fi
 echo ""
 echo "  Dry run mode..............: $DRY_RUN"
 echo "  Debug mode................: $DEBUG"
@@ -273,11 +292,17 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #SBATCH --job-name=makediploidmalesX
 #SBATCH --array=1-$CHUNK_SIZE
 #SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --ntasks=$SBATCH_TASKS
+#SBATCH --partition=$PARTITION
+if [[ $PARTITION == "gpu" ]]; then
+    #SBATCH --gres=gpu:$SBATCH_GPUS_NODE
+    #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
+fi
+#SBATCH -A $SBATCH_ACCOUNT
 #SBATCH --mem=$SBATCH_MEM
 #SBATCH --time=$SBATCH_TIME
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
-#SBATCH --partition=$PARTITION
 #SBATCH --output=makediploidmalesX_%A_%a.out
 #SBATCH --error=makediploidmalesX_%A_%a.err
 
@@ -302,11 +327,13 @@ if [[ -n "$REVERSE_FILE" ]]; then
 fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM Array ID............: \$SLURM_ARRAY_TASK_ID (of $CHUNK_SIZE)"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo "  SLURM account.............: $SBATCH_ACCOUNT"
 echo "  SLURM partition...........: $PARTITION"
 echo ""
 echo "  Dry run mode..............: $DRY_RUN"
@@ -394,11 +421,17 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
 #SBATCH --job-name=concatdiploidmalesX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --ntasks=$SBATCH_TASKS
+#SBATCH --partition=$PARTITION
+if [[ $PARTITION == "gpu" ]]; then
+    #SBATCH --gres=gpu:$SBATCH_GPUS_NODE
+    #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
+fi
+#SBATCH -A $SBATCH_ACCOUNT
 #SBATCH --mem=128G
 #SBATCH --time=02:00:00
 #SBATCH --mail-type=$SBATCH_MAILTYPE
 #SBATCH --mail-user=$SBATCH_MAILUSER
-#SBATCH --partition=$PARTITION
 #SBATCH --output=concatdiploidmalesX_%j.out
 #SBATCH --error=concatdiploidmalesX_%j.err
 
@@ -423,11 +456,17 @@ if [[ -n "$REVERSE_FILE" ]]; then
 fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM memory..............: $SBATCH_MEM"
 echo "  SLURM time................: $SBATCH_TIME"
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
+echo "  SLURM account.............: $SBATCH_ACCOUNT"
 echo "  SLURM partition...........: $PARTITION"
+if [[ $PARTITION == "gpu" ]]; then
+    echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
+    echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
+fi
 echo ""
 echo "  Dry run mode..............: $DRY_RUN"
 echo "  Debug mode................: $DEBUG"
