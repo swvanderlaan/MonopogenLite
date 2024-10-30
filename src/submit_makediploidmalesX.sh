@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Change log:
-# * v1.1.8 2024-10-30: Added options to deal with gpu partitions.
+# * v1.1.8 2024-10-30: Added options to deal with gpu partitions. Added --account option to specify the SLURM account to use. 
 # * v1.1.7 2024-10-28: Fixed an issue where a partition can be given when submitting jobs on the UVA RIVANNA cluster.
 # * v1.1.6 2024-09-30: Fixed an issue where the concatenated VCF was not done in order.
 # * v1.1.5 2024-09-30: Fixed an issue where the concatenated VCF was not sorted prior to indexing.
