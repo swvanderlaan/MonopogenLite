@@ -288,16 +288,17 @@ echo ""
 # Create the SLURM batch job script
 echo "> Create the SLURM batch job script for chunking haploid genotypes in given VCF file."
 
-# Define SLURM options based on partition type
+# Define SLURM options based on partition type for MakeDiploidMalesX
 SBATCH_PARTITION_OPTIONS_MAKEDIPLOID=""
 if [[ "$PARTITION" == "gpu" ]]; then
     SBATCH_PARTITION_OPTIONS_MAKEDIPLOID="#SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
 #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
 #SBATCH -A $SBATCH_ACCOUNT
-#SBATCH --ntasks=$SBATCH_TASKS 
+#SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --time=$SBATCH_TIME"
 else
-    SBATCH_PARTITION_OPTIONS_MAKEDIPLOID="#SBATCH --cpus-per-task=$SBATCH_CPUS #SBATCH --mem=$SBATCH_MEM
+    SBATCH_PARTITION_OPTIONS_MAKEDIPLOID="#SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --mem=$SBATCH_MEM
 #SBATCH --time=$SBATCH_TIME"
 fi
 
@@ -429,18 +430,20 @@ chmod +x $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 # Create the SLURM batch job script
 echo "> Create the SLURM batch job script for concatenating the processed VCF files."
 
-# Define SLURM options based on partition type
+# Define SLURM options based on partition type for ConcatIndex job
 SBATCH_PARTITION_OPTIONS_CONCAT=""
 if [[ "$PARTITION" == "gpu" ]]; then
     SBATCH_PARTITION_OPTIONS_CONCAT="#SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
 #SBATCH --mem-per-gpu=128G
 #SBATCH -A $SBATCH_ACCOUNT
-#SBATCH --ntasks=$SBATCH_TASKS 
+#SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --time=02:00:00"
 else
-    SBATCH_PARTITION_OPTIONS_CONCAT="#SBATCH --cpus-per-task=$SBATCH_CPUS #SBATCH --mem=128G
+    SBATCH_PARTITION_OPTIONS_CONCAT="#SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --mem=128G
 #SBATCH --time=02:00:00"
 fi
+
 
 cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
