@@ -53,12 +53,12 @@ SBATCH_MEM="16G"
 SBATCH_TIME="01:00:00"
 SBATCH_MAILTYPE="FAIL"
 SBATCH_MAILUSER=""
-SBATCH_ACCOUNT="dhl_ec" # Default account
 SBATCH_PARTITION="cpu"  # Default partition
 # GPU settings
 SBATCH_MEM_GPU="16G"
 SBATCH_GPUS_NODE="1"
 SBATCH_TASKS=1
+SBATCH_ACCOUNT="cphg-millerlab" # Default account
 # Other default values
 VERBOSE=0  # Set to 0 by default (not verbose)
 DEBUG=0  # Set to 0 by default (not debug)
@@ -293,13 +293,13 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #SBATCH --job-name=makediploidmalesX
 #SBATCH --array=1-$CHUNK_SIZE
 #SBATCH --cpus-per-task=$SBATCH_CPUS
-#SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --partition=$PARTITION
 #SBATCH --time=$SBATCH_TIME
 if [[ "$PARTITION" == "gpu" ]]; then
     #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
     #SBATCH -A $SBATCH_ACCOUNT
+    #SBATCH --ntasks=$SBATCH_TASKS
 else 
     #SBATCH --mem=$SBATCH_MEM
 fi
@@ -329,13 +329,13 @@ if [[ -n "$REVERSE_FILE" ]]; then
 fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
-echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM Array ID............: \$SLURM_ARRAY_TASK_ID (of $CHUNK_SIZE)"
 echo "  SLURM partition...........: $PARTITION"
 echo "  SLURM time................: $SBATCH_TIME"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
+    echo "  SLURM tasks...............: $SBATCH_TASKS"
     echo "  SLURM account.............: $SBATCH_ACCOUNT"
 else 
     echo "  SLURM memory..............: $SBATCH_MEM"
@@ -435,6 +435,7 @@ if [[ "$PARTITION" == "gpu" ]]; then
     #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
     #SBATCH -A $SBATCH_ACCOUNT
+    #SBATCH --ntasks=$SBATCH_TASKS
 else 
     #SBATCH --mem=128G
 fi
@@ -464,12 +465,12 @@ if [[ -n "$REVERSE_FILE" ]]; then
 fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
-echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM partition...........: $PARTITION"
 echo "  SLURM time................: $SBATCH_TIME"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
+    echo "  SLURM tasks...............: $SBATCH_TASKS"
     echo "  SLURM account.............: $SBATCH_ACCOUNT"
 else 
     echo "  SLURM memory..............: $SBATCH_MEM"
