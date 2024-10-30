@@ -132,8 +132,8 @@ while [[ "$#" -gt 0 ]]; do
         --mail) SBATCH_MAILTYPE="$2"; shift ;;
         --user) SBATCH_MAILUSER="$2"; shift ;;
         --partition) PARTITION="$2"; shift ;;
-        --mem_gpu) SBATCH_MEM_GPU="$2"; shift ;;
-        --gpus_node) SBATCH_GPUS_NODE="$2"; shift ;;
+        --mem-gpu) SBATCH_MEM_GPU="$2"; shift ;;
+        --gpus-node) SBATCH_GPUS_NODE="$2"; shift ;;
         --account) SBATCH_ACCOUNT="$2"; shift ;;
         --dry-run) DRY_RUN=1 ;;  # Set dry run to 1 if --dry-run is passed
         --verbose) VERBOSE=1 ;;  # Set verbose to 1 if --verbose is passed
@@ -235,7 +235,7 @@ fi
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM partition...........: $PARTITION"
-if [[ $PARTITION == "gpu" ]]; then
+if [[ "$PARTITION" == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
 else
@@ -291,7 +291,7 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
 #SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --partition=$PARTITION
-if [[ $PARTITION == "gpu" ]]; then
+if [[ "$PARTITION" == "gpu" ]]; then
     #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
 else 
@@ -426,7 +426,7 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
 #SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --partition=$PARTITION
-if [[ $PARTITION == "gpu" ]]; then
+if [[ "$PARTITION" == "gpu" ]]; then
     #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
 else 
