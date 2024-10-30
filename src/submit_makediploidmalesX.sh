@@ -119,13 +119,6 @@ echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
 echo ""
 
-# Check if conda is installed
-echo "Activating conda environment..."
-source ~/.bashrc
-source ~/.bash_profile
-mamba activate monopogen
-echo ""
-
 # Argument parsing
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -238,11 +231,11 @@ if [[ -n "$REVERSE_FILE" ]]; then
     echo "  Reverse file..............: $REVERSE_FILE"
 fi
 echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM partition...........: $PARTITION"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
-    echo "  SLURM tasks...............: $SBATCH_TASKS"
 else
     echo "  SLURM memory..............: $SBATCH_MEM"
     echo "  SLURM time................: $SBATCH_TIME"
@@ -294,11 +287,11 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #SBATCH --job-name=makediploidmalesX
 #SBATCH --array=1-$CHUNK_SIZE
 #SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --partition=$PARTITION
 if [[ $PARTITION == "gpu" ]]; then
-    #SBATCH --gres=gpu:$SBATCH_GPUS_NODE
+    #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
-    #SBATCH --ntasks=$SBATCH_TASKS
 else 
     #SBATCH --mem=$SBATCH_MEM
     #SBATCH --time=$SBATCH_TIME
@@ -330,12 +323,12 @@ if [[ -n "$REVERSE_FILE" ]]; then
 fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM Array ID............: \$SLURM_ARRAY_TASK_ID (of $CHUNK_SIZE)"
 echo "  SLURM partition...........: $PARTITION"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
-    echo "  SLURM tasks...............: $SBATCH_TASKS"
 else 
     echo "  SLURM memory..............: $SBATCH_MEM"
     echo "  SLURM time................: $SBATCH_TIME"
@@ -429,11 +422,11 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #!/bin/bash
 #SBATCH --job-name=concatdiploidmalesX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
+#SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --partition=$PARTITION
 if [[ $PARTITION == "gpu" ]]; then
-    #SBATCH --gres=gpu:$SBATCH_GPUS_NODE
+    #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
-    #SBATCH --ntasks=$SBATCH_TASKS
 else 
     #SBATCH --mem=128G
     #SBATCH --time=02:00:00
@@ -465,11 +458,11 @@ if [[ -n "$REVERSE_FILE" ]]; then
 fi
 echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
+echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM partition...........: $PARTITION"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
-    echo "  SLURM tasks...............: $SBATCH_TASKS"
 else 
     echo "  SLURM memory..............: $SBATCH_MEM"
     echo "  SLURM time................: $SBATCH_TIME"
