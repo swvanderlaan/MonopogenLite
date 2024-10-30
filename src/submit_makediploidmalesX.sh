@@ -5,7 +5,7 @@
 # * v1.1.7 2024-10-28: Fixed an issue where a partition can be given when submitting jobs on the UVA RIVANNA cluster.
 # * v1.1.6 2024-09-30: Fixed an issue where the concatenated VCF was not done in order.
 # * v1.1.5 2024-09-30: Fixed an issue where the concatenated VCF was not sorted prior to indexing.
-# * v1.1.4 2024-09-30: Fixed an issue where the chrX was not written correctlt to the bed file.
+# * v1.1.4 2024-09-30: Fixed an issue where the chrX was not written correctly to the bed file.
 # * v1.1.3 2024-09-30: Fixed an issue where the script was not properly creating the chunks and intermediate variables.
 # * v1.1.2 2024-09-30: Added --debug mode. 
 # * v1.1.1 2024-09-30: Fixed an issue where the chunking and processing jobs were not properly linked. Added a --dry-run argument to test the script without submitting jobs.
@@ -71,7 +71,7 @@ DRY_RUN=0  # Set to 0 by default (not a dry run)
 print_help() {
     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
     echo ""
-    echo "Usage: $0 --input <input.vcf.gz> --output <output.vcf.gz> [--chunk-size <#>] [--changes <changes.txt.gz>] [--reverse <reverse.txt.gz>] [--job-name <job_name>] [--cpus <num_cpus>] [--mem <memory>] [--time <time>] [--mail <mail-type>] [--user <mail-user>] [--verbose]"
+    echo "Usage: $0 --input <input.vcf.gz> --output <output.vcf.gz> --mpg-dir [/dir/to/MonopogenLite] [--chunk-size <#>] [--changes <changes.txt.gz>] [--reverse <reverse.txt.gz>] [--job-name <job_name>] [--cpus <num_cpus>] [--tasks <tasks>] [--mem <memory>] [--time <time>] [--partition <type of processor>] [--mem_gpu <memory>] [--gpus_node <num_gpus>] [--account <account>] [--dry-run] [--verbose] [--debug] [--help] [--version]"
     echo ""
     echo "Description:"
     echo "  This script will submit a job to the SLURM scheduler to make haploid genotypes in males diploid given a VCF file."
