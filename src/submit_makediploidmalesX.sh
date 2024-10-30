@@ -58,7 +58,7 @@ SBATCH_PARTITION="cpu"  # Default partition
 SBATCH_MEM_GPU="16G"
 SBATCH_GPUS_NODE="1"
 SBATCH_TASKS=1
-SBATCH_ACCOUNT="cphg-millerlab" # Default account
+SBATCH_ACCOUNT="dhl_ec" # Default account
 # Other default values
 VERBOSE=0  # Set to 0 by default (not verbose)
 DEBUG=0  # Set to 0 by default (not debug)
