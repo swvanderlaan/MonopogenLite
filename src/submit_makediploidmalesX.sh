@@ -235,12 +235,12 @@ fi
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM partition...........: $PARTITION"
+echo "  SLURM time................: $SBATCH_TIME"
 if [[ "$PARTITION" == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
 else
     echo "  SLURM memory..............: $SBATCH_MEM"
-    echo "  SLURM time................: $SBATCH_TIME"
 fi
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
@@ -291,12 +291,12 @@ cat << EOF > $SBATCH_SCRIPT_MAKEDIPLOIDMALESX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
 #SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --partition=$PARTITION
+#SBATCH --time=$SBATCH_TIME
 if [[ "$PARTITION" == "gpu" ]]; then
     #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
 else 
     #SBATCH --mem=$SBATCH_MEM
-    #SBATCH --time=$SBATCH_TIME
 fi
 #SBATCH -A $SBATCH_ACCOUNT
 #SBATCH --mail-type=$SBATCH_MAILTYPE
@@ -426,12 +426,12 @@ cat << EOF > $SBATCH_SCRIPT_CONCATINDEX
 #SBATCH --cpus-per-task=$SBATCH_CPUS
 #SBATCH --ntasks=$SBATCH_TASKS
 #SBATCH --partition=$PARTITION
+#SBATCH --time=02:00:00
 if [[ "$PARTITION" == "gpu" ]]; then
     #SBATCH --gpus-per-node=$SBATCH_GPUS_NODE
     #SBATCH --mem-per-gpu=$SBATCH_MEM_GPU
 else 
     #SBATCH --mem=128G
-    #SBATCH --time=02:00:00
 fi
 #SBATCH -A $SBATCH_ACCOUNT
 #SBATCH --mail-type=$SBATCH_MAILTYPE
@@ -462,12 +462,12 @@ echo ""
 echo "  SLURM CPUs................: $SBATCH_CPUS"
 echo "  SLURM tasks...............: $SBATCH_TASKS"
 echo "  SLURM partition...........: $PARTITION"
+echo "  SLURM time................: $SBATCH_TIME"
 if [[ $PARTITION == "gpu" ]]; then
     echo "  SLURM mem GPU.............: $SBATCH_MEM_GPU"
     echo "  SLURM GPUs per node.......: $SBATCH_GPUS_NODE"
 else 
     echo "  SLURM memory..............: $SBATCH_MEM"
-    echo "  SLURM time................: $SBATCH_TIME"
 fi
 echo "  SLURM mail type...........: $SBATCH_MAILTYPE"
 echo "  SLURM mail user...........: $SBATCH_MAILUSER"
