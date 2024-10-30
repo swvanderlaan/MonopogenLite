@@ -148,6 +148,8 @@ done
 # Check if input and output are provided
 if [[ -z "$INPUT_FILE" || -z "$OUTPUT_FILE" || -z "$MPG_DIR" ]]; then
     echo "Error: The --input, --output --mpg-dir arguments are required."
+    echo ""
+    print_help
     exit 1
 fi
 
@@ -157,6 +159,8 @@ MPG=$MPG_DIR
 # Check if input file exists
 if [[ ! -f "$INPUT_FILE" ]]; then
     echo "Error: Input file '$INPUT_FILE' does not exist."
+    echo ""
+    print_help
     exit 1
 fi
 
