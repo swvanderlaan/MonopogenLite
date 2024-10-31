@@ -242,7 +242,7 @@ else
   echo "$VERSION_NAME encountered an error."
 fi
 
-mamba deactivate
+micromamba deactivate
 
 EOF
 
