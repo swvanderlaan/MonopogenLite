@@ -1,4 +1,4 @@
-[MonopogenLite](https://github.com/swvanderlaan/MonopogenLite)<img align="right" height="200" src=images/MonopogenLite_logo_print_transparent.png>
+[MonopogenLite](https://github.com/swvanderlaan/MonopogenLite)<img align="right" height="200" src=images/MonopogenLite_logo_print.png>
 ============
 
 [![Languages](https://skillicons.dev/icons?i=bash,r,py)](https://skillicons.dev) 
