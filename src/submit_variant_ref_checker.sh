@@ -89,7 +89,7 @@ echo "> Parsing command line arguments."
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --input) INPUT_VCF="$2"; shift ;;
-        --mpg-dir) MPG="$2"; shift ;;
+        --mpg-dir) MPG_DIR="$2"; shift ;;
         --job-name) SBATCH_JOB_NAME="$2"; shift ;;
         --cpus) SBATCH_CPUS="$2"; shift ;;
         --mem) SBATCH_MEM="$2"; shift ;;
