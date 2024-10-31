@@ -79,7 +79,7 @@ print_help() {
     echo "Arguments:"
     echo "  --input         The input VCF file. Required."
     echo "  --output        The output VCF file. Required."
-    echo "  --mpg-dir       The directory where MonopogenLite is installed. Default is $MPG_DIR. Optional."
+    echo "  --mpg-dir       The directory where MonopogenLite is installed. Optional."
     echo "  --chunk-size    The number of chunks to process in one go. Default is 100. Optional."
     echo "  --changes       Gzipped file to save the list of changes. Optional."
     echo "  --reverse       Gzipped file with list of changes to reverse. Optional."
