@@ -1,28 +1,31 @@
 [MonopogenLite](https://github.com/swvanderlaan/MonopogenLite)<img align="right" height="200" src=images/MonopogenLite_logo_print.png>
 ============
-
 [![Languages](https://skillicons.dev/icons?i=bash,r,py)](https://skillicons.dev) 
 
 **MonopogenLite** _Germline SNV calling and phasing from single-cell sequencing data (for macOS Sequoia and Linux Rocky8)._
 
+This is a fork of the original [`MonopogenLite`](https://github.com/KChen-lab/Monopogen) which works with python (3.9+), and `samtools` and `bcftools` (v1.21), `vcftools` (v0.1.16), and `tabix` (`htslib`, v1.21), as well as in the context of `Rocky8` (Linux) and macOS Sequoia with [`brew`](https://brew.sh). 
 
-This is a fork of the original [`MonopogenLite`](https://github.com/KChen-lab/Monopogen) which works with python (3.7+), and `samtools`, `vcftools`, and `bcftools`, as well as in the context of `Rocky8` (Linux) and macOS Sequoia with [`brew`](https://brew.sh). 
+`MonopogenLite` was forked from `Monopogen` and edited as such to accommodate the work in [**MetaPlaq**](https://chanzuckerberg.com/science/programs-resources/cell-science/data-insights/metaplaq-integrative-single-cell-meta-analysis-for-atherosclerosis/). In **MetaPlaq** we meta-analyzed 140+ samples with single-cell RNA and ATAC sequencing data which have varying degrees of sequencing quality and depth. The main focus is on genetic ancestry inference and _cis_-acting expression quantitative trait loci (eQTL). Thus, `MonopogenLite` is a light-version of `Monopogen` and only includes the _germline calling_ and _phasing_ of single-nucleotide variants (SNVs) from single-cell sequencing data. It has a few improvements:
 
-`MonopogenLite` was forked from `Monopogen` and edited as such to accommodate the work in [**MetaPlaq**](https://chanzuckerberg.com/science/programs-resources/cell-science/data-insights/metaplaq-integrative-single-cell-meta-analysis-for-atherosclerosis/). In **MetaPlaq** we meta-analyzed 140+ samples with single-cell RNA and ATAC sequencing data which have varying degrees of sequencing quality and depth. The main focus is on genetic ancestry inference and _cis_-acting expression quantitative trait loci (eQTL). Thus, `MonopogenLite` is a light-version of `Monopogen` and only includes the germline calling and phasing of single-nucleotide variants (SNVs) from single-cell sequencing data. It has a few improvements:
-
-* [x] works with the newest versions of `bcftools`, `samtools`, `vcftools`, and `htslib`
-* [x] works with the version 4.1 of `beagle` which still includes the `gl=` option
-* [x] works with `python 3.9+`
-* [x] reproducible workflow to include a genome reference through [`refgenie`](http://refgenie.databio.org/en/latest/) 
-* [x] reproducible workflow to include 1000G phase 3 high-coverage b38 data including 3,202 individuals
-* [x] streamline code 
-* [x] added `--debug` and `--version` flags
-* [x] removed hard-coding of `--platform-library`; now works with _smartseq2_ and _celseq2_, aside of _10x_ data
-* [x] removed hard-coding of `--nthreads` for the phasing step executed through `beagle`
-* [x] improved handling of per-sample or per-cell SNV calling and phasing
-* [x] added script to prepare outputs for TOPMed imputation
-* [x] code improved to only calls bi-allelic SNVs, no structural, INDELs or multi-allelic variants are called
-* [ ] added handling of chromosome X - Issue to tackle: "To ensure proper ploidy of male samples in the phased panel, we converted “0|1”, “1|0”, and “1|1” GTs into a haploid representation (i.e. “1”) in nonPAR regions of chrX in males in the new (v2) version of the chrX VCF." We need to somehow filter out those haploid representations from the nonPAR region - in other words ignore the nonPAR region (for now). 
+* [x] Works with the newest versions of `bcftools`, `samtools`, `vcftools`, `tabix`, and `htslib`.
+* [x] Works with the version 4.1 of `BEAGLE` which still includes the `gl` option.
+* [x] Works with `python 3.9+`.
+* [x] Reproducible workflow to include a genome reference through [`refgenie`](http://refgenie.databio.org/en/latest/).
+* [x] Reproducible workflow to include 1000G phase 3 high-coverage b38 data including 3,202 individuals.
+* [x] Streamline code.
+* [x] Added `--debug` and `--version` flags.
+* [x] Removed hard-coding of `--platform-library`; now works with _smartseq2_ and _celseq2_, aside of _10x_ data.
+* [x] Removed hard-coding of `--nthreads` for the phasing step executed through `BEAGLE`.
+* [x] Improved handling of per-sample or per-cell SNV calling and phasing.
+* [x] Added script to prepare outputs for TOPMed imputation.
+* [x] Code improved to only calls bi-allelic SNVs; no structural, INDELs or multi-allelic variants are called.
+* [x] Added handling of chromosome X - Phased haploid male samples in the phased imputation panel are now converted from "0" or "1" to "0|0" or "1|1", respectively.
+* [x] Utilities work with regular `cpu` or `gpu`.
+* [x] Various utility-scrips:
+  * [x] `compare_vcf2ref.py` -- to compare a given VCF-file to a common reference VCF-file and list the non-overlapping variants.
+  * [x] `variant_ref_checker.py` -- apply `bcftools stat` to calculate statistics on the newly generated reference file (including plotting).
+  * [x] `makediploidmalesX.py` -- make haploid males diploid, or reverse male diploid genotypes to haploid on chromosome X in a given VCF-file.
 
 # Acknowledgements
 Dr. Sander W. van der Laan is funded through EU H2020 TO_AITION (grant number: 848146), EU HORIZON NextGen (grant number: 101136962), EU HORIZON MIRACLE (grant number: 101115381), Health~Holland PPP Allowance ‘Getting the Perfect Image’, and CZI ['MetaPlaq'](https://chanzuckerberg.com/science/programs-resources/cell-science/data-insights/metaplaq-integrative-single-cell-meta-analysis-for-atherosclerosis/).
