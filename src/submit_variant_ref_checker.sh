@@ -69,7 +69,7 @@ echo ""
 echo "Activating conda environment..."
 source ~/.bashrc
 source ~/.bash_profile
-mamba activate monopogen
+micromamba activate monopogen
 echo ""
 
 # Default values for optional parameters
@@ -192,7 +192,7 @@ cat << EOF > $SBATCH_SCRIPT
 
 source ~/.bashrc
 source ~/.bash_profile
-mamba activate monopogen
+micromamba activate monopogen
 
 echo "$VERSION_NAME"
 echo "version $VERSION ($VERSION_DATE)"
