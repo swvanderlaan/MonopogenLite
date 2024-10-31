@@ -71,7 +71,7 @@ DRY_RUN=0  # Set to 0 by default (not a dry run)
 print_help() {
     echo "$VERSION_NAME version $VERSION ($VERSION_DATE)"
     echo ""
-    echo "Usage: $0 --input <input.vcf.gz> --output <output.vcf.gz> --mpg-dir [/dir/to/MonopogenLite] [--chunk-size <#>] [--changes <changes.txt.gz>] [--reverse <reverse.txt.gz>] [--job-name <job_name>] [--cpus <num_cpus>] [--tasks <tasks>] [--mem <memory>] [--time <time>] [--partition <type of processor>] [--mem_gpu <memory>] [--gpus_node <num_gpus>] [--account <account>] [--dry-run] [--verbose] [--debug] [--help] [--version]"
+    echo "Usage: $0 --input <input.vcf.gz> --output <output.vcf.gz> --mpg-dir [/dir/to/MonopogenLite] [--chunk-size <#>] [--changes <changes.txt.gz>] [--reverse <reverse.txt.gz>] [--job-name <job_name>] [--cpus <num_cpus>] [--tasks <tasks>] [--mem <memory>] [--time <time>] [--partition <type of processor>] [--mem-gpu <memory>] [--gpus-node <num_gpus>] [--account <account>] [--mailtype <mail type>] [--mailuser <email>] [--dry-run] [--verbose] [--debug] [--help] [--version]"
     echo ""
     echo "Description:"
     echo "  This script will submit a job to the SLURM scheduler to make haploid genotypes in males diploid given a VCF file."
@@ -87,11 +87,11 @@ print_help() {
     echo "  --tasks         The number of tasks to use. Default is 1. Optional."
     echo "  --mem           The amount of memory to use. Default is 16G. Optional."
     echo "  --time          The maximum time to run the job. Default is 1 hour. Optional."
-    echo "  --mail          The type of mail to send. Default is FAIL. Optional."
-    echo "  --user          The email address to send the mail to. Optional."
+    echo "  --mailtype      The type of mail to send. Default is FAIL. Optional."
+    echo "  --mailuser      The email address to send the mail to. Optional."
     echo "  --partition     SLURM partition to use (default: cpu). Optional."
-    echo "  --mem_gpu       The amount of memory to use on the GPU. Default is 16G. Optional."
-    echo "  --gpus_node     The number of GPUs per node. Default is 1. Optional."
+    echo "  --mem-gpu       The amount of memory to use on the GPU. Default is 16G. Optional."
+    echo "  --gpus-node     The number of GPUs per node. Default is 1. Optional."
     echo "  --account       The SLURM account to use. Default is dhl_ec. Optional."
     echo "  --dry-run       Perform a dry run without submitting the job. Optional."
     echo "  --verbose       Enable verbose output. Optional."
@@ -129,8 +129,8 @@ while [[ "$#" -gt 0 ]]; do
         --tasks) SBATCH_TASKS="$2"; shift ;;
         --mem) SBATCH_MEM="$2"; shift ;;
         --time) SBATCH_TIME="$2"; shift ;;
-        --mail) SBATCH_MAILTYPE="$2"; shift ;;
-        --user) SBATCH_MAILUSER="$2"; shift ;;
+        --mailtype) SBATCH_MAILTYPE="$2"; shift ;;
+        --mailuser) SBATCH_MAILUSER="$2"; shift ;;
         --partition) PARTITION="$2"; shift ;;
         --mem-gpu) SBATCH_MEM_GPU="$2"; shift ;;
         --gpus-node) SBATCH_GPUS_NODE="$2"; shift ;;

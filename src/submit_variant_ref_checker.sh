@@ -34,7 +34,7 @@ Reference: http://opensource.org.
 
 # Argument parsing function
 print_help() {
-    echo "Usage: $0 --input <full-path-to-input.vcf.gz> [--partition <cpu or gpu>] [--dry-run] [--verbose] [--help] [--version] [--job-name <variant_ref_checker>] [--cpus <1>] [--mem <memory>] [--time <time>] [--mailtype <mail type>] [--mailuser <email>]"
+    echo "Usage: $0 --input <full-path-to-input.vcf.gz> [--partition <cpu or gpu>] [--job-name <variant_ref_checker>] [--cpus <1>] [--mem <memory>] [--time <time>] [--mailtype <mail type>] [--mailuser <email>] [--dry-run] [--verbose] [--debug] [--help] [--version]"
     echo
     echo "  --input         Full path to the input VCF file (including .vcf.gz). Required."
     echo "  --mpg-dir       The directory where MonopogenLite is installed. Optional."
