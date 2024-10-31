@@ -1,6 +1,8 @@
 [MonopogenLite](https://github.com/swvanderlaan/MonopogenLite)<img align="right" height="200" src=images/MonopogenLite_logo_print_transparent.png>
 ============
 
+[![Languages](https://skillicons.dev/icons?i=bash,r,py)](https://skillicons.dev) 
+
 **MonopogenLite** _Germline SNV calling and phasing from single-cell sequencing data (for macOS Sequoia and Linux Rocky8)._
 
 
