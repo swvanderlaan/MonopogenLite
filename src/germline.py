@@ -259,6 +259,7 @@ def BamFilter(myargs):
 
 	# Process reads and group them by UMI and position
 	for s in infile.fetch(search_chr):
+		val = None
 		if s.has_tag("NM"):
 			if debug:
 				logger.info(f"Read {s.query_name} has NM tag.")
@@ -269,7 +270,8 @@ def BamFilter(myargs):
 			val = s.get_tag("nM")
 
         # Filter by mismatch and read length
-		if val < max_mismatch and s.query_length >= min_read_length:
+		# if val < max_mismatch and s.query_length >= min_read_length:
+		if val is not None and val < max_mismatch and s.query_length >= min_read_length:
 			if debug: 
 				logger.info(f"Read {s.query_name} has {val} mismatches and length {s.query_length}.")
 			if umi_collapse and s.has_tag(umi_tag):  # Use the specified UMI tag
