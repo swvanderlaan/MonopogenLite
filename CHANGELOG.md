@@ -2,6 +2,14 @@
 
 All notable changes to MonopogenLite will be documented in this file.
 
+## 🛠️ v1.2.6 — 2025-06-05
+### Fixed
+- 🐛 Fixed `runPreprocess.sh` and `runGermline.sh` to be more flexible, including submission-scripts.
+### Updated
+- 🏷️ Updated file names of submission scripts.
+### Added
+- 🧬 Added `cellsnp_vcf_merger.py` (and associated `cellsnp_vcf_merger_submit.sh`) to merge per-sample VCF files into 1 VCF per study.
+
 ## 🛠️ v1.2.5 — 2025-06-03
 ### Fixed
 - 🐛 **`germline.py`**: Fixed an issue where the variable `val` could be referenced before assignment in the `BamFilter` function. Now properly checks `val is not None` before comparing mismatch values.

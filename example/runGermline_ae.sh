@@ -17,12 +17,9 @@
 # provided in the SLURM header.
 # 
 # Change log:
-# v1.1.2, 2024-09-19. Added optional --dry-run argument.
-# v1.1.1, 2024-09-18. Changed reference to MonopogenLite.
-# v1.0.0, 2024-09-11. Initial version.
-# Version: 1.1.2
+# Version: 1.2.6
 # Author: Sander W. van der Laan
-# Date: 2024-09-19
+# Date: 2025-06-05
 # Usage: sbatch runGermline.sh
 # Arguments:
 #   --help, -h       Show this help message
