@@ -17,7 +17,7 @@
 # Run germline variant calling of Monopogen on the provided BAM files.
 
 # --- Define script metadata ---
-VERSION="v1.2.6"
+VERSION="v1.2.7"
 VERSION_DATE="2025-06-05"
 VERSION_NAME="runGermline"
 VERSION_NAME_TEXT="Calling SNPs for scRNA-seq or snATAC-seq data using MonopogenLite."
@@ -230,24 +230,24 @@ echo "> Germline analysis for sample ${SAMPLE} in study ${STUDY}..."
 if [ "$DRY_RUN" = true ]; then
     echo "Dry run mode activated. No jobs will be executed."
     MONOPOGEN_CMD="python ${MPG}/src/MonopogenLite.py germline \
-        --region \"${REGION_FILE:-$REGION_LIST}\" \
-        --reference \"${GRCh38}\" \
-        --imputation-panel \"${IMP_PANEL}\" \
+        --region ${REGION_FILE:-$REGION_LIST} \
+        --reference ${GRCh38} \
+        --imputation-panel ${IMP_PANEL} \
         --step all \
         --max-softClipped 3 \
-        --app-path \"${MPG}/apps\" \
+        --app-path ${MPG}/apps \
         --nthreads 8 \
-        --out \"${MONOPOGEN_ROOT}/monopogen_${SAMPLE}\" --verbose --norun"
+        --out ${MONOPOGEN_ROOT}/monopogen_${SAMPLE} --verbose --norun"
 else
     MONOPOGEN_CMD="python ${MPG}/src/MonopogenLite.py germline \
-        --region \"${REGION_FILE:-$REGION_LIST}\" \
-        --reference \"${GRCh38}\" \
-        --imputation-panel \"${IMP_PANEL}\" \
+        --region ${REGION_FILE:-$REGION_LIST} \
+        --reference ${GRCh38} \
+        --imputation-panel ${IMP_PANEL} \
         --step all \
         --max-softClipped 3 \
-        --app-path \"${MPG}/apps\" \
+        --app-path ${MPG}/apps \
         --nthreads 8 \
-        --out \"${MONOPOGEN_ROOT}/monopogen_${SAMPLE}\" --verbose"
+        --out ${MONOPOGEN_ROOT}/monopogen_${SAMPLE} --verbose"
 fi
 
 # --- Run the constructed command ---

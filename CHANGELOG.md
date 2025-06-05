@@ -2,6 +2,18 @@
 
 All notable changes to MonopogenLite will be documented in this file.
 
+## 🛠️ v1.2.7 — 2025-06-05
+### Fixed
+- 🐛 **`runGermline.sh`**: Fixed issue where double quotes would throw errors or silently misinterpret the python command.
+- 🐛 **`germline.py`**: Fixed typo in `robust_get_tag()` where `tagname` was undefined.
+- 🔍 **`germline.py`**: Improved logic in `BamFilter()` to safely strip `'chr'` prefix only when needed.
+- 🔧 **`germline.py`**: Updated `validate_sample_list_file()` to raise `ValueError` instead of `sys.exit(1)` for better error propagation.
+- 📛 **`germline.py`**: Prevented double `'chr'` prefix in `addChr()` header rewriting.
+### Improved
+- 🧠 **`germline.py`**: Enhanced validation error messages and traceback logging.
+- 🧪 **`germline.py`**: Refactored read group header assignment: replaced float `LB=0.1` with string-based sampleID and added fallback for unknown platforms.
+
+
 ## 🛠️ v1.2.6 — 2025-06-05
 ### Fixed
 - 🐛 Fixed `runPreprocess.sh` and `runGermline.sh` to be more flexible, including submission-scripts.

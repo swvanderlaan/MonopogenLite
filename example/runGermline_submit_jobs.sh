@@ -86,13 +86,16 @@ fi
 
 # --- Start loop to submit jobs for each study ---
 for STUDY in "${STUDIES[@]}"; do
-    echo "Submitting $STUDY >>>"
-    ARRAY_RANGE=$(bash $SCRIPT --input-dir "$INPUT_DIR" --study "$STUDY" --generate-array | awk '{print $5}')
+    echo "Submitting $STUDY germline variant calling job..."
+    
+    # Extract array range safely
+    ARRAY_RANGE=$(bash "$SCRIPT" --input-dir "$INPUT_DIR" --study "$STUDY" --generate-array | awk '/--array/ {print $5}')
 
     if [ -z "$ARRAY_RANGE" ]; then
-        echo "Warning: no array range generated for $STUDY. Skipping."
+        echo "⚠️ Warning: No array range generated for $STUDY. Skipping."
         continue
     fi
+
     echo "Array range for $STUDY: $ARRAY_RANGE"
-    sbatch $ARRAY_RANGE $SCRIPT --input-dir "$INPUT_DIR" --study "$STUDY"
+    sbatch "$ARRAY_RANGE" "$SCRIPT" --input-dir "$INPUT_DIR" --study "$STUDY"
 done

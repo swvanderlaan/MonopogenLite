@@ -83,13 +83,12 @@ def validate_sample_list_file(args):
 					assert 0.0 <= float(record[2]) and float(record[2]) <= 1.0, "Contamination rate of sample {0} has to be a float number between 0 and 1 instead of {1}!".format(record[0], record[2])
 				except:
 					logger.error("Contamination rate of sample {0} has to be a float number between 0 and 1 instead of {1}!".format(record[0], record[2]))
-					sys.exit(1)
+					raise ValueError(f"Contamination rate of sample {record[0]} is invalid: {record[2]}")
 
-	except Exception:
+	except Exception as e:
 		logger.error("There is something wrong with the sample index file. Check the logs for more information.")
-		print(sys.exc_info())
-            
-		raise sys.exc_info()[0]
+		logger.exception(e)
+		raise
 
 # Function to validate the input region file
 def validate_user_setting_germline(args):
@@ -141,7 +140,8 @@ def addChr(in_bam, samtools, verbose=False):
 	input_bam = pysam.AlignmentFile(in_bam,"rb")
 	new_head = input_bam.header.to_dict()
 	for seq in new_head['SQ']:
-		seq['SN'] = prefix  + seq['SN']
+		if not seq['SN'].startswith(prefix):
+			seq['SN'] = prefix + seq['SN']
 	# create output BAM with newly defined header
 	with pysam.AlignmentFile(out_bam, "wb", header=new_head) as outf:
 		for read in input_bam.fetch():
@@ -216,8 +216,9 @@ def BamFilter(myargs):
 			cnt=cnt+1
 	if cnt==0:
 		if debug:
-			logger.info("The contig {} does not contain the prefix 'chr' and we will add 'chr' on it ".format(search_chr))
-		search_chr = search_chr[3:]
+			logger.info("Contigs do not contain the prefix 'chr'. Removing 'chr' from search_chr if present.")
+		if search_chr.startswith("chr"):
+			search_chr = search_chr[3:]
 
 	# Read the header information from the BAM file -- 2024-09-17
 	tp = infile.header.to_dict()
@@ -240,12 +241,35 @@ def BamFilter(myargs):
 		# - Smart-seq2 or CEL-Seq2: These platforms involve different library preparation protocols 
 		# and sequencing setups. 
 		# Set up the sample ID and flowcell/experiment for LB based on platform
+		### --- OLD CODE -- possibly remove ---
+		# if platform_library == "10x":
+		# 	logger.info(f"Platform is {platform_library} -- setting library identifier (LB) to [0.1].")
+		# 	tp1 = [{'SM':sampleID,'ID':sampleID, 'LB':0.1, 'PL':"ILLUMINA", 'PU':sampleID}]
+		# elif platform_library == "smartseq2" or platform_library == "celseq2":
+		# 	logger.info(f"Platform is {platform_library} -- only setting sample ID (SM) and cell/sample identifier (ID).")
+		# 	tp1 = [{'SM':sampleID,'ID':sampleID}]
+		# tp.update({'RG': tp1})
+		# # this debug produces a lot of output
+		# if debug:
+		# 	print(f"Read group information: {tp1} (original: {tp})")
+		# NEW code -- 2025-06-05
+		# Initialize the read group (RG) information
+		logger.info(f"Initializing read group (RG) information for sample {sampleID}.")
+		# Create a list to hold the read group information
+		tp1 = [{'SM': sampleID, 'ID': sampleID}]  # Base RG fields
+
 		if platform_library == "10x":
-			logger.info(f"Platform is {platform_library} -- setting library identifier (LB) to [0.1].")
-			tp1 = [{'SM':sampleID,'ID':sampleID, 'LB':0.1, 'PL':"ILLUMINA", 'PU':sampleID}]
-		elif platform_library == "smartseq2" or platform_library == "celseq2":
-			logger.info(f"Platform is {platform_library} -- only setting sample ID (SM) and cell/sample identifier (ID).")
-			tp1 = [{'SM':sampleID,'ID':sampleID}]
+			logger.info(f"Platform is {platform_library} -- adding LB, PU, and PL fields.")
+			tp1[0].update({
+				'LB': sampleID,  # use sampleID or similar string-based identifier
+				'PU': sampleID,
+				'PL': "ILLUMINA"
+			})
+		elif platform_library in ["smartseq2", "celseq2"]:
+			logger.info(f"Platform is {platform_library} -- using minimal RG fields.")
+		else:
+			logger.warning(f"Unknown platform_library: {platform_library} -- using default RG fields.")
+
 		tp.update({'RG': tp1})
 		# this debug produces a lot of output
 		if debug:
@@ -308,7 +332,7 @@ def BamFilter(myargs):
 	if cnt == 0:
 		# Add the chr prefix to the BAM file -- 2024-09-17
 		addChr(out + "/Bam/" +  id+ "_" + chr+ ".filter.bam", samtools, verbose=myargs.get("verbose", False))
-	bamfile = out + "/Bam/" +  id+ "_" + chr+ ".filter.bam"
+	bamfile = out + "/Bam/" +  id+ "_" + chr + ".filter.bam"
 	return(bamfile)
 
 # Function to get the tag and otherwise return an error message
@@ -316,7 +340,7 @@ def robust_get_tag(read, tag_name):
 	try:  
 		return read.get_tag(tag_name)
 	except KeyError:
-		return f"ERROR: tag {tagname} not found -- NotFound"
+		return f"ERROR: tag {tag_name} not found -- NotFound"
 
 # Function to extract the command errors if any
 def runCMD(cmd):
@@ -327,4 +351,3 @@ def runCMD(cmd):
 	else:
 		logger.error(f"ERROR: Command '{cmd}' failed with error: {result.stderr}")
 		return None  # Handle failure case if needed
-
