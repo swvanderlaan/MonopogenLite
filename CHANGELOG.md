@@ -2,6 +2,13 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.3.1 -- 2025-06-05
+### Improved doc strings
+- 📝 Improved doc strings in `MonopogenLite.py` for better clarity and understanding of functions.
+### Smaller Fixes
+- 🐛 Fixed issue with indentations. 
+
+
 ## 🛠️ v1.3.0 -- Major Patch -— 2025-06-05
 ### Major Enhancements & Refactors in `MonopogenLite.py`
 - 🧱 Refactored command generation into helper functions:

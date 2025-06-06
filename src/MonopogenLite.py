@@ -1,6 +1,33 @@
 #!/usr/bin/env python3
 """
 The main interface of MonopgenLite.
+
+MonopogenLite is a lightweight version of Monopogen, a tool for single-cell variant calling and phasing.
+It is designed to perform germline variant calling and phasing from single-cell sequencing data.
+It is a simplified version of Monopogen, focusing on germline variant calling and phasing, since 
+de novo calling of variants is not feasible with most single-cell sequencing data. 
+
+Arguments:
+	- `--app_path`: Path to the application directory containing the Beagle JAR file.
+	- `--nthreads`: Number of threads to use for processing.
+	- `--debug`: Enable debug mode for verbose output.
+	- `--verbose`: Enable verbose output.
+	- `--out`: Output directory where results will be saved.
+	- `--region`: Path to a file containing regions to process, one per line.
+	- `--reference`: Path to the reference genome FASTA file.
+	- `--imputation_panel`: Path to the imputation panel VCF file.
+	- `--max_softClipped`: Maximum number of soft-clipped bases allowed in reads.
+	- `--max_mismatch`: Maximum number of mismatches allowed in reads (for pre-processing).
+	- `--platform_library`: Platform library used for sequencing (e.g., Illumina, PacBio).
+	- `--min_read_length`: Minimum read length for filtering reads (for pre-processing).
+	- `--umi_collapse`: UMI collapse option, can be a boolean or a string indicating the UMI tag.
+Returns:
+	- pre-processed BAM files in the specified output directory needed for germline variant calling.
+	- Germline variant calling and phasing results in the specified output directory.
+	- Job scripts for each region processed, which can be run in parallel.
+
+This script is part of the MonopogenLite project, which is licensed under the MIT License.
+
 """
 
 # Importing the required libraries -- 2024-09-17
@@ -34,8 +61,8 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.2.7'
-VERSION_DATE = '2025-06-05'
+VERSION = '1.3.1'
+VERSION_DATE = '2025-06-06'
 COPYRIGHT = 'Copyright 1979-2025. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -63,7 +90,7 @@ Reference: http://opensource.org.
 LIB_PATH = Path(__file__).resolve().parent / "pipelines/lib"
 LIB_PATH = str(LIB_PATH)
 if LIB_PATH not in sys.path:
-    sys.path.insert(0, LIB_PATH)
+	sys.path.insert(0, LIB_PATH)
 
 PIPELINE_BASEDIR = str(Path(sys.argv[0]).resolve().parent)
 CFG_DIR = str(Path(PIPELINE_BASEDIR) / "cfg")
@@ -84,11 +111,11 @@ def setup_logger(logfile_path, level=logging.DEBUG):
 		logfile_path (str): Path to the log file.
 		level (int): Logging level (default: logging.DEBUG).
 	"""
-
-    handler = logging.FileHandler(logfile_path)
-    handler.setFormatter(logging.Formatter('[{asctime}] {levelname:8s} {filename} {message}', style='{'))
-    logger.addHandler(handler)
-    logger.setLevel(level)
+	
+	handler = logging.FileHandler(logfile_path)
+	handler.setFormatter(logging.Formatter('[{asctime}] {levelname:8s} {filename} {message}', style='{'))
+	logger.addHandler(handler)
+	logger.setLevel(level)
 
 # Function to print errors if any exist -- 2024-08-08
 def error_check(all, output, step):
@@ -100,15 +127,15 @@ def error_check(all, output, step):
 		step (str): The step of the pipeline being checked.
 	"""
 
-		job_fail = 0
-		for id in all:
-			if id not in output:
-				logger.error("In "+ step + " step " + id + " failed!")
-				job_fail = job_fail + 1
+	job_fail = 0
+	for id in all:
+		if id not in output:
+			logger.error("In "+ step + " step " + id + " failed!")
+			job_fail = job_fail + 1
 
-		if job_fail > 0:
-			logger.error("Failed! See instructions above.")
-			sys.exit(1)
+	if job_fail > 0:
+		logger.error("Failed! See instructions above.")
+		sys.exit(1)
 
 # Utility function to log tool versions -- 2024-06-05
 def log_tool_versions(logger):
@@ -118,47 +145,47 @@ def log_tool_versions(logger):
 		logger (logging.Logger): Logger instance to log the tool versions.
 	"""
 
-    # Use the global 'args' variable if present, else skip beagle version
-    try:
-        app_path = args.app_path
-    except Exception:
-        app_path = None
-    tools = {
-        "bcftools": ["bcftools", "--version"],
-    }
-    if app_path:
-        tools["beagle"] = ["java", "-jar", str(Path(app_path) / "beagle.jar")]
-    for name, cmd in tools.items():
-        try:
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            version_info = result.stdout.strip().split('\n')[0] or result.stderr.strip().split('\n')[0]
-            logger.info(f"{name} version: {version_info}")
-        except Exception as e:
-            logger.warning(f"Failed to retrieve version for {name}: {e}")
+	# Use the global 'args' variable if present, else skip beagle version
+	try:
+		app_path = args.app_path
+	except Exception:
+		app_path = None
+	tools = {
+		"bcftools": ["bcftools", "--version"],
+	}
+	if app_path:
+		tools["beagle"] = ["java", "-jar", str(Path(app_path) / "beagle.jar")]
+	for name, cmd in tools.items():
+		try:
+			result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+			version_info = result.stdout.strip().split('\n')[0] or result.stderr.strip().split('\n')[0]
+			logger.info(f"{name} version: {version_info}")
+		except Exception as e:
+			logger.warning(f"Failed to retrieve version for {name}: {e}")
 
 # Function to build sample commands for variant calling and phasing
 def build_sample_commands(samples, chr, out_path, args):
-    commands = []
-    for sample in samples:
-        bam_path = sample["bam"]
-        sampleID = sample["sampleID"]
-        output_vcf = out_path / "VCF" / f"{sampleID}.chr{chr}.bcf"
-        bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chr, out_path)
-        if args.impute:
-            if args.genotype:
-                beagle_cmd = generate_beagle_cmd_gt(output_vcf, args.app_path, out_path)
-            else:
-                beagle_cmd = generate_beagle_cmd_gp(output_vcf, args.app_path, out_path)
-            command = f"{bcftools_cmd} && {beagle_cmd}"
-        else:
-            command = bcftools_cmd
-        commands.append((sampleID, command))
-    return commands
+	commands = []
+	for sample in samples:
+		bam_path = sample["bam"]
+		sampleID = sample["sampleID"]
+		output_vcf = out_path / "VCF" / f"{sampleID}.chr{chr}.bcf"
+		bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chr, out_path)
+		if args.impute:
+			if args.genotype:
+				beagle_cmd = generate_beagle_cmd_gt(output_vcf, args.app_path, out_path)
+			else:
+				beagle_cmd = generate_beagle_cmd_gp(output_vcf, args.app_path, out_path)
+			command = f"{bcftools_cmd} && {beagle_cmd}"
+		else:
+			command = bcftools_cmd
+		commands.append((sampleID, command))
+	return commands
 
 # Function to write a job script for germline variant calling
 def write_job_script(jobid, command, out_path, version="1.2.7", verbose=False):
-    script_path = out_path / "scripts" / f"runGermline_{jobid}.sh"
-    slurm_script_content = f"""#!/bin/bash
+	script_path = out_path / "scripts" / f"runGermline_{jobid}.sh"
+	slurm_script_content = f"""#!/bin/bash
 echo "[MonopogenLite germline.py v{version}] Start time: $(date)"
 echo "[MonopogenLite germline.py v{version}] Running job: {jobid}"
 
@@ -169,7 +196,7 @@ conda activate monopogen
 
 echo "[MonopogenLite germline.py v{version}] End time: $(date)"
 """
-    write_slurm_script(script_path, slurm_script_content, verbose=verbose)
+	write_slurm_script(script_path, slurm_script_content, verbose=verbose)
 
 # Helper function to write SLURM (shell) scripts
 def write_slurm_script(path, content, verbose=False):
@@ -181,11 +208,11 @@ def write_slurm_script(path, content, verbose=False):
 		verbose (bool): If True, print a message indicating the script was written.
 	"""
 
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w") as f:
-        f.write(content)
-    if verbose:
-        print(f"  - SLURM script written to: {path}")
+	path.parent.mkdir(parents=True, exist_ok=True)
+	with path.open("w") as f:
+		f.write(content)
+	if verbose:
+		print(f"  - SLURM script written to: {path}")
 
 # Function to generate bcftools command for mpileup and filtering
 def generate_bcftools_command(bam_filter, jobid, reference, out):
@@ -198,13 +225,13 @@ def generate_bcftools_command(bam_filter, jobid, reference, out):
 		out (str): Output directory where the VCF file will be saved.
 	"""
 
-    return (
-        f"{bcftools} mpileup -b {bam_filter} --fasta-ref {reference} --regions {jobid} --min-MQ 20 --min-BQ 20 --annotate FORMAT/DP "
-        f"| {bcftools} norm -m-both --rm-dup both --check-ref wx --fasta-ref {reference} "
-        f"| {bcftools} annotate --set-id '%CHROM:%POS:%REF:%ALT' "
-        f"| {bcftools} filter --exclude 'ALT !~ \"^[ATGC]$\"' "
-        f"| {bcftools} +fill-tags -Oz -o {out}/germline/{jobid}.gl.vcf.gz"
-    )
+	return (
+		f"{bcftools} mpileup -b {bam_filter} --fasta-ref {reference} --regions {jobid} --min-MQ 20 --min-BQ 20 --annotate FORMAT/DP "
+		f"| {bcftools} norm -m-both --rm-dup both --check-ref wx --fasta-ref {reference} "
+		f"| {bcftools} annotate --set-id '%CHROM:%POS:%REF:%ALT' "
+		f"| {bcftools} filter --exclude 'ALT !~ \"^[ATGC]$\"' "
+		f"| {bcftools} +fill-tags -Oz -o {out}/germline/{jobid}.gl.vcf.gz"
+	)
 
 # Function to generate Beagle command for genotype probabilities
 def generate_beagle_cmd_gp(jobid, out, imputation_vcf, chrom, nthreads_downsample):
@@ -218,11 +245,11 @@ def generate_beagle_cmd_gp(jobid, out, imputation_vcf, chrom, nthreads_downsampl
 		nthreads_downsample (int): Number of threads to use for downsampling.
 	"""
 
-    return (
-        f"{java} -Xmx20g -jar {beagle} gl={out}/germline/{jobid}.gl.vcf.gz ref={imputation_vcf} "
-        f"chrom={chrom} out={out}/germline/{jobid}.gp impute=false modelscale=2 "
-        f"nthreads={nthreads_downsample} gprobs=true niterations=0"
-    )
+	return (
+		f"{java} -Xmx20g -jar {beagle} gl={out}/germline/{jobid}.gl.vcf.gz ref={imputation_vcf} "
+		f"chrom={chrom} out={out}/germline/{jobid}.gp impute=false modelscale=2 "
+		f"nthreads={nthreads_downsample} gprobs=true niterations=0"
+	)
 
 # Function to generate Beagle command for genotype phasing
 def generate_beagle_cmd_gt(jobid, out, imputation_vcf, chrom, nthreads_downsample):
@@ -236,11 +263,11 @@ def generate_beagle_cmd_gt(jobid, out, imputation_vcf, chrom, nthreads_downsampl
 		nthreads_downsample (int): Number of threads to use for downsampling.
 	"""
 
-    return (
-        f"{java} -Xmx20g -jar {beagle} gt={out}/germline/{jobid}.gp.vcf.gz ref={imputation_vcf} "
-        f"chrom={chrom} out={out}/germline/{jobid}.phased impute=false modelscale=2 "
-        f"nthreads={nthreads_downsample} gprobs=true niterations=0"
-    )
+	return (
+		f"{java} -Xmx20g -jar {beagle} gt={out}/germline/{jobid}.gp.vcf.gz ref={imputation_vcf} "
+		f"chrom={chrom} out={out}/germline/{jobid}.phased impute=false modelscale=2 "
+		f"nthreads={nthreads_downsample} gprobs=true niterations=0"
+	)
 
 # Function to make output directories
 def prepare_output_dirs(base_out, subdirs, verbose=False):
@@ -251,13 +278,13 @@ def prepare_output_dirs(base_out, subdirs, verbose=False):
 		subdirs (list): List of subdirectory names to create.
 		verbose (bool): If True, print messages about created directories.
 	"""
-    base_out = Path(base_out)
-    base_out.mkdir(parents=True, exist_ok=True)
-    for subdir in subdirs:
-        path = base_out / subdir
-        path.mkdir(parents=True, exist_ok=True)
-        if verbose:
-            print(f"  - Created directory: {path}")
+	base_out = Path(base_out)
+	base_out.mkdir(parents=True, exist_ok=True)
+	for subdir in subdirs:
+		path = base_out / subdir
+		path.mkdir(parents=True, exist_ok=True)
+		if verbose:
+			print(f"  - Created directory: {path}")
 
 # Function to perform germline variant calling -- 2024-08-08
 def germline(args):
@@ -335,7 +362,7 @@ def germline(args):
 				print(f"  -- DEBUGGING: number of threads used: {args.nthreads}, attempt 2-fold downsampling these for phasing.")
 			nthreads_downsample=int(args.nthreads/2)
 
-			# NEW COMMANDS with bcftools -- 2024-09-17
+			# NEW CODE with bcftools -- 2025-06-05
 			# germline variant calling from mpileup
 			# https://samtools.github.io/bcftools/bcftools.html	
 			# https://www.biostars.org/p/425139/
@@ -374,17 +401,17 @@ def germline(args):
 			if args.debug:
 				print(f"    -- DEBUGGING: Command to run: {cmd1}")
 
-			# NEW code -- 2024-09-17
+			# NEW code -- 2025-06-05
 			# germline variant phasing of genotype probabilities
 			cmd3 = generate_beagle_cmd_gp(jobid, str(out_path), imputation_vcf, record[0], nthreads_downsample)
 			
-			# NEW code -- 2024-09-17
+			# NEW code -- 2025-06-05
 			if args.verbose:
 				print(f"    * germline variant phasing of genotype probabilities")
 			if args.debug:
 				print(f"    -- DEBUGGING: Command to run: {cmd3}")
 
-			# NEW code -- 2024-09-17
+			# NEW code -- 2025-06-05
 			# germline variant phasing of genotypes
 			# cmd5 = java + " -Xmx20g -jar " + beagle +  " gt=" +  out + "/germline/" +  jobid + ".germline.vcf"  +  " ref=" +  imputation_vcf  +  "  chrom=" + record[0]  + " out="   +  out + "/germline/" + jobid+ ".phased " + "impute=false modelscale=2 nthreads=" + nthreads_downsample + " gprobs=true niterations=0"
 			# cmd5 = cmd5 + "\n" + "rm -v " +  out + "/germline/" +  jobid + ".germline.vcf" 
@@ -397,7 +424,7 @@ def germline(args):
 				print(f"    -- DEBUGGING: Command to run: {cmd5}")
 
 			# NEW code -- 2025-06-05
-			# NEW: Use build_sample_commands and write_job_script to generate job scripts
+			# Use build_sample_commands and write_job_script to generate job scripts
 			# These should replace the above job script generation logic.
 			# Assumes build_sample_commands(samples, chr, out_path, args) returns a list of (jobid, command) tuples.
 			# Since the current function is per-region, we need to adapt the context.
@@ -487,126 +514,126 @@ def preProcess(args):
 		args (argparse.Namespace): Parsed command-line arguments.
 	"""
 
-    logger.info("Performing data preprocess before variant calling with the following arguments.")
-    print_parameters_given(args)
+	logger.info("Performing data preprocess before variant calling with the following arguments.")
+	print_parameters_given(args)
 
-    if not os.path.isfile(args.bamFile):
-        print(f"ERROR: The list of bam file(s) '{args.bamFile}' cannot be found!")
-        sys.exit(1)
+	if not os.path.isfile(args.bamFile):
+		print(f"ERROR: The list of bam file(s) '{args.bamFile}' cannot be found!")
+		sys.exit(1)
 
-    # Create necessary directories -- 2024-09-17
-    if args.verbose:
-        print(f"\n> Checking the existence of the necessary output directories. If they do not exist, they will be created.")
-    if not args.out:
-        print(f"ERROR: Output directory not specified!")
-        sys.exit(1)
-    prepare_output_dirs(args.out, ['preprocess', 'scripts'], verbose=args.verbose)
+	# Create necessary directories -- 2024-09-17
+	if args.verbose:
+		print(f"\n> Checking the existence of the necessary output directories. If they do not exist, they will be created.")
+	if not args.out:
+		print(f"ERROR: Output directory not specified!")
+		sys.exit(1)
+	prepare_output_dirs(args.out, ['preprocess', 'scripts'], verbose=args.verbose)
 
-    sample = []
-    # Check the existence of the bam files -- 2024-09-17
-    if args.verbose:
-        print(f"> Checking the existence of the bam files.")
-    with open(args.bamFile) as f_in:
-        for line in f_in:
-            record = line.strip().split(",")
-            sample.append(record[0])
-            if args.verbose:
-                print(f"> Checking sample {record[0]}")
-            logger.debug("Checking sample {}".format(record[0]))
-            if len(record) != 2:
-                print(f"ERROR: Line with sample name '{record[0]}' does not have exactly 2 comma-delimited columns!")
-                sys.exit(1)
-            bam_path = Path(record[1])
-            if not bam_path.is_file():
-                print(f"ERROR: BAM file '{record[1]}' cannot be found!")
-                sys.exit(1)
-            if not (bam_path.parent / (bam_path.name + ".bai")).is_file() and not (bam_path.with_suffix(bam_path.suffix + ".bai")).is_file():
-                # Try both conventions: file.bam.bai and file.bai
-                print(f"ERROR: BAM index '{record[1]}.bai' is missing!")
-                sys.exit(1)
+	sample = []
+	# Check the existence of the bam files -- 2024-09-17
+	if args.verbose:
+		print(f"> Checking the existence of the bam files.")
+	with open(args.bamFile) as f_in:
+		for line in f_in:
+			record = line.strip().split(",")
+			sample.append(record[0])
+			if args.verbose:
+				print(f"> Checking sample {record[0]}")
+			logger.debug("Checking sample {}".format(record[0]))
+			if len(record) != 2:
+				print(f"ERROR: Line with sample name '{record[0]}' does not have exactly 2 comma-delimited columns!")
+				sys.exit(1)
+			bam_path = Path(record[1])
+			if not bam_path.is_file():
+				print(f"ERROR: BAM file '{record[1]}' cannot be found!")
+				sys.exit(1)
+			if not (bam_path.parent / (bam_path.name + ".bai")).is_file() and not (bam_path.with_suffix(bam_path.suffix + ".bai")).is_file():
+				# Try both conventions: file.bam.bai and file.bai
+				print(f"ERROR: BAM index '{record[1]}.bai' is missing!")
+				sys.exit(1)
 
-    # Handle UMI collapse and UMI tag -- 2024-09-18
-    if args.umi_collapse:
-        umi_collapse = True
-        umi_tag = args.umi_collapse if isinstance(args.umi_collapse, str) else "UMI"
-    else:
-        umi_collapse = False
-        umi_tag = None
+	# Handle UMI collapse and UMI tag -- 2024-09-18
+	if args.umi_collapse:
+		umi_collapse = True
+		umi_tag = args.umi_collapse if isinstance(args.umi_collapse, str) else "UMI"
+	else:
+		umi_collapse = False
+		umi_tag = None
 
-    para_lst = []
-    # Process each sample in parallel -- 2024-09-18
-    # A list of bam files for each sample is expected
-    # sample1, /path/to/sample1.bam
-    # sample2, /path/to/sample2.bam
-    with open(args.bamFile) as f_in:
-        for line in f_in:
-            record = line.strip().split(",")
-            if args.verbose:
-                print(f"> PreProcessing sample {record[0]}")
-            logger.debug("PreProcessing sample {}".format(record[0]))
-            # Process chromosome 1-22 -- 2024-09-16
-            if args.verbose:
-                print(f"  - Processing chromosomes 1-22, X...")
-            for chr in range(1, 23):
-                if args.debug:
-                    print(f"  -- DEBUGGING: chromosome [{chr}]")
-                para_single = dict(
-                    chr="chr" + str(chr), # Add the chromosome number to the chromosome name, make strings of the numbers
-                    out=str(Path(args.out)),
-                    id=record[0], # record[0] is the sample ID and this assigned here
-                    bamFile=record[1], # record[1] is the path to the bam file and this assigned here
-                    max_mismatch=args.max_mismatch,
-                    samtools=samtools,
-                    platform_library=args.platform_library,  # new code -- 2024-09-16
-                    verbose=args.verbose,  # new code -- 2024-09-17
-                    debug=args.debug,  # new code -- 2024-09-17
-                    min_read_length=args.min_read_length,  # new code -- 2024-09-18
-                    umi_collapse=umi_collapse,  # Pass umi_collapse flag
-                    umi_tag=umi_tag  # Pass umi_tag if provided
-                )
-                para_lst.append(para_single)
+	para_lst = []
+	# Process each sample in parallel -- 2024-09-18
+	# A list of bam files for each sample is expected
+	# sample1, /path/to/sample1.bam
+	# sample2, /path/to/sample2.bam
+	with open(args.bamFile) as f_in:
+		for line in f_in:
+			record = line.strip().split(",")
+			if args.verbose:
+				print(f"> PreProcessing sample {record[0]}")
+			logger.debug("PreProcessing sample {}".format(record[0]))
+			# Process chromosome 1-22 -- 2024-09-16
+			if args.verbose:
+				print(f"  - Processing chromosomes 1-22, X...")
+			for chr in range(1, 23):
+				if args.debug:
+					print(f"  -- DEBUGGING: chromosome [{chr}]")
+				para_single = dict(
+					chr="chr" + str(chr), # Add the chromosome number to the chromosome name, make strings of the numbers
+					out=str(Path(args.out)),
+					id=record[0], # record[0] is the sample ID and this assigned here
+					bamFile=record[1], # record[1] is the path to the bam file and this assigned here
+					max_mismatch=args.max_mismatch,
+					samtools=samtools,
+					platform_library=args.platform_library,  # new code -- 2024-09-16
+					verbose=args.verbose,  # new code -- 2024-09-17
+					debug=args.debug,  # new code -- 2024-09-17
+					min_read_length=args.min_read_length,  # new code -- 2024-09-18
+					umi_collapse=umi_collapse,  # Pass umi_collapse flag
+					umi_tag=umi_tag  # Pass umi_tag if provided
+				)
+				para_lst.append(para_single)
 
-            # Process chromosome X -- 2024-09-17
-            for chr in ["X"]:
-                if args.debug:
-                    print(f"  -- DEBUGGING: chromosome [{chr}]")
-                para_single = dict(
-                    chr="chr" + chr, # Add the chromosome number to the chromosome name
-                    out=str(Path(args.out)),
-                    id=record[0], # record[0] is the sample ID and this assigned here
-                    bamFile=record[1], # record[1] is the path to the bam file and this assigned here
-                    max_mismatch=args.max_mismatch,
-                    samtools=samtools,
-                    platform_library=args.platform_library,  # new code -- 2024-09-16
-                    verbose=args.verbose,  # new code -- 2024-09-17
-                    debug=args.debug,  # new code -- 2024-09-17
-                    min_read_length=args.min_read_length,  # new code -- 2024-09-18
-                    umi_collapse=umi_collapse,  # Pass umi_collapse flag
-                    umi_tag=umi_tag  # Pass umi_tag if provided
-                )
-                para_lst.append(para_single)
+			# Process chromosome X -- 2024-09-17
+			for chr in ["X"]:
+				if args.debug:
+					print(f"  -- DEBUGGING: chromosome [{chr}]")
+				para_single = dict(
+					chr="chr" + chr, # Add the chromosome number to the chromosome name
+					out=str(Path(args.out)),
+					id=record[0], # record[0] is the sample ID and this assigned here
+					bamFile=record[1], # record[1] is the path to the bam file and this assigned here
+					max_mismatch=args.max_mismatch,
+					samtools=samtools,
+					platform_library=args.platform_library,  # new code -- 2024-09-16
+					verbose=args.verbose,  # new code -- 2024-09-17
+					debug=args.debug,  # new code -- 2024-09-17
+					min_read_length=args.min_read_length,  # new code -- 2024-09-18
+					umi_collapse=umi_collapse,  # Pass umi_collapse flag
+					umi_tag=umi_tag  # Pass umi_tag if provided
+				)
+				para_lst.append(para_single)
 
-    # Run the BamFilter function in parallel for each chromosome from the germline.py module -- 2024-09-16
-    with Pool(processes=args.nthreads) as pool:
-        result = pool.map(BamFilter, para_lst)
+	# Run the BamFilter function in parallel for each chromosome from the germline.py module -- 2024-09-16
+	with Pool(processes=args.nthreads) as pool:
+		result = pool.map(BamFilter, para_lst)
 
-    # NEW CODE: Create bam file list for chromosomes 1-22, X
-    if args.verbose:
-        print(f"> Creating the bam file list for each chromosome, 1-22, X.")
-    out_path = Path(args.out)
-    for chr in list(range(1, 23)) + ["X"]:
-        if args.debug:
-            print(f"  -- DEBUGGING: chromosome [{chr}]")
-        bamlist_path = out_path / "Bam" / f"chr{chr}.filter.bam.lst"
-        with bamlist_path.open("w") as bamlist:
-            for s in sample:
-                bam_file = out_path / "Bam" / f"{s}_chr{chr}.filter.bam"
-                bamlist.write(str(bam_file) + "\n")
+	# NEW CODE: Create bam file list for chromosomes 1-22, X
+	if args.verbose:
+		print(f"> Creating the bam file list for each chromosome, 1-22, X.")
+	out_path = Path(args.out)
+	for chr in list(range(1, 23)) + ["X"]:
+		if args.debug:
+			print(f"  -- DEBUGGING: chromosome [{chr}]")
+		bamlist_path = out_path / "Bam" / f"chr{chr}.filter.bam.lst"
+		with bamlist_path.open("w") as bamlist:
+			for s in sample:
+				bam_file = out_path / "Bam" / f"{s}_chr{chr}.filter.bam"
+				bamlist.write(str(bam_file) + "\n")
 
-    # Write a SLURM/script file for preprocessing using the shared helper
-    jobid = args.study if hasattr(args, 'study') else 'study'
-    command = f'echo "[MonopogenLite.py --preProcess] Done preprocessing {jobid}."'
-    write_job_script(jobid, command, out_path, version=VERSION, verbose=args.verbose)
+	# Write a SLURM/script file for preprocessing using the shared helper
+	jobid = args.study if hasattr(args, 'study') else 'study'
+	command = f'echo "[MonopogenLite.py --preProcess] Done preprocessing {jobid}."'
+	write_job_script(jobid, command, out_path, version=VERSION, verbose=args.verbose)
 		
 # Main function -- 2024-08-08
 def main():
@@ -616,7 +643,7 @@ def main():
 	"""
 	
 	parser = argparse.ArgumentParser(
-        description=f"""
+		description=f"""
 {VERSION_NAME} v{VERSION} ({VERSION_DATE})
 MonopogenLite: SNV calling and phasing from single-cell sequencing data.""",
 		epilog=f"""\n
@@ -626,11 +653,11 @@ python MonopogenLite.py preProcess --help\n
 python MonopogenLite.py germline --help\n\n
 + {VERSION_NAME} v{VERSION}. {COPYRIGHT} + \n
 {COPYRIGHT_TEXT}""",
-        formatter_class=argparse.RawTextHelpFormatter)
+		formatter_class=argparse.RawTextHelpFormatter)
 
 	# Add --logfile argument to the main parser BEFORE subparsers
 	parser.add_argument('--logfile', required=False,
-	                    help="Optional log file path. If not provided, logs will be saved to OUTDIR/MonopogenLite.YYYYMMDD.log")
+						help="Optional log file path. If not provided, logs will be saved to OUTDIR/MonopogenLite.YYYYMMDD.log")
 
 	# Create a subparser object for subcommands (e.g., preProcess, germline)
 	subparsers = parser.add_subparsers(title='Subcommands', dest="subcommand", help="Choose one of the available subcommands.")
@@ -642,7 +669,7 @@ python MonopogenLite.py germline --help\n\n
 	help='Preprocess BAM files before variant calling.', 
 	description='Preprocess of BAM files including removing reads with high alignment mismatches. Default mismatch threshold is 3.',
 	formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    
+	
 	parser_preProcess.add_argument('-b', '--bamFile', required=True,
 									help="The comma-separated listf of bam-files for the study sample. The first column should have the sampleID, and the second column the location of the corresponding bam-file. The bam-files should be sorted and indexed. If there are multiple samples, each row with each sample. Required.") 
 	parser_preProcess.add_argument('-o', '--out', required=True,
@@ -664,16 +691,16 @@ python MonopogenLite.py germline --help\n\n
 	parser_preProcess.add_argument('-d', '--debug', action='store_true',
 									help="For debugging, specifically for installed tools.")
 	parser_preProcess.set_defaults(func=preProcess)
-    
-    # Set the default function to run when 'preProcess' is called
+	
+	# Set the default function to run when 'preProcess' is called
 	parser_preProcess.set_defaults(func=preProcess)
 
-    # Add the subcommand for 'germline'
+	# Add the subcommand for 'germline'
 	parser_germline = subparsers.add_parser('germline', parents=[common_parser],
 	help='Germline variant genotype calling and phasing.',
 	description='Perform germline variant calling and phasing from single-cell sequencing data.',
 	formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    
+	
 	parser_germline.add_argument('-r', '--region', required= True,
 								help="The genome regions for variant calling. This file should have either 1 column (chromosome) or 3 columns (chromosome, start, end), where chromosome X is noted as chrX. Required.")
 	parser_germline.add_argument('-s', '--step', required= True, default="all", choices=['varScan', 'varProb' , 'varPhasing', 'all'],
@@ -696,17 +723,17 @@ python MonopogenLite.py germline --help\n\n
 								help="Increase output verbosity")
 	parser_germline.add_argument('-d', '--debug', action='store_true',
 								help="For debugging, specifically for installed tools and some intermediate steps.")
-    
-    # Set the default function to run when 'germline' is called
+	
+	# Set the default function to run when 'germline' is called
 	parser_germline.set_defaults(func=germline)
 
-    # Add --version argument to the main parser
+	# Add --version argument to the main parser
 	parser.add_argument('--version', action='version', version=f'{VERSION_NAME} {VERSION} ({VERSION_DATE})')
 
-    # Parse the arguments
+	# Parse the arguments
 	args = parser.parse_args()
 
-    # If no subcommand is provided, print the help and exit
+	# If no subcommand is provided, print the help and exit
 	if args.subcommand is None:
 		# if no command is specified, print help and exit
 		print("Please specify one subcommand ('preProcess' or 'germline')! Exiting!")
@@ -725,7 +752,7 @@ python MonopogenLite.py germline --help\n\n
 
 	# Log tool versions if verbose
 	if getattr(args, "verbose", False):
-	    log_tool_versions(logging.getLogger())
+		log_tool_versions(logging.getLogger())
 
 	# Updated code -- 2024-09-17
 	# set paths for tools
@@ -795,7 +822,7 @@ python MonopogenLite.py germline --help\n\n
 		print(f"ERROR: Beagle jar not found at expected path: {beagle}")
 		sys.exit(1)
 	
-    # Execute the corresponding function for the subcommand
+	# Execute the corresponding function for the subcommand
 	args.func(args)
 
 	logger.info("Success! See instructions above.")
