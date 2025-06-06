@@ -42,7 +42,7 @@ Dr. Sander W. van der Laan is funded through EU H2020 TO_AITION (grant number: 8
 
 We are thankful for the support of the Leducq Fondation ‘PlaqOmics’ and 'AtheroGen'. The research for this contribution was made possible by the AI for Health working group of the [EWUU alliance](https://aiforhealth.ewuu.nl/). The collaborative project ‘Getting the Perfect Image’ was co-financed through use of PPP Allowance awarded by Health~Holland, Top Sector Life Sciences & Health, to stimulate public-private partnerships. Part of the work and data generation (scRNAseq and bulk RNAseq) were funded through ERA-CVD 'druggable-MI-targets' project (grantnumber: 01KL1802). 
 
-Plaque samples are derived from carotid endarterectomies as part of the [Athero-Express Biobank Study](https://doi.org/10.1007/s10564-004-2304-6) which is an ongoing study in the UMC Utrecht.
+Plaque samples are derived from carotid endarterectomies as part of the [Athero-Express Biobank Study](https://www.atheroexpress.nl)([Verhoeven _et al._](https://doi.org/10.1007/s10564-004-2304-6)) which is an ongoing study in the UMC Utrecht.
 
 ### 📝 Disclosures
 Dr. Sander W. van der Laan has received Roche funding for unrelated work.
