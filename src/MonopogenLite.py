@@ -61,8 +61,8 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.3.1'
-VERSION_DATE = '2025-06-06'
+VERSION = '1.3.2'
+VERSION_DATE = '2025-06-07'
 COPYRIGHT = 'Copyright 1979-2025. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -746,6 +746,10 @@ python MonopogenLite.py germline --help\n\n
 	resolved_out = str(Path(args.out).resolve() if hasattr(args, 'out') and args.out else Path(".").resolve())
 	default_logfile = str(Path(resolved_out) / f"MonopogenLite.{today_str}.log")
 	logfile_path = args.logfile or default_logfile
+	# Ensure log directory exists
+	if logfile_path:
+		Path(logfile_path).parent.mkdir(parents=True, exist_ok=True)
+
 	setup_logger(logfile_path)
 	if getattr(args, "verbose", False):
 		print(f"> Log file set to: {logfile_path}")
