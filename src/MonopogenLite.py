@@ -286,28 +286,30 @@ def prepare_output_dirs(base_out, subdirs, verbose=False):
 		if verbose:
 			print(f"  - Created directory: {path}")
 
-# Function to read a region file and extract sample identifiers
-def read_sample_list_file(region_file: str) -> list:
+# Function to read a sample list based on the region file and return a list of dicts with a "bam" key
+def read_sample_list_file(region_file_path):
     """
-    Reads a region file and extracts sample identifiers from the second column (if present).
+    Read the sample list based on the region file.
 
     Args:
-        region_file (str): Path to the region file containing region lines (e.g., chr,start,end or chr only).
+        region_file_path (str): Path to the region file.
 
     Returns:
-        list: A list of unique sample identifiers extracted from the file, if present.
-
-    Notes:
-        Assumes that if multiple columns exist, the second column holds the sample identifier.
+        list of dict: A list of samples where each sample is a dictionary with at least a 'bam' key.
     """
-    samples = []
-    with open(region_file, 'r') as infile:
-        for line in infile:
-            fields = line.strip().split(',')
-            if len(fields) >= 2:
-                samples.append(fields[1])
-            elif len(fields) == 1:
-                samples.append(fields[0])
+    sample_set = set()
+    with open(region_file_path) as f:
+        for line in f:
+            parts = line.strip().split(",")
+            if len(parts) >= 1:
+                chrom = parts[0]
+                bam_file_path = Path(args.out) / "Bam" / f"{chrom}.filter.bam.lst"
+                with bam_file_path.open() as bf:
+                    for line in bf:
+                        bam = line.strip()
+                        sample_set.add(bam)
+
+    samples = [{"bam": bam} for bam in sorted(sample_set)]
     return samples
 
 # Function to perform germline variant calling -- 2024-08-08
