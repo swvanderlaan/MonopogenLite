@@ -286,6 +286,30 @@ def prepare_output_dirs(base_out, subdirs, verbose=False):
 		if verbose:
 			print(f"  - Created directory: {path}")
 
+# Function to read a region file and extract sample identifiers
+def read_sample_list_file(region_file: str) -> list:
+    """
+    Reads a region file and extracts sample identifiers from the second column (if present).
+
+    Args:
+        region_file (str): Path to the region file containing region lines (e.g., chr,start,end or chr only).
+
+    Returns:
+        list: A list of unique sample identifiers extracted from the file, if present.
+
+    Notes:
+        Assumes that if multiple columns exist, the second column holds the sample identifier.
+    """
+    samples = []
+    with open(region_file, 'r') as infile:
+        for line in infile:
+            fields = line.strip().split(',')
+            if len(fields) >= 2:
+                samples.append(fields[1])
+            elif len(fields) == 1:
+                samples.append(fields[0])
+    return samples
+
 # Function to perform germline variant calling -- 2024-08-08
 def germline(args):
 	"""
