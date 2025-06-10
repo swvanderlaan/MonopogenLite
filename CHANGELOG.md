@@ -2,6 +2,12 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+
+## 🛠️ v1.3.3 -- 2025-06-10
+### Smaller Fixes
+- 🐛 `MonopogenLite.py`: Fixed `NameError` in `germline()` by adding missing `samples = read_sample_list_file(args.region)` before calling `build_sample_commands()`.
+
+
 ## 🛠️ v1.3.2 -- 2025-06-07
 ### Smaller Fixes
 - 🐛 `MonopogenLite.py`: Fixed `FileNotFoundError` by ensuring log file directory is created before initializing the logger.

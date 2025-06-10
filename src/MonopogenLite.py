@@ -61,8 +61,8 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.3.2'
-VERSION_DATE = '2025-06-07'
+VERSION = '1.3.3'
+VERSION_DATE = '2025-06-10'
 COPYRIGHT = 'Copyright 1979-2025. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -310,6 +310,9 @@ def germline(args):
 	prepare_output_dirs(args.out, ['germline', 'scripts'], verbose=args.verbose)
 	out_path = Path(args.out)
 
+	# Load samples from the region file
+	samples = read_sample_list_file(args.region)
+
 	# check whether region files were set correctly 
 	if args.verbose:
 		print(f"  - Checking the region file [{args.region}].")
@@ -504,7 +507,6 @@ def germline(args):
 		print(joblst)
 		print(f"\nExiting.")
 		print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
-
 
 # Function to perform pre-processing of bam files -- 2024-08-08
 def preProcess(args):
