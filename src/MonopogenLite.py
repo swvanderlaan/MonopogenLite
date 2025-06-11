@@ -61,7 +61,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.3.7'
+VERSION = '1.3.8'
 VERSION_DATE = '2025-06-11'
 COPYRIGHT = 'Copyright 1979-2025. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -170,7 +170,9 @@ def build_sample_commands(samples, chrom, out_path, args):
 		bam_path = sample["bam"]
 		sampleID = sample["sampleID"]
 		output_vcf = out_path / "VCF" / f"{sampleID}.chr{chrom}.bcf"
-		bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chrom, out_path)
+		# Updated: pass bam_path, chrom, args.reference, out_path
+		bcftools_cmd = generate_bcftools_command(bam_path, chrom, args.reference, out_path)
+		# bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chrom, out_path)
 		if hasattr(args, 'impute') and args.impute:
 			if hasattr(args, 'genotype') and args.genotype:
 				beagle_cmd = generate_beagle_cmd_gt(output_vcf, args.app_path, out_path)
@@ -220,7 +222,7 @@ def generate_bcftools_command(bam_filter, jobid, reference, out):
 	Generate the bcftools command for mpileup and filtering.
 	Args:
 		bam_filter (str): Path to the list of BAM files.
-		jobid (str): Job ID or region to process.
+		jobid (str): Job ID (which is the chrom[osome] number) or region to process.
 		reference (str): Path to the reference genome FASTA file.
 		out (str): Output directory where the VCF file will be saved.
 	"""
@@ -608,11 +610,11 @@ def preProcess(args):
 			# Process chromosome 1-22 -- 2024-09-16
 			if args.verbose:
 				print(f"  - Processing chromosomes 1-22, X...")
-			for chr in range(1, 23):
+			for chrom in range(1, 23):
 				if args.debug:
-					print(f"  -- DEBUGGING: chromosome [{chr}]")
+					print(f"  -- DEBUGGING: chromosome [{chrom}]")
 				para_single = dict(
-					chr="chr" + str(chr), # Add the chromosome number to the chromosome name, make strings of the numbers
+					chr="chr" + str(chrom), # Add the chromosome number to the chromosome name, make strings of the numbers
 					out=str(Path(args.out)),
 					id=record[0], # record[0] is the sample ID and this assigned here
 					bamFile=record[1], # record[1] is the path to the bam file and this assigned here
@@ -628,11 +630,11 @@ def preProcess(args):
 				para_lst.append(para_single)
 
 			# Process chromosome X -- 2024-09-17
-			for chr in ["X"]:
+			for chrom in ["X"]:
 				if args.debug:
-					print(f"  -- DEBUGGING: chromosome [{chr}]")
+					print(f"  -- DEBUGGING: chromosome [{chrom}]")
 				para_single = dict(
-					chr="chr" + chr, # Add the chromosome number to the chromosome name
+					chr="chr" + chrom, # Add the chromosome number to the chromosome name
 					out=str(Path(args.out)),
 					id=record[0], # record[0] is the sample ID and this assigned here
 					bamFile=record[1], # record[1] is the path to the bam file and this assigned here

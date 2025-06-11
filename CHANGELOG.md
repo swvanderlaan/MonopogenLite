@@ -2,10 +2,14 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.3.8 -- 2025-06-11
+### Smaller Fixes
+- 🐛 Fixed issue where sampleID and `chrom` (chromosome) was used instead of `chrom` and `args.reference`.
+
+
 ## 🛠️ v1.3.7 -- 2025-06-11
 ### Smaller Fixes
 - 🐛 Fixed issue where `slurm` jobs are not submitted because of the incorrect usage of `<built-in function chr>` with the actual `chrom` (chromosome) from the reference genome path (`args.reference`).
-
 
 
 ## 🛠️ v1.3.6 -- 2025-06-11
