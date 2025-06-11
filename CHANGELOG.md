@@ -3,6 +3,11 @@
 All notable changes to `MonopogenLite` will be documented in this file.
 
 
+## 🛠️ v1.3.4 -- 2025-06-11
+### Smaller Fixes
+- 🐛 Refactored `read_sample_list_file()` to accept explicit arguments instead of relying on global `args`, improving modularity and testability. Fixed the `NameError: name 'args' is not defined` message.
+
+
 ## 🛠️ v1.3.3 -- 2025-06-10
 ### Smaller Fixes
 - 🐛 `MonopogenLite.py`: Fixed `NameError` in `germline()` by adding missing `samples = read_sample_list_file(args.region)` before calling `build_sample_commands()`.
