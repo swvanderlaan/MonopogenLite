@@ -2,10 +2,15 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.3.7 -- 2025-06-11
+### Smaller Fixes
+- 🐛 Fixed issue where `slurm` jobs are not submitted because of the incorrect usage of `<built-in function chr>` with the actual `chrom` (chromosome) from the reference genome path (`args.reference`).
+
+
 
 ## 🛠️ v1.3.6 -- 2025-06-11
 ### Smaller Fixes
-- 🐛 Fixed AttributeError when accessing `args.impute` in `build_sample_commands()` by using `hasattr` check — ensures safe argument access even if `--impute` is not provided.
+- 🐛 Fixed `AttributeError` when accessing `args.impute` in `build_sample_commands()` by using `hasattr` check — ensures safe argument access even if `--impute` is not provided.
 
 
 ## 🛠️ v1.3.5 -- 2025-06-11
