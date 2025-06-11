@@ -287,12 +287,13 @@ def prepare_output_dirs(base_out, subdirs, verbose=False):
 			print(f"  - Created directory: {path}")
 
 # Function to read a sample list based on the region file and return a list of dicts with a "bam" key
-def read_sample_list_file(region_file_path):
+def read_sample_list_file(region_file_path, out):
     """
     Read the sample list based on the region file.
 
     Args:
         region_file_path (str): Path to the region file.
+        out (str): Output directory.
 
     Returns:
         list of dict: A list of samples where each sample is a dictionary with at least a 'bam' key.
@@ -303,7 +304,7 @@ def read_sample_list_file(region_file_path):
             parts = line.strip().split(",")
             if len(parts) >= 1:
                 chrom = parts[0]
-                bam_file_path = Path(args.out) / "Bam" / f"{chrom}.filter.bam.lst"
+                bam_file_path = Path(out) / "Bam" / f"{chrom}.filter.bam.lst"
                 with bam_file_path.open() as bf:
                     for line in bf:
                         bam = line.strip()
@@ -337,7 +338,7 @@ def germline(args):
 	out_path = Path(args.out)
 
 	# Load samples from the region file
-	samples = read_sample_list_file(args.region)
+	samples = read_sample_list_file(args.region, args.out)
 
 	# check whether region files were set correctly 
 	if args.verbose:
