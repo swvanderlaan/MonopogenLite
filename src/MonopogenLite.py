@@ -61,7 +61,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.3.6'
+VERSION = '1.3.7'
 VERSION_DATE = '2025-06-11'
 COPYRIGHT = 'Copyright 1979-2025. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -164,15 +164,15 @@ def log_tool_versions(logger):
 			logger.warning(f"Failed to retrieve version for {name}: {e}")
 
 # Function to build sample commands for variant calling and phasing
-def build_sample_commands(samples, chr, out_path, args):
+def build_sample_commands(samples, chrom, out_path, args):
 	commands = []
 	for sample in samples:
 		bam_path = sample["bam"]
 		sampleID = sample["sampleID"]
-		output_vcf = out_path / "VCF" / f"{sampleID}.chr{chr}.bcf"
-		bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chr, out_path)
+		output_vcf = out_path / "VCF" / f"{sampleID}.chr{chrom}.bcf"
+		bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chrom, out_path)
 		if hasattr(args, 'impute') and args.impute:
-			if args.genotype:
+			if hasattr(args, 'genotype') and args.genotype:
 				beagle_cmd = generate_beagle_cmd_gt(output_vcf, args.app_path, out_path)
 			else:
 				beagle_cmd = generate_beagle_cmd_gp(output_vcf, args.app_path, out_path)
@@ -488,7 +488,7 @@ def germline(args):
 			# elif N_sample > 1: 
 			# 	cmd4 = "zless -S " +  out + "/germline/" + jobid + ".gp.vcf.gz   > " +  out + "/germline/" + jobid + ".germline.vcf"
 			# f_out.write(cmd4 + "\n")
-			commands = build_sample_commands(samples, chr, out_path, args)
+			commands = build_sample_commands(samples, record[0], out_path, args)
 			for jobid, (_, command) in enumerate(commands):
 				write_job_script(jobid, command, out_path, version=VERSION, verbose=args.verbose)
 
