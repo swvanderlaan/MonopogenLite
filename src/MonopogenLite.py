@@ -61,8 +61,8 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.3.3'
-VERSION_DATE = '2025-06-10'
+VERSION = '1.3.6'
+VERSION_DATE = '2025-06-11'
 COPYRIGHT = 'Copyright 1979-2025. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -171,7 +171,7 @@ def build_sample_commands(samples, chr, out_path, args):
 		sampleID = sample["sampleID"]
 		output_vcf = out_path / "VCF" / f"{sampleID}.chr{chr}.bcf"
 		bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chr, out_path)
-		if args.impute:
+		if hasattr(args, 'impute') and args.impute:
 			if args.genotype:
 				beagle_cmd = generate_beagle_cmd_gt(output_vcf, args.app_path, out_path)
 			else:
