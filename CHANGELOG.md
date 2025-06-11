@@ -2,6 +2,10 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.3.5 -- 2025-06-11
+### Smaller Fixes
+- 🐛 Fixed KeyError in `build_sample_commands()` by ensuring `sampleID` and `bam` keys are correctly set from the BAM list. Now compatible with `germline` job submission logic.
+
 
 ## 🛠️ v1.3.4 -- 2025-06-11
 ### Smaller Fixes

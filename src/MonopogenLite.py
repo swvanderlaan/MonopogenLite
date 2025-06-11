@@ -338,8 +338,13 @@ def germline(args):
 	out_path = Path(args.out)
 
 	# Load samples from the region file
-	samples = read_sample_list_file(args.region, args.out)
-
+	samples = read_sample_list_file(region_file_path=args.region, out=args.out)
+	# Convert to expected sample dict format
+	samples = [{"sampleID": Path(bam["bam"]).stem.replace(".filter", "").replace(".bam", ""), "bam": bam["bam"]} for bam in samples]
+	if args.debug:
+		print(f"  -- DEBUGGING: Sample list loaded with {len(samples)} samples.")
+		print(f"  -- DEBUGGING: Sample list: {samples}")
+	
 	# check whether region files were set correctly 
 	if args.verbose:
 		print(f"  - Checking the region file [{args.region}].")
