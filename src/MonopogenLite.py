@@ -185,7 +185,7 @@ def build_sample_commands(samples, chrom, out_path, args):
 	return commands
 
 # Function to write a job script for germline variant calling
-def write_job_script(jobid, command, out_path, version="1.2.7", verbose=False):
+def write_job_script(jobid, command, out_path, version=VERSION, verbose=False):
 	script_path = out_path / "scripts" / f"runGermline_{jobid}.sh"
 	slurm_script_content = f"""#!/bin/bash
 echo "[MonopogenLite germline.py v{version}] Start time: $(date)"
