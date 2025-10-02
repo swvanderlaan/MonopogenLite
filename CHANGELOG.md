@@ -2,6 +2,11 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.3.9 -- 2025-10-02
+### Smaller Fixes
+- 🐛 Fixed issue where job-scripts were written, but not added to the `joblst` for the job-pool.
+
+
 ## 🛠️ v1.3.8 -- 2025-06-11
 ### Smaller Fixes
 - 🐛 Fixed issue where sampleID and `chrom` (chromosome) was used instead of `chrom` and `args.reference`.

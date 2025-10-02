@@ -61,8 +61,8 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.3.8'
-VERSION_DATE = '2025-06-11'
+VERSION = '1.3.9'
+VERSION_DATE = '2025-10-02'
 COPYRIGHT = 'Copyright 1979-2025. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -199,6 +199,7 @@ conda activate monopogen
 echo "[MonopogenLite germline.py v{version}] End time: $(date)"
 """
 	write_slurm_script(script_path, slurm_script_content, verbose=verbose)
+	return str(script_path)
 
 # Helper function to write SLURM (shell) scripts
 def write_slurm_script(path, content, verbose=False):
@@ -491,8 +492,11 @@ def germline(args):
 			# 	cmd4 = "zless -S " +  out + "/germline/" + jobid + ".gp.vcf.gz   > " +  out + "/germline/" + jobid + ".germline.vcf"
 			# f_out.write(cmd4 + "\n")
 			commands = build_sample_commands(samples, record[0], out_path, args)
+			# for jobid, (_, command) in enumerate(commands):
+			# 	write_job_script(jobid, command, out_path, version=VERSION, verbose=args.verbose)
 			for jobid, (_, command) in enumerate(commands):
-				write_job_script(jobid, command, out_path, version=VERSION, verbose=args.verbose)
+				script_path = write_job_script(jobid, command, out_path, version=VERSION, verbose=args.verbose)
+				joblst.append(f'bash "{script_path}"')
 
 	# pool the shell scripts in the job list when the norun flag is not set
 	if not args.norun:
