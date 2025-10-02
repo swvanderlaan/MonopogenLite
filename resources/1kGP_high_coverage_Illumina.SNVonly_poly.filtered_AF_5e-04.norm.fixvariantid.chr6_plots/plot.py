@@ -1,11 +1,11 @@
 # This file was produced by plot-vcfstats, the command line was:
-#   plot-vcfstats --prefix /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr6_plots --main-title Summary chr6 /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr6.vcf.stats.txt
+#   plot-vcfstats --prefix /project/cphg-millerlab/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr6_plots --main-title Summary chr6 /project/cphg-millerlab/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr6.vcf.stats.txt
 #
 # Edit as necessary and recreate the plots by running
 #   python3 plot.py
 #
 # Title abbreviations:
-# 	 0 .. 1kGP_ .. /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr6.vcf.gz
+# 	 0 .. 1kGP_ .. /project/cphg-millerlab/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chr6.vcf.gz
 #
 
 img_fmt = 'png'

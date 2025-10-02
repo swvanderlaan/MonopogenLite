@@ -1,9 +1,9 @@
 # This file was produced by bcftools stats (1.21+htslib-1.21) and can be plotted using plot-vcfstats.
-# The command line was:	bcftools stats  /hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrX.vcf.gz
+# The command line was:	bcftools stats  /project/cphg-millerlab/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrX.vcf.gz
 #
 # Definition of sets:
 # ID	[2]id	[3]tab-separated file names
-ID	0	/hpc/local/Rocky8/dhl_ec/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrX.vcf.gz
+ID	0	/project/cphg-millerlab/software/MonopogenLite/resources/1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrX.vcf.gz
 # SN, Summary numbers:
 #   number of records   .. number of data rows in the VCF
 #   number of no-ALTs   .. reference-only sites, ALT is either "." or identical to REF
