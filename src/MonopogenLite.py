@@ -220,8 +220,11 @@ def write_slurm_script(path, content, verbose=False):
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w") as f:
         f.write(content)
+<<<<<<< HEAD
     # Make the script executable.
     os.system(f'chmod +x {path}')
+=======
+>>>>>>> 610eca566b27254119efea90b66bc1834346d146
     if verbose:
         print(f"  - SLURM script written to: {path}")
 
@@ -235,6 +238,7 @@ def generate_bcftools_command(bam_filter, jobid, reference, out):
         reference (str): Path to the reference genome FASTA file.
         out (str): Output directory where the VCF file will be saved.
     """
+<<<<<<< HEAD
     # FIXME: mpileup only computes the PL. Added bcftools call this actually computes the genotypes based on the PL.
     return (
         f"{bcftools} mpileup -b {bam_filter} --fasta-ref {reference} --regions {jobid} --min-MQ 20 --min-BQ 20 --annotate FORMAT/DP "
@@ -243,6 +247,15 @@ def generate_bcftools_command(bam_filter, jobid, reference, out):
         f"| {bcftools} annotate --set-id '%CHROM:%POS:%REF:%ALT' "
         f"| {bcftools} filter --exclude 'ALT !~ \"^[ATGC]$\"' "
         f"| {bcftools} +fill-tags -Oz -o {out}/{jobid}.gl.vcf.gz"
+=======
+
+    return (
+        f"{bcftools} mpileup -b {bam_filter} --fasta-ref {reference} --regions {jobid} --min-MQ 20 --min-BQ 20 --annotate FORMAT/DP "
+        f"| {bcftools} norm -m-both --rm-dup both --check-ref wx --fasta-ref {reference} "
+        f"| {bcftools} annotate --set-id '%CHROM:%POS:%REF:%ALT' "
+        f"| {bcftools} filter --exclude 'ALT !~ \"^[ATGC]$\"' "
+        f"| {bcftools} +fill-tags -Oz -o {out}/germline/{jobid}.gl.vcf.gz"
+>>>>>>> 610eca566b27254119efea90b66bc1834346d146
     )
 
 # Function to generate Beagle command for genotype probabilities
@@ -317,7 +330,11 @@ def read_sample_list_file(region_file_path, out):
             if len(parts) >= 1:
                 chrom = parts[0]
                 # FIXME: Adjust the file path to the correct folder with the lists containing the BAMS per chromosome.
+<<<<<<< HEAD
                 bam_file_path = Path(out) / ".." / "ListedBamsPerChr" / f"{chrom}.lst"
+=======
+                bam_file_path = Path(out) / ".." / "ListedBamsPerChr" / f"chr{chrom}.lst"
+>>>>>>> 610eca566b27254119efea90b66bc1834346d146
                 print(
                     f"  -- DEBUGGING: The BAM file path is: [{bam_file_path}].")
                 with bam_file_path.open() as bf:
@@ -337,6 +354,7 @@ def germline(args):
     """
 
     logger.info("Performing germline variant calling with the following arguments.")
+<<<<<<< HEAD
     print(f"  -- DEBUGGING: Germline before print_parameters_given()")
     print_parameters_given(args)
 
@@ -346,12 +364,21 @@ def germline(args):
 
     logger.info("Checking dependencies.")
     print(f"  -- DEBUGGING: Germline before check_dependencies()")
+=======
+    print_parameters_given(args)
+
+    logger.info("Checking existence of essenstial resource files.")
+    validate_user_setting_germline(args)
+
+    logger.info("Checking dependencies.")
+>>>>>>> 610eca566b27254119efea90b66bc1834346d146
     check_dependencies(args)
 
     # Create necessary directories -- 2024-09-17
     if not args.out:
         print(f"ERROR: Output directory not specified!")
         sys.exit(1)
+<<<<<<< HEAD
     # No longer neccessary for per region variant calling.
     #prepare_output_dirs(args.out, ['germline', 'scripts'], verbose=args.verbose)
     out_path = Path(args.out)
@@ -363,6 +390,18 @@ def germline(args):
     #if args.debug:
         #print(f"  -- DEBUGGING: Sample list loaded with {len(samples)} samples.")
         #print(f"  -- DEBUGGING: Sample list: {samples}")
+=======
+    prepare_output_dirs(args.out, ['germline', 'scripts'], verbose=args.verbose)
+    out_path = Path(args.out)
+
+    # Load samples from the region file
+    samples = read_sample_list_file(region_file_path=args.region, out=args.out)
+    # Convert to expected sample dict format
+    samples = [{"sampleID": Path(bam["bam"]).stem.replace(".filter", "").replace(".bam", ""), "bam": bam["bam"]} for bam in samples]
+    if args.debug:
+        print(f"  -- DEBUGGING: Sample list loaded with {len(samples)} samples.")
+        print(f"  -- DEBUGGING: Sample list: {samples}")
+>>>>>>> 610eca566b27254119efea90b66bc1834346d146
 
     # check whether region files were set correctly
     if args.verbose:
@@ -370,6 +409,7 @@ def germline(args):
     if args.debug:
         print(f"  -- DEBUGGING: Creating job-list for pooled job management.")
     joblst = []
+<<<<<<< HEAD
     # ----------------- Region specific file reader, only fetches relevant chromosome ------------- (FIX)
     # Predefine sex chromosome with chromosome number + 1, because of Python logic.
     sex_chromosomes = {"X": 23, "Y":24}
@@ -484,6 +524,105 @@ def germline(args):
                 print(f"    -- DEBUGGING: Command to run: {cmd3}")
 
             # NEW code -- 2025-06-05
+=======
+    with open(args.region) as f_in:
+        for line in f_in:
+            # checking the region file and setting the jobid
+            if args.debug:
+                print(f"  -- DEBUGGING: Line in the region file: {line}; splitting on ',' ...")
+            record = line.strip().split(",")
+            if args.verbose:
+                print(f"  -- chromosome [{record}].")
+            if len(record) == 1:
+                jobid = record[0]
+                if args.debug:
+                    print(f"  -- DEBUGGING: The region file has only one column. Setting jobid to the chromosome: [{jobid}].")
+            if len(record) == 3:
+                jobid = record[0] + ":" + record[1] + "-" + record[2]
+                if args.debug:
+                    print(f"  -- DEBUGGING: The region file has three columns. Setting jobid to the region: [{jobid}].")
+
+            # setting the bam file list for the given region
+            # FIXME: Fix the path to the BAM-files per chromosome.
+            bam_filter = Path(args.out) / ".." / "ListedBamsPerChr" / f"chr{record[0]}.lst"
+            print(f"  -- DEBUGGING: The current file to the list of BAMs: [{bam_filter}].")
+            # checking number of samples within each given region
+            N_sample = 0
+            with bam_filter.open() as p:
+                for s in p:
+                    N_sample = N_sample + 1
+            if args.debug:
+                print(f"  -- DEBUGGING: The number of samples for the given region (should always be the same for each region): {N_sample}.")
+
+            # NEW code -- 2024-09-17
+            # check the imputation panel file
+            if args.verbose:
+                print(f"  - Checking the imputation panel file: [{args.imputation_panel}].")
+            imputation_panel_path = Path(args.imputation_panel)
+            if record[0] == "chrX":
+                imputation_vcf = imputation_panel_path / f"1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.{record[0]}.vcf.gz"
+            elif record[0] in {f"chr{n}" for n in range(1, 23)}:
+                imputation_vcf = imputation_panel_path / f"1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.{record[0]}.vcf.gz"
+            else:
+                print(f"ERROR: The chromosome {record[0]} is not supported!")
+                sys.exit(1)
+            if args.verbose:
+                print(f"  - Starting germline variant calling for region {jobid}.")
+            if args.debug:
+                print(f"  -- DEBUGGING: number of threads used: {args.nthreads}, attempt 2-fold downsampling these for phasing.")
+            nthreads_downsample=int(args.nthreads/2)
+
+            # NEW CODE with bcftools -- 2025-06-05
+            # germline variant calling from mpileup
+            # https://samtools.github.io/bcftools/bcftools.html
+            # https://www.biostars.org/p/425139/
+            # https://www.biostars.org/p/418738/
+            # mpileup a single region
+            # -b list of input BAM files
+            # --regions region to include
+            # --min-MQ Minimum mapping quality for an alignment to be used [0]
+            # --min-BQ Minimum base quality for a base to be considered [13]
+            # --annotate FORMAT/DP
+            # norm -m-both --rm-dup both > split multi-allelics, both INDEL and SNP, into bi-allelic, but remove duplicate alleles based on chrom, pos, ref, alt
+            # --check-ref wx -f > check reference allele (-w warn only; -x fix issues) and use reference data (-f)
+            # what to do when incorrect or missing REF allele is encountered:
+            # exit (e), warn (w), exclude (x), or set/fix (s) bad sites.
+            # The w option can be combined with x and s.
+            # Note that s can swap alleles and will update genotypes (GT) and AC counts,
+            # but will not attempt to fix PL or other fields.
+            # Also note, and this cannot be stressed enough,
+            # that s will NOT fix strand issues in your VCF, do NOT use it for that purpose!!!
+            # (Instead see http://samtools.github.io/bcftools/howtos/plugin.af-dist.html and <https://samtools.github.io/bcftools/howtos/plugin.fixref.html>.)
+            # annotate --set-id '%CHROM:%POS:%REF:%ALT' > set ID to CHROM:POS:REF:ALT
+            # filter -e \'ALT !~ "^[ATGC]$"\ > to remove non-ATGC bases
+            # +fill-tags -Oz > fill tag (the INFO field) and compress output
+
+            # the full command
+            # bcftools mpileup -b /path/to/MonopogenLite/example/Bam/chr22.filter.bam.lst --check-ref wx --fasta-ref /Users/slaan3/PLINK/references/fasta/hg38.fa --regions chr22 --min-MQ 20 --min-BQ 20 --annotate FORMAT/DP
+            # | bcftools norm -m-both --rm-dup both --check-ref wx --fasta-ref /path/to/references/fasta/hg38.fa
+            # | bcftools annotate --set-id '%CHROM:%POS:%REF:%ALT'
+            # | bcftools filter --exclude 'ALT !~ "^[ATCG]$"'
+            # | bcftools +fill-tags -Oz -o /path/to/MonopogenLite/example/germline_test/chr22.gl.vcf.gz
+            cmd1 = generate_bcftools_command(bam_filter, jobid, args.reference, str(out_path))
+
+            # NEW code -- 2024-09-17
+            if args.verbose:
+                print(f"    * germline variant calling")
+            if args.debug:
+                print(f"    -- DEBUGGING: Command to run: {cmd1}")
+
+            # NEW code -- 2025-06-05
+            # germline variant phasing of genotype probabilities
+            cmd3 = generate_beagle_cmd_gp(jobid, str(out_path), imputation_vcf, record[0], nthreads_downsample)
+
+            # NEW code -- 2025-06-05
+            if args.verbose:
+                print(f"    * germline variant phasing of genotype probabilities")
+            if args.debug:
+                print(f"    -- DEBUGGING: Command to run: {cmd3}")
+
+            # NEW code -- 2025-06-05
+>>>>>>> 610eca566b27254119efea90b66bc1834346d146
             # germline variant phasing of genotypes
             # cmd5 = java + " -Xmx20g -jar " + beagle +  " gt=" +  out + "/germline/" +  jobid + ".germline.vcf"  +  " ref=" +  imputation_vcf  +  "  chrom=" + record[0]  + " out="   +  out + "/germline/" + jobid+ ".phased " + "impute=false modelscale=2 nthreads=" + nthreads_downsample + " gprobs=true niterations=0"
             # cmd5 = cmd5 + "\n" + "rm -v " +  out + "/germline/" +  jobid + ".germline.vcf"
@@ -539,11 +678,16 @@ def germline(args):
             full_cmd = f"{cmd1} && {cmd3} && {cmd5}"
             print(f"  -- DEBUGGING: The full command of the better solution is\n{full_cmd}.")
 
+<<<<<<< HEAD
             script_path = write_job_script(jobid, full_cmd, out_path, version=VERSION, verbose=args.verbose)
             joblst.append(f'bash "{script_path}"')
     else:
         print("--ERROR: Chromosome number couldn't be extracted from the output path. Please ensure the output path contains the chromosome"
               "and its corresponding number! E.g. chr20")
+=======
+            script_path = write_job_script(len(joblst), full_cmd, out_path, version=VERSION, verbose=args.verbose)
+            joblst.append(f'bash "{script_path}"')
+>>>>>>> 610eca566b27254119efea90b66bc1834346d146
 
 
     # pool the shell scripts in the job list when the norun flag is not set
