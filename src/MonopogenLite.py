@@ -187,8 +187,8 @@ def build_sample_commands(samples, chrom, out_path, args):
 # Function to write a job script for germline variant calling
 def write_job_script(jobid, command, out_path, version=VERSION, verbose=False):
     script_path = out_path / f"runGermline_{jobid}.sh"
-    vcf_file_name = f"{out_path}/{jobid}"
-    vcf_extension = ".gl.vcf.gz"
+    vcf_file_name = f"{out_path}/monopogen_{jobid}"
+    vcf_extension = ".vcf.gz"
     sorted_vcf_file_name = f"{vcf_file_name}_sorted{vcf_extension}"
     slurm_script_content = f"""#!/bin/bash
 echo "[MonopogenLite germline.py v{version}] Start time: $(date)"
@@ -373,17 +373,17 @@ def germline(args):
     # Predefine sex chromosome with chromosome number + 1, because of Python logic.
     sex_chromosomes = {"X": 23, "Y":24}
     print(f"  -- DEBUGGING: The out_path is: {out_path}")
-    # Extract the chromosome number at the end of the file path
-    chromosome = re.search(r"chr(\w*)", str(out_path))
+    # Retrieve the chromosome.
+    chromosome = args.chromosome
     # If chr... has  been extracted continue the script.
     if chromosome:
         try:
-            chromosome_number = int(chromosome.group(1))
+            chromosome_number = int(chromosome)
         # Assume the error is raised by a sex chromosome.
         except ValueError:
             # Retrieve the sex-chromosome from the dictionary.
-            chromosome_number = sex_chromosomes[chromosome.group(1)]
-        logger.info(f"Chromosome number ({chromosome_number} successfully extracted!")
+            chromosome_number = sex_chromosomes[chromosome]
+        logger.info(f"Chromosome number chr({chromosome_number}) successfully extracted!")
 
         with open(args.region) as f_in:
             # Retrieve the region using chromosome number as line index.
@@ -810,6 +810,8 @@ python MonopogenLite.py germline --help\n\n
                                 help="Increase output verbosity")
     parser_germline.add_argument('-d', '--debug', action='store_true',
                                 help="For debugging, specifically for installed tools and some intermediate steps.")
+    parser_germline.add_argument('-c', '--chromosome', required=True, type=int,
+                                 help="Chromosome number will be used to perforn per region variant calling.")
 
     # Set the default function to run when 'germline' is called
     parser_germline.set_defaults(func=germline)
