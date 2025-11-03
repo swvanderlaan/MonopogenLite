@@ -242,7 +242,7 @@ def generate_bcftools_command(bam_filter, jobid, reference, out):
         f"| {bcftools} norm -m-both --rm-dup both --check-ref wx --fasta-ref {reference} "
         f"| {bcftools} annotate --set-id '%CHROM:%POS:%REF:%ALT' "
         f"| {bcftools} filter --exclude 'ALT !~ \"^[ATGC]$\"' "
-        f"| {bcftools} +fill-tags -Oz -o {out}/{jobid}.gl.vcf.gz")
+        f"| {bcftools} +fill-tags -Oz -o {out}/monopogen_{jobid}.vcf.gz")
 
 # Function to generate Beagle command for genotype probabilities
 def generate_beagle_cmd_gp(jobid, out, imputation_vcf, chrom, nthreads_downsample):
@@ -405,7 +405,7 @@ def germline(args):
 
             # setting the bam file list for the given region
             # FIXME: Fix the path to the BAM-files per chromosome.
-            bam_filter = Path(args.out) / ".." / "ListedBamsPerChr" / f"{record[0]}.lst"
+            bam_filter = Path(args.out) / "ListedBamsPerChr" / f"{record[0]}.lst"
             print(f"  -- DEBUGGING: The current file to the list of BAMs: [{bam_filter}].")
             # checking number of samples within each given region
             N_sample = 0
@@ -810,7 +810,7 @@ python MonopogenLite.py germline --help\n\n
                                 help="Increase output verbosity")
     parser_germline.add_argument('-d', '--debug', action='store_true',
                                 help="For debugging, specifically for installed tools and some intermediate steps.")
-    parser_germline.add_argument('-c', '--chromosome', required=True, type=int,
+    parser_germline.add_argument('-c', '--chromosome', required=True,
                                  help="Chromosome number will be used to perforn per region variant calling.")
 
     # Set the default function to run when 'germline' is called
