@@ -198,7 +198,7 @@ source ~/.bashrc
 conda activate monopogen
 
 {command}
-bcftools sort {vcf_file_name}.phased{vcf_extension} -Oz -o {sorted_vcf_file_name}
+bcftools sort {vcf_file_name}{vcf_extension} -Oz -o {sorted_vcf_file_name}
 bcftools index -t {sorted_vcf_file_name}
 
 #rm {vcf_file_name}{vcf_extension} {vcf_file_name}.gp{vcf_extension} {vcf_file_name}.phased{vcf_extension}
