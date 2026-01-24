@@ -198,9 +198,10 @@ source ~/.bashrc
 conda activate monopogen
 
 {command}
-bcftools sort {vcf_file_name}{vcf_extension} -Oz -o {sorted_vcf_file_name}
+bcftools sort {vcf_file_name}.phased{vcf_extension} -Oz -o {sorted_vcf_file_name}
 bcftools index -t {sorted_vcf_file_name}
-rm {vcf_file_name}{vcf_extension}
+
+#rm {vcf_file_name}{vcf_extension} {vcf_file_name}.gp{vcf_extension} {vcf_file_name}.phased{vcf_extension}
 
 echo "[MonopogenLite germline.py v{version}] End time: $(date)"
 """
@@ -244,6 +245,7 @@ def generate_bcftools_command(bam_filter, jobid, reference, out):
         f"| {bcftools} filter --exclude 'ALT !~ \"^[ATGC]$\"' "
         f"| {bcftools} +fill-tags -Oz -o {out}/monopogen_{jobid}.vcf.gz")
 
+# FIXME: 24-01-2026: Adjusted paths of gt and gp to ensure phasing happens correctly! (Damian)
 # Function to generate Beagle command for genotype probabilities
 def generate_beagle_cmd_gp(jobid, out, imputation_vcf, chrom, nthreads_downsample):
     """
@@ -257,12 +259,13 @@ def generate_beagle_cmd_gp(jobid, out, imputation_vcf, chrom, nthreads_downsampl
     """
 
     return (
-        f"{java} -Xmx20g -jar {beagle} gl={out}/germline/{jobid}.gl.vcf.gz ref={imputation_vcf} "
-        f"chrom={chrom} out={out}/germline/{jobid}.gp impute=false modelscale=2 "
+        f"{java} -Xmx20g -jar {beagle} gl={out}/monopogen_{jobid}.vcf.gz ref={imputation_vcf} "
+        f"chrom={chrom} out={out}/monopogen_{jobid}.gp impute=false modelscale=2 "
         f"nthreads={nthreads_downsample} gprobs=true niterations=0"
     )
 
 # Function to generate Beagle command for genotype phasing
+# FIXME: 24-01-2026: Adjusted paths of gt and gp to ensure phasing happens correctly! (Damian)
 def generate_beagle_cmd_gt(jobid, out, imputation_vcf, chrom, nthreads_downsample):
     """
     Generate the Beagle command for genotype phasing.
@@ -275,8 +278,8 @@ def generate_beagle_cmd_gt(jobid, out, imputation_vcf, chrom, nthreads_downsampl
     """
 
     return (
-        f"{java} -Xmx20g -jar {beagle} gt={out}/germline/{jobid}.gp.vcf.gz ref={imputation_vcf} "
-        f"chrom={chrom} out={out}/germline/{jobid}.phased impute=false modelscale=2 "
+        f"{java} -Xmx20g -jar {beagle} gt={out}/monopogen_{jobid}.gp.vcf.gz ref={imputation_vcf} "
+        f"chrom={chrom} out={out}/monopogen_{jobid}.phased impute=false modelscale=2 "
         f"nthreads={nthreads_downsample} gprobs=true niterations=0"
     )
 
