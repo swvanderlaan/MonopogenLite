@@ -1,20 +1,13 @@
 #!/bin/bash
 
-#SBATCH --job-name=submit_mpg_jobs
-#SBATCH --output=/sfs/gpfs/tardis/project/cphg-millerlab/swvanderlaan_man7zh/MetaPlaq/monopogen/submit_mpg_%j.out
-#SBATCH --error=/sfs/gpfs/tardis/project/cphg-millerlab/swvanderlaan_man7zh/MetaPlaq/monopogen/submit_mpg_%j.err
-#SBATCH --ntasks=1
-#SBATCH --time=00:10:00
-#SBATCH --partition=standard
-#SBATCH -A cphg-millerlab
-
+# Title: submit_jobs_runPreprocess_rivanna.sh
 # Description: 
 # Submit preProcess of Monopogen on the provided BAM files.
 # It will try to run all the samples sequentially using the --mem and --time 
 # provided in the SLURM header.
 # 
 # Change log:
-# Version: 1.2.2
+# Version: 1.2.8
 # Author: Sander W. van der Laan
 # Date: 2026-01-28
 # Usage: bash submit_jobs_runPreprocess_rivanna.sh
@@ -34,16 +27,16 @@ STUDIES=("Katyayani_et_al")
 # List of platform libraries corresponding to each study (in the same order)
 # choices=['10x','smartseq2','celseq2']
 # CELLRANGER
-# PLATFORM_LIBRARY="10x"
+# PLATFORM="10x"
 # STARSOLO
-PLATFORM_LIBRARY="smartseq2"
+PLATFORM="smartseq2"
 
 # Loop over studies and submit array jobs
 for STUDY in "${STUDIES[@]}"; do
-    STUDY_PATH="${STUDY_DIR}/${STUDY}"
+    STUDY_PATH="${STUDY_DIR}/${STUDY}" # Define full path to the study directory, which --input-dir will point to
 
     if [ -d "$STUDY_PATH" ]; then
-        echo "Submitting SLURM job for study: $STUDY"
+        echo "Submitting SLURM job for study: $STUDY" # Define the study name, which --study will point to
 
         # Get sample count for SLURM array job
         SAMPLE_COUNT=$(find "$STUDY_PATH" -mindepth 1 -maxdepth 1 -type d | wc -l)
@@ -54,7 +47,7 @@ for STUDY in "${STUDIES[@]}"; do
         fi
 
         # Submit SLURM job with correct array size
-        sbatch --array=0-$(($SAMPLE_COUNT - 1)) runPreprocess_rivanna.sh --input-dir "$STUDY_PATH" --study "$STUDY" --platform "$PLATFORM_LIBRARY" --mpg "$MPG" --project-dir "$PROJECT_DIR" --generate-array --dry-run
+        sbatch --array=0-$(($SAMPLE_COUNT - 1)) runPreprocess_rivanna.sh --input-dir "$STUDY_PATH" --study "$STUDY" --platform "$PLATFORM" 
     else
         echo "Warning: Study directory $STUDY_PATH does not exist. Skipping..."
     fi
