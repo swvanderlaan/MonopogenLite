@@ -19,16 +19,12 @@
 # provided in the SLURM header.
 
 # --- Define script metadata ---
-VERSION="v1.2.6"
-VERSION_DATE="2025-06-05"
+VERSION="v1.2.7"
+VERSION_DATE="2026-01-28"
 VERSION_NAME="runPreprocess"
 VERSION_NAME_TEXT="Preprocess scRNA-seq or snATAC-seq data for usage with MonopogenLite."
-COPYRIGHT="Copyright 1979-2025. José Verdezoto Mosquera; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science."
+COPYRIGHT="Copyright 1979-2026. José Verdezoto Mosquera; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science."
 COPYRIGHT_TEXT="This script is licensed under the MIT license."
-
-# --- Input arguments ---
-STUDY_PATH="$1"
-STUDY_NAME="$2"
 
 # --- Define default paths ---
 MPG="/sfs/gpfs/tardis/project/cphg-millerlab/software/MonopogenLite"
@@ -79,7 +75,6 @@ if [ -z "$STUDY_PATH" ] || [ -z "$STUDY_NAME" ]; then
     exit 1
 fi
 }
-
 
 # --- Parse command line arguments ---
 while [[ "$#" -gt 0 ]]; do
