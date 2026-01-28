@@ -1,17 +1,17 @@
 #!/bin/bash
 
 #SBATCH --job-name=mpg_preprocess       # Job name
-#SBATCH --output=/hpc/dhl_ec/svanderlaan/projects/molqtl_scrnaseq/monopogen/mpg_preprocess_%A_%a.out     # Standard output log file
-#SBATCH --error=/hpc/dhl_ec/svanderlaan/projects/molqtl_scrnaseq/monopogen/mpg_preprocess_%A_%a.err   # Error log
-#SBATCH --array=0-0  # Placeholder; will be replaced dynamically if script is submitted with --generate-array
+#SBATCH --output=/sfs/gpfs/tardis/project/cphg-millerlab/swvanderlaan_man7zh/MetaPlaq/monopogen/mpg_preprocess_%A_%a.out     # Standard output log file
+#SBATCH --error=/sfs/gpfs/tardis/project/cphg-millerlab/swvanderlaan_man7zh/MetaPlaq/monopogen/mpg_preprocess_%A_%a.err   # Error log
+#SBATCH --array=0-49   # Array range (adjust based on the size of SAMPLE_LIST)
 #SBATCH --ntasks=1     # Number of tasks
 #SBATCH --cpus-per-task=8  # Number of CPU cores per task
 #SBATCH --mem=8G                    # Memory per node (specify in GB)
-#SBATCH --time=01:00:00              # Time limit (HH:MM:SS)
+#SBATCH --time=08:00:00              # Time limit (HH:MM:SS)
 #SBATCH --mail-type=END,FAIL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
 #SBATCH --mail-user=s.w.vanderlaan-2@umcutrecht.nl      # Where to send mail
-#SBATCH --partition=standard
-#SBATCH -A cphg-millerlab
+#SBATCH --partition=standard # specific to rivanna
+#SBATCH -A cphg-millerlab # specific to rivanna
 
 # Description: 
 # Run preProcess of Monopogen on the provided BAM files.
@@ -19,7 +19,7 @@
 # provided in the SLURM header.
 
 # --- Define script metadata ---
-VERSION="v1.2.7"
+VERSION="v1.2.8"
 VERSION_DATE="2026-01-28"
 VERSION_NAME="runPreprocess"
 VERSION_NAME_TEXT="Preprocess scRNA-seq or snATAC-seq data for usage with MonopogenLite."
@@ -47,9 +47,9 @@ display_help() {
     echo "It will try to run all the samples sequentially using the --mem and --time provided in the SLURM header." 
     echo ""
     echo "Arguments:"
-    echo "  --input-dir <dir>   Path to the directory containing the study samples."
-    echo "  --study <name>      Name of the study to be processed."
-    echo "  --platform <name>   Platform library used for sequencing. Default: celseq2. Options: 10x, smartseq2, celseq2."
+    echo "  --input-dir <dir>   Path to the directory containing the study samples. REQUIRED."
+    echo "  --study <name>      Name of the study to be processed. REQUIRED."
+    echo "  --platform <name>   Platform library used for sequencing. REQUIRED. Options: 10x, smartseq2, celseq2."
     echo "  --mpg <dir>         Path to the MonopogenLite root directory. Default: $MPG"
     echo "  --project-dir <dir> Project directory with region.lst. Default: $PROJECT_DIR"
     echo "  --generate-array    Only output the recommended --array setting based on number of samples, then exit."
@@ -66,14 +66,6 @@ display_help() {
     echo "$COPYRIGHT"
     echo "$COPYRIGHT_TEXT"
     echo "========================================================================"
-}
-
-# --- Validate input arguments ---
-validate_arguments() {
-if [ -z "$STUDY_PATH" ] || [ -z "$STUDY_NAME" ]; then
-    echo "Error: Missing input arguments."
-    exit 1
-fi
 }
 
 # --- Parse command line arguments ---
@@ -114,6 +106,15 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+# --- Validate input arguments ---
+validate_arguments() {
+if [ -z "$INPUT_DIR" ] || [ -z "$STUDY" ] || [ -z "$PLATFORM" ]; then
+    echo "Error: Missing input arguments. --input-dir, --study, and --platform are required." >&2
+    display_help
+    exit 1
+fi
+}
+
 echo "============================================"
 echo "Monopogen: Running preprocess variant calling"
 echo "============================================"
@@ -150,25 +151,26 @@ echo ""
 echo "Running MonopogenLite"
 
 # --- Define output directory ---
-OUTPUT_DIR="${PROJECT_DIR}/${STUDY_NAME}"
+OUTPUT_DIR="${PROJECT_DIR}/${STUDY}"
 mkdir -p "$OUTPUT_DIR"
 
 # --- Optionally calculate and output correct array range ---
 if [[ "$GENERATE_ARRAY" = true ]]; then
     # --- Get list of sample directories ---
-    SAMPLES=($(find "$STUDY_PATH" -mindepth 1 -maxdepth 1 -type d))
-    if [[ "$SAMPLES" -eq 0 ]]; then
-        echo "Error: No sample directories found for study $STUDY_NAME." >&2
+    SAMPLES=($(find "$INPUT_DIR" -mindepth 1 -maxdepth 1 -type d))
+    if [[ ${#SAMPLES[@]} -eq 0 ]]; then
+        echo "Error: No sample directories found for study $STUDY." >&2
         exit 1
     fi
-    echo "Suggested sbatch array range: --array=0-$((SAMPLES - 1))"
+    echo "Suggested sbatch array range: --array=0-$(( ${#SAMPLES[@]} - 1 ))"
     exit 0
+# --- If not generating array, proceed with processing ---
 else
-    echo "Running MonopogenLite preProcess for study: $STUDY_NAME"
+    echo "Running MonopogenLite preProcess for study: $STUDY"
     # --- Get list of sample directories ---
-    SAMPLES=($(find "$STUDY_PATH" -mindepth 1 -maxdepth 1 -type d))
+    SAMPLES=($(find "$INPUT_DIR" -mindepth 1 -maxdepth 1 -type d))
     if [ "${#SAMPLES[@]}" -eq 0 ]; then
-        echo "Error: No sample directories found for study $STUDY_NAME." >&2
+        echo "Error: No sample directories found for study $STUDY." >&2
         exit 1
     fi
 
@@ -241,14 +243,14 @@ python ${MPG}/src/MonopogenLite.py preProcess \
     --app-path "${MPG}/apps" \
     --max-mismatch 3 \
     --nthreads 8 \
-    --platform-library "${PLATFORM:-celseq2}" --verbose &> "$LOG_FILE"
+    --platform-library "$PLATFORM" --verbose &> "$LOG_FILE"
 
 if [ $? -ne 0 ]; then
     echo "Error processing sample ${SAMPLE_NAME}. See log: [${LOG_FILE}]." >&2
     exit 1
 fi
 
-echo "Preprocessing complete for ${SAMPLE_NAME}. Output: [${OUTPUT_DIR}/monopogen_${SAMPLE_NAME}]."
+echo "Preprocessing complete for ${SAMPLE_NAME} from ${STUDY} (in ${INPUT_DIR}). Output: [${OUTPUT_DIR}/monopogen_${SAMPLE_NAME}]."
 
 echo "Wow. That was a lot. Let's have a beer, buddy!"
 
