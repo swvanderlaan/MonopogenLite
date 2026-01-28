@@ -45,6 +45,7 @@ import subprocess # run shell commands
 import multiprocessing as mp
 from multiprocessing import Pool
 from pathlib import Path
+import pysam
 
 # import data manipulation and analysis libraries
 import pandas as pd # data manipulation and analysis
@@ -195,7 +196,7 @@ echo "[MonopogenLite germline.py v{version}] Start time: $(date)"
 echo "[MonopogenLite germline.py v{version}] Running job: {jobid}"
 
 source ~/.bashrc
-conda activate monopogen
+micromamba activate monopogen
 
 {command}
 bcftools sort {vcf_file_name}{vcf_extension} -Oz -o {sorted_vcf_file_name}
@@ -596,6 +597,55 @@ def germline(args):
         print(f"\nExiting.")
         print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
 
+# ADDED by Damian, made with ChatGPT.
+def count_and_filter_reads(bam_path, max_mismatch, min_read_length):
+    """
+    Count and filter reads in a BAM file, tracking discarded reads based on max_mismatch and min_read_length.
+
+    Args:
+        bam_path (str): Path to the BAM file.
+        max_mismatch (int): Maximum allowed mismatches for reads.
+        min_read_length (int): Minimum length of reads.
+
+    Returns:
+        tuple: Total reads, discarded reads due to mismatch, discarded reads due to length, and retained reads.
+    """
+    bamfile = pysam.AlignmentFile(bam_path, "rb")
+
+    total_reads = 0
+    discarded_mismatch = 0
+    discarded_length = 0
+    retained_reads = 0
+
+    for read in bamfile.fetch():
+        total_reads += 1
+
+        # Check mismatch
+        mismatch_count = read.get_tag('NM') if read.has_tag('NM') else 0
+        if mismatch_count > max_mismatch:
+            discarded_mismatch += 1
+            continue  # Discard read if mismatch count exceeds max_mismatch
+
+        # Check read length
+        if len(read.query_sequence) < min_read_length:
+            discarded_length += 1
+            continue  # Discard read if it is shorter than the minimum length
+
+        retained_reads += 1
+
+    bamfile.close()
+
+    # Log the filtering results
+    logger.info(f"BAM File: {bam_path}")
+    logger.info(f"  Total Reads: {total_reads}")
+    logger.info(
+        f"  Discarded (mismatch > {max_mismatch}): {discarded_mismatch}")
+    logger.info(
+        f"  Discarded (length < {min_read_length}): {discarded_length}")
+    logger.info(f"  Retained Reads: {retained_reads}")
+
+    return total_reads, discarded_mismatch, discarded_length, retained_reads
+
 # Function to perform pre-processing of bam files -- 2024-08-08
 def preProcess(args):
     """
@@ -683,6 +733,22 @@ def preProcess(args):
                 )
                 para_lst.append(para_single)
 
+                # --- Quick read count --- ADDED by Damian, made with ChatGPT.
+                bam_path = record[1]
+                try:
+                    bamfile = pysam.AlignmentFile(bam_path, "rb")
+                    read_count = bamfile.count(
+                        contig="chr" + str(chrom))
+                    bamfile.close()
+                    print(
+                        f"BAM {bam_path} has {read_count} reads on chromosome chr{chrom}")
+                    # Here we call count_and_filter_reads for each BAM file, which already logs stats
+                    count_and_filter_reads(bam_path, args.max_mismatch,
+                                           args.min_read_length)
+                except ValueError as e:
+                    print(
+                        f"Could not count reads for chr{chrom} in BAM {bam_path}: {e}")
+
             # Process chromosome X -- 2024-09-17
             for chrom in ["X"]:
                 if args.debug:
@@ -702,6 +768,21 @@ def preProcess(args):
                     umi_tag=umi_tag  # Pass umi_tag if provided
                 )
                 para_lst.append(para_single)
+
+                # --- Quick read count --- ADDED by Damian, made with ChatGPT.
+                bam_path = record[1]
+                try:
+                    bamfile = pysam.AlignmentFile(bam_path, "rb")
+                    read_count = bamfile.count(contig="chr" + chrom)
+                    bamfile.close()
+                    print(
+                        f"BAM {bam_path} has {read_count} reads on chromosome chr{chrom}")
+                    # Here we call count_and_filter_reads for each BAM file, which already logs stats
+                    count_and_filter_reads(bam_path, args.max_mismatch,
+                                           args.min_read_length)
+                except ValueError as e:
+                    print(
+                        f"Could not count reads for chr{chrom} in BAM {bam_path}: {e}")
 
     # Run the BamFilter function in parallel for each chromosome from the germline.py module -- 2024-09-16
     with Pool(processes=args.nthreads) as pool:
