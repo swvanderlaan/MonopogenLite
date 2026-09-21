@@ -62,9 +62,9 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.3.9'
-VERSION_DATE = '2025-10-02'
-COPYRIGHT = 'Copyright 1979-2025. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
+VERSION = '1.4.1'
+VERSION_DATE = '2026-09-21'
+COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
 
@@ -852,11 +852,23 @@ python MonopogenLite.py germline --help\n\n
     parser_preProcess.add_argument('-t', '--nthreads', required=False, type=int, default=1,
                                     help="Number of threads used for SNVs calling. Default is 1.")
     parser_preProcess.add_argument('-l', '--platform-library', required=True, choices=['10x','smartseq2','celseq2'],
-                                    help="The platform library used for sequencing. This can be 10x, smartseq2, or celseq2. Required.")
+                                    help=(
+                                        "The platform library used for sequencing. Required. "
+                                        "Use '10x' for 10x Genomics RNA-seq (CellRanger) and 10x ATAC-seq (CellRanger ATAC). "
+                                        "Use 'smartseq2' for SmartSeq2/STARsolo full-length RNA-seq. "
+                                        "Use 'celseq2' for CEL-Seq2 (e.g. bowtie2-based pipelines)."
+                                    ))
     parser_preProcess.add_argument('-r', '--min-read-length', required=False, type=int, default=30,
                                     help="The minimum read length for variant calling. Default is 30.")
     parser_preProcess.add_argument('-u', '--umi-collapse', required=False, nargs='?', const=True, default=None,
-                                    help="Collapse UMIs. By default no UMIs are collapsed. Optionally, specify the UMI tag (e.g., 'UMI', 'RX' or 'MI'). If no tag is provided, default is 'RX'.")
+                                    help=(
+                                        "Collapse reads by UMI to remove PCR duplicates. Omit this flag entirely for "
+                                        "platforms without UMIs (10x ATAC-seq, SmartSeq2). "
+                                        "When used, optionally provide the BAM tag that holds the corrected UMI: "
+                                        "'UB' for 10x RNA-seq (CellRanger; recommended), "
+                                        "'UMI' for CEL-Seq2 pipelines (e.g. bowtie2-based). "
+                                        "If the flag is given without a tag name, the default tag is 'UMI'."
+                                    ))
     parser_preProcess.add_argument('-v', '--verbose', action='store_true',
                                     help="Increase output verbosity.")
     parser_preProcess.add_argument('-d', '--debug', action='store_true',

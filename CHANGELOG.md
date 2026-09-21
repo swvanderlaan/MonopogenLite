@@ -2,6 +2,13 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.1 -- 2026-09-21
+### Smaller Fixes
+- 🐛 `germline.py` `BamFilter()`: Fixed silent read-drop for alignments lacking `NM`/`nM` mismatch tags (e.g. STARsolo SmartSeq2 secondary alignments). Reads without either tag now pass the mismatch filter rather than being silently discarded.
+- 🐛 `germline.py` `BamFilter()`: Added explicit skip of unmapped reads (`is_unmapped`), making the intent clear and decoupling it from the accidental `val is None` drop.
+- 🐛 `germline.py` `BamFilter()`: Added `umi_tag and` guard before `s.has_tag(umi_tag)` to prevent `TypeError` when `umi_tag` is `None`.
+
+
 ## 🛠️ v1.3.9 -- 2025-10-02
 ### Smaller Fixes
 - 🐛 Fixed issue where job-scripts were written, but not added to the `joblst` for the job-pool.

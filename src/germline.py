@@ -289,6 +289,12 @@ def BamFilter(myargs):
 
     # Process reads and group them by UMI and position
     for s in infile.fetch(search_chr):
+        # Skip unmapped reads — they carry no alignment position and no NM tag
+        if s.is_unmapped:
+            if debug:
+                logger.info(f"Read {s.query_name} is unmapped; skipping.")
+            continue
+
         val = None
         if s.has_tag("NM"):
             if debug:
@@ -299,12 +305,13 @@ def BamFilter(myargs):
                 logger.info(f"Read {s.query_name} has nM tag.")
             val = s.get_tag("nM")
 
-        # Filter by mismatch and read length
-        # if val < max_mismatch and s.query_length >= min_read_length:
-        if val is not None and val < max_mismatch and s.query_length >= min_read_length:
+        # Filter by mismatch and read length.
+        # When neither NM nor nM is present (val is None — e.g. STARsolo SmartSeq2 reads,
+        # or aligners that omit the tag) the read cannot be filtered by mismatch, so it passes.
+        if (val is None or val < max_mismatch) and s.query_length >= min_read_length:
             if debug:
                 logger.info(f"Read {s.query_name} has {val} mismatches and length {s.query_length}.")
-            if umi_collapse and s.has_tag(umi_tag):  # Use the specified UMI tag
+            if umi_collapse and umi_tag and s.has_tag(umi_tag):  # Use the specified UMI tag
                 if debug:
                     logger.info(f"Read {s.query_name} has UMI tag {umi_tag}.")
                 umi = s.get_tag(umi_tag)  # Extract UMI from the specified tag
