@@ -7,6 +7,9 @@ All notable changes to `MonopogenLite` will be documented in this file.
 - 🐛 `germline.py` `BamFilter()`: Fixed silent read-drop for alignments lacking `NM`/`nM` mismatch tags (e.g. STARsolo SmartSeq2 secondary alignments). Reads without either tag now pass the mismatch filter rather than being silently discarded.
 - 🐛 `germline.py` `BamFilter()`: Added explicit skip of unmapped reads (`is_unmapped`), making the intent clear and decoupling it from the accidental `val is None` drop.
 - 🐛 `germline.py` `BamFilter()`: Added `umi_tag and` guard before `s.has_tag(umi_tag)` to prevent `TypeError` when `umi_tag` is `None`.
+- 📝 `MonopogenLite.py`: Corrected `--umi-collapse` help text — default tag was documented as `'RX'` but the code default is `'UMI'`; updated per-platform UMI tag guidance.
+- 📝 `MonopogenLite.py`: Clarified `--platform-library` help text to distinguish 10x RNA vs ATAC and SmartSeq2 vs CEL-Seq2.
+- 📝 `MonopogenLite.py`: Corrected CEL-Seq2 UMI guidance — the UMI is encoded in the read name (`BC-<barcode>_UMI-<umi>`), not a BAM tag; `--umi-collapse` should not be used for CEL-Seq2.
 
 
 ## 🛠️ v1.3.9 -- 2025-10-02

@@ -862,11 +862,12 @@ python MonopogenLite.py germline --help\n\n
                                     help="The minimum read length for variant calling. Default is 30.")
     parser_preProcess.add_argument('-u', '--umi-collapse', required=False, nargs='?', const=True, default=None,
                                     help=(
-                                        "Collapse reads by UMI to remove PCR duplicates. Omit this flag entirely for "
-                                        "platforms without UMIs (10x ATAC-seq, SmartSeq2). "
-                                        "When used, optionally provide the BAM tag that holds the corrected UMI: "
-                                        "'UB' for 10x RNA-seq (CellRanger; recommended), "
-                                        "'UMI' for CEL-Seq2 pipelines (e.g. bowtie2-based). "
+                                        "Collapse reads by UMI to remove PCR duplicates. "
+                                        "Only supported for platforms where the corrected UMI is stored as a BAM auxiliary tag. "
+                                        "Omit this flag for: 10x ATAC-seq (no UMIs), SmartSeq2 (no UMIs), and CEL-Seq2 "
+                                        "(UMI is encoded in the read name as 'BC-<barcode>_UMI-<umi>', not a BAM tag). "
+                                        "When used, provide the BAM tag that holds the corrected UMI: "
+                                        "'UB' for 10x RNA-seq (CellRanger). "
                                         "If the flag is given without a tag name, the default tag is 'UMI'."
                                     ))
     parser_preProcess.add_argument('-v', '--verbose', action='store_true',
