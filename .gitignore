@@ -248,3 +248,4 @@ resources/_logs/*
 resources/*vcf.gz*
 
 
+.claude/
