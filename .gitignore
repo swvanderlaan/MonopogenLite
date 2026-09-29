@@ -247,5 +247,7 @@ example/germline/
 resources/_logs/*
 resources/*vcf.gz*
 
-
+# ignore Claude coding
 .claude/
+claude/
+
