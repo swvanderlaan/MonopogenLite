@@ -62,8 +62,8 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.1'
-VERSION_DATE = '2026-09-21'
+VERSION = '1.4.2'
+VERSION_DATE = '2026-10-15'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -620,11 +620,21 @@ def count_and_filter_reads(bam_path, max_mismatch, min_read_length):
     for read in bamfile.fetch():
         total_reads += 1
 
+        # Skip unmapped reads — they carry no alignment position, no NM tag,
+        # and query_sequence is None for mate-rescued unmapped entries.
+        if read.is_unmapped:
+            continue
+
         # Check mismatch
         mismatch_count = read.get_tag('NM') if read.has_tag('NM') else 0
         if mismatch_count > max_mismatch:
             discarded_mismatch += 1
             continue  # Discard read if mismatch count exceeds max_mismatch
+
+        # query_sequence is None for secondary/supplementary alignments that
+        # omit the sequence field; skip them rather than crashing on len().
+        if read.query_sequence is None:
+            continue
 
         # Check read length
         if len(read.query_sequence) < min_read_length:

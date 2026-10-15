@@ -2,6 +2,12 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.2 -- 2026-10-15
+### Smaller Fixes
+- 🐛 `MonopogenLite.py` `count_and_filter_reads()`: Fixed `TypeError: object of type 'NoneType' has no len()` crash when processing 10x ATAC-seq BAMs. Unmapped reads (which have `query_sequence = None`) are now skipped before the read-length check, mirroring the fix applied to `germline.py` `BamFilter()` in v1.4.1.
+- 🐛 `MonopogenLite.py` `count_and_filter_reads()`: Added `query_sequence is None` guard for secondary/supplementary alignments that omit the sequence field.
+
+
 ## 🛠️ v1.4.1 -- 2026-09-21
 ### Smaller Fixes
 - 🐛 `germline.py` `BamFilter()`: Fixed silent read-drop for alignments lacking `NM`/`nM` mismatch tags (e.g. STARsolo SmartSeq2 secondary alignments). Reads without either tag now pass the mismatch filter rather than being silently discarded.
