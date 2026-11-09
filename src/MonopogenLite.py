@@ -62,8 +62,8 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.2'
-VERSION_DATE = '2026-10-15'
+VERSION = '1.4.3'
+VERSION_DATE = '2026-11-09'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
 The MIT License (MIT).
@@ -627,9 +627,9 @@ def count_and_filter_reads(bam_path, max_mismatch, min_read_length):
 
         # Check mismatch
         mismatch_count = read.get_tag('NM') if read.has_tag('NM') else 0
-        if mismatch_count > max_mismatch:
+        if mismatch_count >= max_mismatch:
             discarded_mismatch += 1
-            continue  # Discard read if mismatch count exceeds max_mismatch
+            continue  # Discard read if mismatch count meets or exceeds max_mismatch
 
         # query_sequence is None for secondary/supplementary alignments that
         # omit the sequence field; skip them rather than crashing on len().
@@ -649,7 +649,7 @@ def count_and_filter_reads(bam_path, max_mismatch, min_read_length):
     logger.info(f"BAM File: {bam_path}")
     logger.info(f"  Total Reads: {total_reads}")
     logger.info(
-        f"  Discarded (mismatch > {max_mismatch}): {discarded_mismatch}")
+        f"  Discarded (mismatch >= {max_mismatch}): {discarded_mismatch}")
     logger.info(
         f"  Discarded (length < {min_read_length}): {discarded_length}")
     logger.info(f"  Retained Reads: {retained_reads}")

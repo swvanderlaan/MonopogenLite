@@ -2,6 +2,11 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.3 -- 2026-11-09
+### Smaller Fixes
+- 🐛 `MonopogenLite.py` `count_and_filter_reads()`: Fixed mismatch threshold to align with the original Monopogen (`val < max_mismatch`). Reads with exactly `max_mismatch` mismatches are now discarded (`>=`) rather than retained (`>`).
+
+
 ## 🛠️ v1.4.2 -- 2026-10-15
 ### Smaller Fixes
 - 🐛 `MonopogenLite.py` `count_and_filter_reads()`: Fixed `TypeError: object of type 'NoneType' has no len()` crash when processing 10x ATAC-seq BAMs. Unmapped reads (which have `query_sequence = None`) are now skipped before the read-length check, mirroring the fix applied to `germline.py` `BamFilter()` in v1.4.1.
