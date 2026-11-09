@@ -62,7 +62,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.4'
+VERSION = '1.4.5'
 VERSION_DATE = '2026-11-09'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -926,7 +926,11 @@ python MonopogenLite.py germline --help\n\n
     parser_preProcess.add_argument('-a', '--app-path', required=True,
                                     help="The app library paths used in the tool. The app library paths should include (a symlink to) beagle. Also see wiki for installation instructions of relevant tools (samtools, bcftools, bgzip, and java). Required.")
     parser_preProcess.add_argument('-m', '--max-mismatch', required=False, type=int, default=3,
-                                    help="The maximal alignment mismatch allowed in one reads for variant calling. Default is 3.")
+                                    help=(
+                                        "Mismatch threshold for reads used in variant calling: reads with this many or more "
+                                        "mismatches (NM tag, or nM for STAR-based BAMs) are removed. "
+                                        "The default of 3 keeps reads with at most 2 mismatches, as in the original Monopogen."
+                                    ))
     parser_preProcess.add_argument('-t', '--nthreads', required=False, type=int, default=1,
                                     help="Number of threads used for SNVs calling. Default is 1.")
     parser_preProcess.add_argument('-l', '--platform-library', required=True, choices=['10x','smartseq2','celseq2'],

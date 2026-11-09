@@ -167,14 +167,15 @@ def addChr(in_bam, samtools, verbose=False):
             a.tags = read.tags
             outf.write(a)
     input_bam.close()
-    outf.close()
-    os.system(samtools + " index " +  out_bam)
+    # Index and move with explicit error checks; the old os.system("mv -v" + path) call lacked a space,
+    # so with --verbose the renamed BAM silently never replaced the original -- 2026-11-09
+    result = subprocess.run([samtools, "index", out_bam], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"samtools index failed for {out_bam}: {result.stderr.strip()}")
+    os.replace(out_bam, in_bam)
+    os.replace(out_bam + ".bai", in_bam + ".bai")
     if verbose:
-        os.system(" mv -v" + out_bam + " " + in_bam)
-        os.system(" mv -v" + out_bam + ".bai  " + in_bam + ".bai")
-    else:
-        os.system(" mv " + out_bam + " " + in_bam)
-        os.system(" mv " + out_bam + ".bai  " + in_bam + ".bai")
+        logger.info(f"Added the 'chr' prefix to the contig names in [{in_bam}].")
 
 # Function to sort and filter the chromosomes -- 2024-09-16
 def BamFilter(myargs):
@@ -228,59 +229,26 @@ def BamFilter(myargs):
 
     # Read the header information from the BAM file -- 2024-09-17
     tp = infile.header.to_dict()
-    # Check if the read group (RG) information is available in the header
-    # If not, add the read group information to the header
-    if 'RG' not in tp:
-        if verbose:
-            logger.info("Read group information not found in the header.")
-        # Check the read group information
+
+    # Give the filtered BAM exactly one read group, named after the sample ID from the --bamFile list -- 2026-11-09
+    # bcftools mpileup treats every distinct SM in the read groups as a separate sample. Upstream read
+    # groups cannot be trusted for this: when absent, the old code named the sample after the BAM file
+    # (CellRanger calls every BAM possorted_genome_bam.bam, so all samples merged into one), and STARsolo
+    # SmartSeq2 BAMs can carry one read group per cell (so every cell became a sample). MonopogenLite
+    # genotypes individuals, so one filtered BAM is always one sample.
+    if 'RG' in tp:
+        logger.info(f"Replacing {len(tp['RG'])} upstream read group(s) with a single read group for sample {id}.")
         if debug:
-            print(f"Read group information:  {tp}")
-        # To avoid the format issue, we update the RG flag based on sample information
-        sampleID = os.path.splitext(os.path.basename(myargs["bamFile"]))[0]
+            print(f"Upstream read group information: {tp['RG']}")
+    else:
+        logger.info(f"No read group information found; adding a read group for sample {id}.")
+    read_group = {'ID': id, 'SM': id}
+    if platform_library == "10x":
+        read_group.update({'LB': id, 'PU': id, 'PL': "ILLUMINA"})
+    elif platform_library not in ["smartseq2", "celseq2"]:
+        logger.warning(f"Unknown platform_library: {platform_library} -- using minimal read group fields.")
+    tp['RG'] = [read_group]
 
-
-        # Update the read group (RG) information with the dynamically generated LB_value  -- 2024-09-19
-        # - 10x Genomics: Often, the BAM files produced by 10x Genomics pipelines will already have
-        # appropriate read groups. The PU might reflect the flowcell or lane ID, and the LB would
-        # represent the library constructed during the 10x library preparation process.
-        # - Smart-seq2 or CEL-Seq2: These platforms involve different library preparation protocols
-        # and sequencing setups.
-        # Set up the sample ID and flowcell/experiment for LB based on platform
-        ### --- OLD CODE -- possibly remove ---
-        # if platform_library == "10x":
-        # 	logger.info(f"Platform is {platform_library} -- setting library identifier (LB) to [0.1].")
-        # 	tp1 = [{'SM':sampleID,'ID':sampleID, 'LB':0.1, 'PL':"ILLUMINA", 'PU':sampleID}]
-        # elif platform_library == "smartseq2" or platform_library == "celseq2":
-        # 	logger.info(f"Platform is {platform_library} -- only setting sample ID (SM) and cell/sample identifier (ID).")
-        # 	tp1 = [{'SM':sampleID,'ID':sampleID}]
-        # tp.update({'RG': tp1})
-        # # this debug produces a lot of output
-        # if debug:
-        # 	print(f"Read group information: {tp1} (original: {tp})")
-        # NEW code -- 2025-06-05
-        # Initialize the read group (RG) information
-        logger.info(f"Initializing read group (RG) information for sample {sampleID}.")
-        # Create a list to hold the read group information
-        tp1 = [{'SM': sampleID, 'ID': sampleID}]  # Base RG fields
-
-        if platform_library == "10x":
-            logger.info(f"Platform is {platform_library} -- adding LB, PU, and PL fields.")
-            tp1[0].update({
-                'LB': sampleID,  # use sampleID or similar string-based identifier
-                'PU': sampleID,
-                'PL': "ILLUMINA"
-            })
-        elif platform_library in ["smartseq2", "celseq2"]:
-            logger.info(f"Platform is {platform_library} -- using minimal RG fields.")
-        else:
-            logger.warning(f"Unknown platform_library: {platform_library} -- using default RG fields.")
-
-        tp.update({'RG': tp1})
-        # this debug produces a lot of output
-        if debug:
-            print(f"Read group information: {tp1} (original: {tp})")
-  
     outfile =  pysam.AlignmentFile( out + "/Bam/" +id + "_" + chr + ".filter.bam", "wb", header=tp)
 
     # NEW code -- 2024-09-18
@@ -311,6 +279,8 @@ def BamFilter(myargs):
         if (val is None or val < max_mismatch) and s.query_length >= min_read_length:
             if debug:
                 logger.info(f"Read {s.query_name} has {val} mismatches and length {s.query_length}.")
+            # Point every kept read at the single read group of this sample (see header above).
+            s.set_tag("RG", id, value_type="Z")
             if umi_collapse and umi_tag and s.has_tag(umi_tag):  # Use the specified UMI tag
                 if debug:
                     logger.info(f"Read {s.query_name} has UMI tag {umi_tag}.")
@@ -336,10 +306,12 @@ def BamFilter(myargs):
     outfile.close()
 
     # Index the BAM file -- 2024-09-16
+    # An unindexed BAM cannot be used by bcftools mpileup --regions, so stop here instead of continuing -- 2026-11-09
     logger.info(f"Indexing the BAM file [{out}/Bam/{id}_{chr}.filter.bam].")
     result = subprocess.run([samtools, "index", out + "/Bam/" + id + "_" + chr + ".filter.bam"], capture_output=True, text=True)
     if result.returncode != 0:
         logger.error(f"ERROR: Error running samtools index: {result.stderr}.")
+        raise RuntimeError(f"samtools index failed for {out}/Bam/{id}_{chr}.filter.bam: {result.stderr.strip()}")
 
     # Adding the chr prefix to the BAM file when the contig does not include this-- 2024-09-17
     if cnt == 0:

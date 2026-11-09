@@ -2,6 +2,15 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.5 -- 2026-11-09
+### Fixes affecting genotypes
+- 🐛 `germline.py` `BamFilter()`: Every filtered BAM now carries exactly one read group, with `ID` and `SM` set to the sample ID from the `--bamFile` list, and every kept read is tagged with it. Previously, BAMs without read groups were named after the BAM file (CellRanger names every BAM `possorted_genome_bam.bam`, so all samples could merge into one in `bcftools mpileup`), and upstream read groups were kept as-is (STARsolo SmartSeq2 BAMs with one read group per cell would be genotyped per cell). One filtered BAM is now always one individual.
+- 🐛 `germline.py` `addChr()`: Fixed the `mv -v` command missing a space, which with `--verbose` (always used by `runPreprocess.sh`) left filtered BAMs without the `chr` prefix for BAMs whose contigs are named `1` instead of `chr1`; those samples then produced no calls. Files are now moved with `os.replace()` and indexing is checked.
+- 🐛 `germline.py` `BamFilter()`: A failing `samtools index` now stops the run instead of only logging an error.
+### Documentation
+- 📝 `MonopogenLite.py`: `--max-mismatch` help now states the actual behaviour: reads with this many or more mismatches are removed, so the default of 3 keeps reads with at most 2 mismatches (as in the original Monopogen).
+
+
 ## 🛠️ v1.4.4 -- 2026-11-09
 ### Improvements
 - ⚡ `MonopogenLite.py` `count_and_filter_reads()`: Now counts reads per chromosome (`bam.fetch(contig)`) instead of scanning the whole BAM once per chromosome, removing up to 23 full passes over each BAM during `--preProcess`.
