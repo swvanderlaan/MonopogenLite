@@ -62,7 +62,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.6'
+VERSION = '1.4.7'
 VERSION_DATE = '2026-11-09'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -190,17 +190,17 @@ def write_job_script(jobid, command, out_path, version=VERSION, verbose=False):
     script_path = out_path / f"runGermline_{jobid}.sh"
     vcf_file_name = f"{out_path}/monopogen_{jobid}"
     vcf_extension = ".vcf.gz"
-    sorted_vcf_file_name = f"{vcf_file_name}_sorted{vcf_extension}"
+    # pipefail and '|| exit 1' make the script exit with an error when any step fails, so the failure is
+    # reported instead of the script ending successfully; sorting/indexing is part of the command -- 2026-11-09
     slurm_script_content = f"""#!/bin/bash
 echo "[MonopogenLite germline.py v{version}] Start time: $(date)"
 echo "[MonopogenLite germline.py v{version}] Running job: {jobid}"
 
 source ~/.bashrc
 micromamba activate monopogen
+set -o pipefail
 
-{command}
-bcftools sort {vcf_file_name}{vcf_extension} -Oz -o {sorted_vcf_file_name}
-bcftools index -t {sorted_vcf_file_name}
+{command} || {{ echo "[MonopogenLite germline.py v{version}] Job {jobid} FAILED: $(date)"; exit 1; }}
 
 #rm {vcf_file_name}{vcf_extension} {vcf_file_name}.gp{vcf_extension} {vcf_file_name}.phased{vcf_extension}
 
@@ -331,6 +331,83 @@ def read_sample_list_file(region_file_path, out):
     samples = [{"bam": bam} for bam in sorted(sample_set)]
     return samples
 
+# Chromosomes MonopogenLite can call; the imputation panel covers 1-22 and X -- 2026-11-09
+SUPPORTED_CHROMOSOMES = [str(n) for n in range(1, 23)] + ["X"]
+
+def normalize_chromosome(name):
+    """
+    Return the chromosome as '1'-'22' or 'X' (without 'chr'), or None if it is not supported.
+    Args:
+        name (str or int): Chromosome, e.g. 1, '1', 'chr1', 'X', 'chrX'.
+    """
+    bare = str(name).strip()
+    if bare.lower().startswith("chr"):
+        bare = bare[3:]
+    bare = bare.upper()
+    return bare if bare in SUPPORTED_CHROMOSOMES else None
+
+def read_regions_for_chromosome(region_file, chromosome):
+    """
+    Return the regions of one chromosome in the region file, as 'chrN' or 'chrN:start-end'.
+    Lines are 'chromosome' or 'chromosome,start,end'; blank lines and lines starting with '#' are skipped.
+    Args:
+        region_file (str): Path to the region file.
+        chromosome (str): Chromosome as returned by normalize_chromosome().
+    """
+    regions = []
+    with open(region_file) as f_in:
+        for line_number, line in enumerate(f_in, start=1):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            record = [field.strip() for field in line.split(",")]
+            if len(record) not in (1, 3):
+                print(f"ERROR: Line {line_number} of the region file [{region_file}] should have 1 column (chromosome) "
+                      f"or 3 comma-delimited columns (chromosome,start,end): [{line}].")
+                sys.exit(1)
+            if normalize_chromosome(record[0]) != chromosome:
+                continue
+            if len(record) == 1:
+                regions.append(f"chr{chromosome}")
+            else:
+                regions.append(f"chr{chromosome}:{record[1]}-{record[2]}")
+    return regions
+
+def build_chromosome_bam_list(out, preprocess_dir, chrom_label):
+    """
+    Return the path to OUT/ListedBamsPerChr/<chrom_label>.lst and the number of BAMs in it.
+    If the list does not exist, it is built from the preProcess output: every
+    <preprocess_dir>/*/Bam/*_<chrom_label>.filter.bam. Every listed BAM must exist and be indexed.
+    Args:
+        out (str or Path): Output directory of germline.
+        preprocess_dir (str or Path): Directory holding one preProcess output folder per sample.
+        chrom_label (str): Chromosome with 'chr' prefix, e.g. 'chr1'.
+    """
+    list_path = Path(out) / "ListedBamsPerChr" / f"{chrom_label}.lst"
+    found = sorted(str(p) for p in Path(preprocess_dir).glob(f"*/Bam/*_{chrom_label}.filter.bam"))
+    if list_path.is_file():
+        listed = [line.strip() for line in list_path.open() if line.strip()]
+        logger.info(f"Using the existing BAM list [{list_path}] with {len(listed)} BAM(s).")
+        if sorted(listed) != found:
+            logger.warning(f"The existing BAM list [{list_path}] differs from the {len(found)} filtered BAM(s) found in "
+                           f"[{preprocess_dir}/*/Bam/]. Delete the list to let germline rebuild it.")
+    else:
+        if not found:
+            print(f"ERROR: No filtered BAM files (*_{chrom_label}.filter.bam) found in [{preprocess_dir}/*/Bam/]. "
+                  f"Run preProcess first, or set --preprocess-dir.")
+            sys.exit(1)
+        list_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp_path = list_path.with_name(list_path.name + ".tmp")
+        tmp_path.write_text("\n".join(found) + "\n")
+        os.replace(tmp_path, list_path)
+        listed = found
+        logger.info(f"Wrote the BAM list [{list_path}] with {len(found)} BAM(s) found in [{preprocess_dir}/*/Bam/].")
+    missing = [bam for bam in listed if not Path(bam).is_file() or not Path(bam + ".bai").is_file()]
+    if missing:
+        print(f"ERROR: {len(missing)} BAM(s) in [{list_path}] are missing or not indexed, e.g. {missing[:3]}.")
+        sys.exit(1)
+    return list_path, len(listed)
+
 # Function to perform germline variant calling -- 2024-08-08
 def germline(args):
     """
@@ -367,75 +444,47 @@ def germline(args):
         #print(f"  -- DEBUGGING: Sample list loaded with {len(samples)} samples.")
         #print(f"  -- DEBUGGING: Sample list: {samples}")
 
-    # check whether region files were set correctly
+    # Select the regions of this chromosome from the region file -- 2026-11-09
+    # Regions are matched on chromosome name instead of line number, so the region file may list the
+    # chromosomes in any order, with or without the 'chr' prefix, and may hold several start-end regions
+    # per chromosome (one job each).
+    chromosome = normalize_chromosome(args.chromosome)
+    if chromosome is None:
+        print(f"ERROR: --chromosome '{args.chromosome}' is not supported; use 1-22 or X, with or without 'chr'.")
+        sys.exit(1)
+    chrom_label = f"chr{chromosome}"
     if args.verbose:
-        print(f"  - Checking the region file [{args.region}].")
+        print(f"  - Checking the region file [{args.region}] for {chrom_label}.")
+    regions = read_regions_for_chromosome(args.region, chromosome)
+    if not regions:
+        print(f"ERROR: The region file [{args.region}] has no line for {chrom_label}.")
+        sys.exit(1)
+    logger.info(f"Found {len(regions)} region(s) for {chrom_label}: {', '.join(regions)}.")
+
+    # List of filtered BAMs (one per sample) for this chromosome, built from the preProcess output -- 2026-11-09
+    preprocess_dir = args.preprocess_dir or args.out
+    bam_filter, N_sample = build_chromosome_bam_list(out_path, preprocess_dir, chrom_label)
+    if args.verbose:
+        print(f"  - {N_sample} sample BAM(s) listed in [{bam_filter}].")
+
+    # NEW code -- 2024-09-17
+    # check the imputation panel file
+    if args.verbose:
+        print(f"  - Checking the imputation panel file: [{args.imputation_panel}].")
+    imputation_vcf = Path(args.imputation_panel) / f"1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.{chrom_label}.vcf.gz"
+    if not imputation_vcf.is_file():
+        print(f"ERROR: The imputation panel file [{imputation_vcf}] cannot be found!")
+        sys.exit(1)
+
+    # Beagle gets half of the threads, but at least one -- 2026-11-09
+    nthreads_downsample = max(1, args.nthreads // 2)
     if args.debug:
-        print(f"  -- DEBUGGING: Creating job-list for pooled job management.")
+        print(f"  -- DEBUGGING: number of threads used: {args.nthreads}; Beagle uses {nthreads_downsample}.")
+
     joblst = []
-    # ----------------- Region specific file reader, only fetches relevant chromosome ------------- (FIX)
-    # Predefine sex chromosome with chromosome number + 1, because of Python logic.
-    sex_chromosomes = {"X": 23, "Y":24}
-    print(f"  -- DEBUGGING: The out_path is: {out_path}")
-    # Retrieve the chromosome.
-    chromosome = args.chromosome
-    # If chr... has  been extracted continue the script.
-    if chromosome:
-        try:
-            chromosome_number = int(chromosome)
-        # Assume the error is raised by a sex chromosome.
-        except ValueError:
-            # Retrieve the sex-chromosome from the dictionary.
-            chromosome_number = sex_chromosomes[chromosome]
-        logger.info(f"Chromosome number chr({chromosome_number}) successfully extracted!")
-
-        with open(args.region) as f_in:
-            # Retrieve the region using chromosome number as line index.
-            record = f_in.readlines()[chromosome_number - 1]
-            record = record.strip().split(",")
-            # checking the region file and setting the jobid
-            if args.debug:
-                print(f"  -- DEBUGGING: Line in the region file: {record}; splitting on ',' ...")
-            if args.verbose:
-                print(f"  -- chromosome [{record}].")
-            if len(record) == 1:
-                jobid = record[0]
-                if args.debug:
-                    print(f"  -- DEBUGGING: The region file has only one column. Setting jobid to the chromosome: [{jobid}].")
-            if len(record) == 3:
-                jobid = record[0] + ":" + record[1] + "-" + record[2]
-                if args.debug:
-                    print(f"  -- DEBUGGING: The region file has three columns. Setting jobid to the region: [{jobid}].")
-
-            # setting the bam file list for the given region
-            # FIXME: Fix the path to the BAM-files per chromosome.
-            bam_filter = Path(args.out) / "ListedBamsPerChr" / f"{record[0]}.lst"
-            print(f"  -- DEBUGGING: The current file to the list of BAMs: [{bam_filter}].")
-            # checking number of samples within each given region
-            N_sample = 0
-            with bam_filter.open() as p:
-                for s in p:
-                    N_sample = N_sample + 1
-            if args.debug:
-                print(f"  -- DEBUGGING: The number of samples for the given region (should always be the same for each region): {N_sample}.")
-
-            # NEW code -- 2024-09-17
-            # check the imputation panel file
-            if args.verbose:
-                print(f"  - Checking the imputation panel file: [{args.imputation_panel}].")
-            imputation_panel_path = Path(args.imputation_panel)
-            if record[0] == "chrX":
-                imputation_vcf = imputation_panel_path / f"1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.{record[0]}.vcf.gz"
-            elif record[0] in {f"chr{n}" for n in range(1, 23)}:
-                imputation_vcf = imputation_panel_path / f"1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.{record[0]}.vcf.gz"
-            else:
-                print(f"ERROR: The chromosome {record[0]} is not supported!")
-                sys.exit(1)
+    for jobid in regions:
             if args.verbose:
                 print(f"  - Starting germline variant calling for region {jobid}.")
-            if args.debug:
-                print(f"  -- DEBUGGING: number of threads used: {args.nthreads}, attempt 2-fold downsampling these for phasing.")
-            nthreads_downsample=int(args.nthreads/2)
 
             # NEW CODE with bcftools -- 2025-06-05
             # germline variant calling from mpileup
@@ -478,7 +527,7 @@ def germline(args):
 
             # NEW code -- 2025-06-05
             # germline variant phasing of genotype probabilities
-            cmd3 = generate_beagle_cmd_gp(jobid, str(out_path), imputation_vcf, record[0], nthreads_downsample)
+            cmd3 = generate_beagle_cmd_gp(jobid, str(out_path), imputation_vcf, chrom_label, nthreads_downsample)
 
             # NEW code -- 2025-06-05
             if args.verbose:
@@ -490,7 +539,7 @@ def germline(args):
             # germline variant phasing of genotypes
             # cmd5 = java + " -Xmx20g -jar " + beagle +  " gt=" +  out + "/germline/" +  jobid + ".germline.vcf"  +  " ref=" +  imputation_vcf  +  "  chrom=" + record[0]  + " out="   +  out + "/germline/" + jobid+ ".phased " + "impute=false modelscale=2 nthreads=" + nthreads_downsample + " gprobs=true niterations=0"
             # cmd5 = cmd5 + "\n" + "rm -v " +  out + "/germline/" +  jobid + ".germline.vcf"
-            cmd5 = generate_beagle_cmd_gt(jobid, str(out_path), imputation_vcf, record[0], nthreads_downsample)
+            cmd5 = generate_beagle_cmd_gt(jobid, str(out_path), imputation_vcf, chrom_label, nthreads_downsample)
 
             # NEW code -- 2024-09-17
             if args.verbose:
@@ -538,20 +587,39 @@ def germline(args):
             # 	joblst.append(f'bash "{script_path}"')
 
 
-            # Fixme: Better solution using per region jobs.
-            full_cmd = f"{cmd1} && {cmd3} && {cmd5}"
-            print(f"  -- DEBUGGING: The full command of the better solution is\n{full_cmd}.")
+            # Compose the steps requested with --step; one job per region -- 2026-11-09
+            # The unphased VCF is sorted and indexed right after calling, so it is kept even if phasing fails.
+            unphased_vcf = f"{out_path}/monopogen_{jobid}.vcf.gz"
+            sorted_vcf = f"{out_path}/monopogen_{jobid}_sorted.vcf.gz"
+            cmd_sort = f"{bcftools} sort {unphased_vcf} -Oz -o {sorted_vcf} && {bcftools} index -t {sorted_vcf}"
+
+            # Beagle stops with an error on a VCF without variants; skip phasing for such a region instead of failing the job.
+            def unless_no_variants(cmd):
+                return (f'if [ -z "$({bcftools} view -H {unphased_vcf} | head -n 1)" ]; '
+                        f'then echo "No variants called in {jobid}; skipping Beagle."; else {cmd}; fi')
+
+            step_commands = {
+                "varScan": [cmd1, cmd_sort],
+                "varProb": [unless_no_variants(cmd3)],
+                "varPhasing": [cmd5],
+                "all": [cmd1, cmd_sort, unless_no_variants(f"{cmd3} && {cmd5}")],
+            }
+            required_input = {"varProb": unphased_vcf,
+                              "varPhasing": f"{out_path}/monopogen_{jobid}.gp.vcf.gz"}.get(args.step)
+            if required_input and not args.norun and not Path(required_input).is_file():
+                print(f"ERROR: --step {args.step} needs [{required_input}], which does not exist. Run the previous step first.")
+                sys.exit(1)
+            full_cmd = " && ".join(step_commands[args.step])
+            if args.debug:
+                print(f"  -- DEBUGGING: The full command for region {jobid} (step {args.step}) is\n{full_cmd}.")
 
             script_path = write_job_script(jobid, full_cmd, out_path, version=VERSION, verbose=args.verbose)
             joblst.append(f'bash "{script_path}"')
-    else:
-        print("--ERROR: Chromosome number couldn't be extracted from the output path. Please ensure the output path contains the chromosome"
-              "and its corresponding number! E.g. chr20")
-
 
     # pool the shell scripts in the job list when the norun flag is not set
+    # Each job runs Beagle with nthreads_downsample threads, so run only as many jobs at once as the threads allow.
     if not args.norun:
-        with Pool(processes=args.nthreads) as pool:
+        with Pool(processes=max(1, min(len(joblst), args.nthreads // nthreads_downsample))) as pool:
             print(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE}) \nMonopogenLite: SNV calling and phasing from single-cell sequencing data.")
             print("\nSettings:")
             print(f"  - App path...............: {args.app_path}")
@@ -572,8 +640,13 @@ def germline(args):
             print(f"> Jobs submitted:")
             print(joblst)
             result = pool.map(runCMD, joblst)
-            print(f"\nAll jobs submitted and run.")
-            print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
+        # runCMD returns None for a failed job; report it and exit with an error so SLURM marks the job as failed -- 2026-11-09
+        failed_jobs = [job for job, res in zip(joblst, result) if res is None]
+        if failed_jobs:
+            logger.error(f"{len(failed_jobs)} of {len(joblst)} job(s) failed: {failed_jobs}")
+            sys.exit(1)
+        print(f"\nAll jobs submitted and run.")
+        print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
     else:
         print(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE}) \nMonopogenLite: SNV calling and phasing from single-cell sequencing data.")
         print("\nSettings:")
@@ -886,10 +959,11 @@ def preProcess(args):
                 bam_file = out_path / "Bam" / f"{s}_chr{chr}.filter.bam"
                 bamlist.write(str(bam_file) + "\n")
 
-    # Write a SLURM/script file for preprocessing using the shared helper
-    jobid = args.study if hasattr(args, 'study') else 'study'
-    command = f'echo "[MonopogenLite.py --preProcess] Done preprocessing {jobid}."'
-    write_job_script(jobid, command, out_path, version=VERSION, verbose=args.verbose)
+    # Disabled -- 2026-11-09: args.study never exists, so this wrote a runGermline_study.sh that sorted a non-existent VCF.
+    # # Write a SLURM/script file for preprocessing using the shared helper
+    # jobid = args.study if hasattr(args, 'study') else 'study'
+    # command = f'echo "[MonopogenLite.py --preProcess] Done preprocessing {jobid}."'
+    # write_job_script(jobid, command, out_path, version=VERSION, verbose=args.verbose)
 
 # Main function -- 2024-08-08
 def main():
@@ -978,8 +1052,16 @@ python MonopogenLite.py germline --help\n\n
 
     parser_germline.add_argument('-r', '--region', required= True,
                                 help="The genome regions for variant calling. This file should have either 1 column (chromosome) or 3 columns (chromosome, start, end), where chromosome X is noted as chrX. Required.")
-    parser_germline.add_argument('-s', '--step', required= True, default="all", choices=['varScan', 'varProb' , 'varPhasing', 'all'],
-                                help="Run germline variant calling step by step. varScan: variant calling; varProb: variant phased genotype probabilities; varPhasing: variant phasing; all: all steps. Default is all.")
+    parser_germline.add_argument('-s', '--step', required=False, default="all", choices=['varScan', 'varProb' , 'varPhasing', 'all'],
+                                help=("Run germline variant calling step by step. "
+                                      "varScan: call variants with bcftools (and sort and index the unphased VCF); "
+                                      "varProb: genotype probabilities with Beagle (needs the varScan output); "
+                                      "varPhasing: phase genotypes with Beagle (needs the varProb output); "
+                                      "all: all three steps. Default is all."))
+    parser_germline.add_argument('--preprocess-dir', required=False, default=None,
+                                help=("Directory holding one preProcess output folder per sample (each with a Bam/ folder). "
+                                      "Used to build OUT/ListedBamsPerChr/chrN.lst when that list does not exist yet. "
+                                      "Default: the --out directory."))
     parser_germline.add_argument('-o', '--out', required= False,
                                 help="The output directory. The output will be saved in the output directory. Required.")
     parser_germline.add_argument('-g', '--reference', required= True,
@@ -999,7 +1081,7 @@ python MonopogenLite.py germline --help\n\n
     parser_germline.add_argument('-d', '--debug', action='store_true',
                                 help="For debugging, specifically for installed tools and some intermediate steps.")
     parser_germline.add_argument('-c', '--chromosome', required=True,
-                                 help="Chromosome number will be used to perforn per region variant calling.")
+                                 help="Chromosome to call: 1-22 or X, with or without 'chr'. All regions of this chromosome in --region are processed. Required.")
 
     # Set the default function to run when 'germline' is called
     parser_germline.set_defaults(func=germline)

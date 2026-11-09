@@ -2,6 +2,24 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.7 -- 2026-11-09
+### Connecting preProcess and germline (`MonopogenLite.py`)
+- 🔗 `germline`: Builds the per-chromosome BAM list `OUT/ListedBamsPerChr/chrN.lst` itself from the preProcess output (`<preprocess-dir>/*/Bam/*_chrN.filter.bam`) when the list does not exist yet. New option `--preprocess-dir`, defaulting to `--out`. An existing list is used as-is, with a warning when it differs from the filtered BAMs found. Every listed BAM must exist and be indexed. This replaces the need for `runBamListPerChrConstructor.sh`.
+- 🐛 `germline`: The region file is now matched on chromosome name instead of line number. Chromosomes may be listed in any order, with or without `chr`, and a chromosome may have several `chromosome,start,end` regions (one job each). Previously line *N* was taken for chromosome *N*, so any other region file silently processed the wrong region.
+- 🐛 `germline`: `--chromosome` accepts `1`-`22` and `X`, with or without `chr`, and gives a clear error otherwise.
+- 🐛 `germline`: The imputation panel file for the chromosome is checked before any job is written.
+- ✨ `germline`: `--step` is now implemented (`varScan`, `varProb`, `varPhasing`, `all`) and no longer required; the default is `all`. Previously the value was ignored and all steps always ran. `varProb` and `varPhasing` check that the output of the previous step exists.
+- 🐛 `germline`: Failed jobs are now reported: job scripts use `pipefail` and exit with an error when any step fails, and germline exits with an error when any job failed. Previously a failing `bcftools` or Beagle step still ended with "All jobs submitted and run."
+- 🔧 `germline`: The unphased VCF is sorted and indexed directly after variant calling (same `_sorted.vcf.gz` file names as before), so it is kept even when phasing fails.
+- 🔧 `germline`: A region in which no variants were called skips Beagle with a message instead of failing the job (Beagle stops with an error on an empty VCF).
+- 🔧 `germline.py` `validate_user_setting_germline()`: Blank lines and lines starting with `#` in the region file are skipped, as in the new region lookup.
+- 🐛 `germline`: Beagle now gets at least one thread (`--nthreads 1` gave `nthreads=0`), and only as many region jobs run at once as the threads allow.
+- 🐛 `preProcess`: No longer writes a meaningless `runGermline_study.sh` (disabled, kept as comments).
+### `runGermline.sh` (v1.3.0)
+- 🔁 Rewritten to run one SLURM array task per chromosome (`--array=1-23`, 23 = X), passing `--chromosome`, with all samples of a study called together. Previously it looped over samples and did not pass the required `--chromosome`, so it could not run.
+- 🔧 Uses the same defaults as `runPreprocess.sh` (Rivanna paths, `PROJECT_DIR/<study>` as study folder); `--input-dir` is now optional; `--generate-array` removed; no longer passes the unused `--max-softClipped`; exits with an error when germline fails.
+
+
 ## 🛠️ v1.4.6 -- 2026-11-09
 ### UMI collapsing (`--umi-collapse`)
 - 🐛 `germline.py` `BamFilter()`: Duplicates are now defined per cell: reads must share the cell barcode (`CB`), UMI, start position and strand. Previously reads from different cells that happened to share a UMI at the same position were merged, discarding independent evidence for the genotype.

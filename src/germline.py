@@ -112,6 +112,9 @@ def validate_user_setting_germline(args):
     # check whether region files were set correctly
     with open(args.region) as f_in:
         for line in f_in:
+            # Blank lines and comment lines are skipped, as in read_regions_for_chromosome() -- 2026-11-09
+            if not line.strip() or line.strip().startswith("#"):
+                continue
             record = line.strip().split(",")
             assert len(record)==3 or len(record)==1, "Every line has to have exactly 3 comma-delimited columns chr1,1,100000 or chr1 (on the whole chromosome)! Line with region {} does not satisify this requiremnt!".format(line)
 
