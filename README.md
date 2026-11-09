@@ -105,6 +105,19 @@ Install or change packages with `mamba`, not `pip`: `pip` can bring in versions 
 mamba env update -n monopogen -f environment.yml --prune
 ```
 
+With `micromamba`, which has no `env update` (on UVA Rivanna `mamba` is an alias for `micromamba`; check with `type mamba`), install from the file instead. This installs or upgrades everything in `environment.yml`, but does not remove packages that are not in it:
+
+```bash
+micromamba install -n monopogen -f environment.yml
+```
+
+For an environment that matches `environment.yml` exactly, remove and recreate it. Make sure no jobs are using it at that moment:
+
+```bash
+micromamba env remove -n monopogen
+micromamba env create -f environment.yml
+```
+
 Python packages in your personal `~/.local` folder are visible in every environment and can override the environment's own. If something behaves differently for you than for others, check with `python -m pip list --user`, or run with `PYTHONNOUSERSITE=1`.
 
 ## 🚀 Usage
@@ -200,8 +213,8 @@ Dr. Sander W. van der Laan has received Roche funding for unrelated work.
 
 #### 📦 Changes log
     
-    _Version:_      v1.4.11</br>
-    _Last update:_  2026-11-09</br>
+    _Version:_      v1.4.12</br>
+    _Last update:_  2026-11-10</br>
     _Changes:_      see CHANGELOG.md</br>
     _Written by:_   Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com.</br>
     _Contributors:_ Damian Ulrich; Teresa Jhee.

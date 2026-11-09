@@ -2,6 +2,11 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.12 -- 2026-11-10
+### Documentation
+- 📝 `README.md`: Added how to update the environment with `micromamba` (e.g. on UVA Rivanna, where `mamba` is an alias for `micromamba`), which has no `env update`: `micromamba install -n monopogen -f environment.yml`, or remove and recreate the environment for an exact match.
+
+
 ## 🛠️ v1.4.11 -- 2026-11-09
 ### Options
 - 🗑️ `germline --max-softClipped` removed. It never had any effect (also not in the original Monopogen) and was hidden since v1.4.8; no script passes it anymore. Passing it now gives argparse's "unrecognized arguments" error.
