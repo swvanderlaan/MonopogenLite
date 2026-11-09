@@ -7,20 +7,24 @@ It is designed to perform germline variant calling and phasing from single-cell 
 It is a simplified version of Monopogen, focusing on germline variant calling and phasing, since 
 de novo calling of variants is not feasible with most single-cell sequencing data. 
 
-Arguments:
-    - `--app_path`: Path to the application directory containing the Beagle JAR file.
-    - `--nthreads`: Number of threads to use for processing.
-    - `--debug`: Enable debug mode for verbose output.
-    - `--verbose`: Enable verbose output.
-    - `--out`: Output directory where results will be saved.
-    - `--region`: Path to a file containing regions to process, one per line.
-    - `--reference`: Path to the reference genome FASTA file.
-    - `--imputation_panel`: Path to the imputation panel VCF file.
-    - `--max_softClipped`: Maximum number of soft-clipped bases allowed in reads.
-    - `--max_mismatch`: Maximum number of mismatches allowed in reads (for pre-processing).
-    - `--platform_library`: Platform library used for sequencing (e.g., Illumina, PacBio).
-    - `--min_read_length`: Minimum read length for filtering reads (for pre-processing).
-    - `--umi_collapse`: UMI collapse option, can be a boolean or a string indicating the UMI tag.
+Subcommands and main arguments (see `MonopogenLite.py <subcommand> --help` for all):
+  preProcess (per sample):
+    - `--bamFile`: Comma-separated file with sampleID and BAM path per line.
+    - `--out`: Output directory for this sample (filtered BAMs per chromosome in OUT/Bam/).
+    - `--platform-library`: 10x, smartseq2 or celseq2; sets read group fields and whether --umi-collapse is allowed.
+    - `--max-mismatch`: Reads with this many or more mismatches are removed (default 3).
+    - `--min-read-length`: Minimum read length (default 30).
+    - `--umi-collapse`: Optional UMI collapsing (10x only; not recommended for germline calling).
+  germline (per chromosome, all samples of a study together):
+    - `--chromosome`: 1-22 or X.
+    - `--region`: Region file; all regions of the chromosome are processed.
+    - `--out`: Study folder; the per-chromosome BAM lists are built from the preProcess folders in it (see `--preprocess-dir`).
+    - `--reference`: Reference genome FASTA file.
+    - `--imputation-panel`: Directory with the imputation panel VCF per chromosome.
+    - `--step`: varScan, varProb, varPhasing or all (default).
+  Both:
+    - `--app-path`: Directory containing beagle.jar.
+    - `--nthreads`, `--verbose`, `--debug`.
 Returns:
     - pre-processed BAM files in the specified output directory needed for germline variant calling.
     - Germline variant calling and phasing results in the specified output directory.
@@ -62,7 +66,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.7'
+VERSION = '1.4.8'
 VERSION_DATE = '2026-11-09'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -420,6 +424,9 @@ def germline(args):
     print(f"  -- DEBUGGING: Germline before print_parameters_given()")
     print_parameters_given(args)
 
+    if args.max_softClipped is not None:
+        logger.warning("--max-softClipped has no effect and will be removed in a future version; remove it from your scripts.")
+
     logger.info("Checking existence of essenstial resource files.")
     print(f"  -- DEBUGGING: Germline before validate_user_setting()")
     validate_user_setting_germline(args)
@@ -630,7 +637,6 @@ def germline(args):
             print(f"  - Regions................: {args.region}")
             print(f"  - Reference..............: {args.reference}")
             print(f"  - Imputation panel.......: {args.imputation_panel}")
-            print(f"  - Maximum soft-clipped...: {args.max_softClipped}")
             if args.subcommand == "preProcess":
                 print(f"  - Maximum mismatch.......: {args.max_mismatch}")
                 print(f"  - Platform library.......: {args.platform_library}")
@@ -658,7 +664,6 @@ def germline(args):
         print(f"  - Regions................: {args.region}")
         print(f"  - Reference..............: {args.reference}")
         print(f"  - Imputation panel.......: {args.imputation_panel}")
-        print(f"  - Maximum soft-clipped...: {args.max_softClipped}")
         if args.subcommand == "preProcess":
             print(f"  - Maximum mismatch.......: {args.max_mismatch}")
             print(f"  - Platform library.......: {args.platform_library}")
@@ -841,9 +846,9 @@ def preProcess(args):
             if not bam_path.is_file():
                 print(f"ERROR: BAM file '{record[1]}' cannot be found!")
                 sys.exit(1)
-            if not (bam_path.parent / (bam_path.name + ".bai")).is_file() and not (bam_path.with_suffix(bam_path.suffix + ".bai")).is_file():
-                # Try both conventions: file.bam.bai and file.bai
-                print(f"ERROR: BAM index '{record[1]}.bai' is missing!")
+            # Accept both index conventions: file.bam.bai and file.bai -- 2026-11-09
+            if not Path(str(bam_path) + ".bai").is_file() and not bam_path.with_suffix(".bai").is_file():
+                print(f"ERROR: BAM index for '{record[1]}' is missing (looked for '{bam_path}.bai' and '{bam_path.with_suffix('.bai')}')!")
                 sys.exit(1)
 
     # Handle UMI collapse and UMI tag -- 2024-09-18
@@ -1001,7 +1006,7 @@ python MonopogenLite.py germline --help\n\n
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser_preProcess.add_argument('-b', '--bamFile', required=True,
-                                    help="The comma-separated listf of bam-files for the study sample. The first column should have the sampleID, and the second column the location of the corresponding bam-file. The bam-files should be sorted and indexed. If there are multiple samples, each row with each sample. Required.")
+                                    help="The comma-separated list of bam-files for the study sample. The first column should have the sampleID, and the second column the location of the corresponding bam-file. The bam-files should be sorted and indexed (file.bam.bai or file.bai). If there are multiple samples, each row with each sample. The sampleID is used as the sample name in the VCF. Required.")
     parser_preProcess.add_argument('-o', '--out', required=True,
                                     help="The output directory. The output will be saved in the output directory. Required.")
     parser_preProcess.add_argument('-a', '--app-path', required=True,
@@ -1013,15 +1018,17 @@ python MonopogenLite.py germline --help\n\n
                                         "The default of 3 keeps reads with at most 2 mismatches, as in the original Monopogen."
                                     ))
     parser_preProcess.add_argument('-t', '--nthreads', required=False, type=int, default=1,
-                                    help="Number of threads used for SNVs calling. Default is 1.")
+                                    help="Number of chromosomes filtered in parallel (BAM filtering of chromosomes 1-22 and X). Default is 1.")
     parser_preProcess.add_argument('-l', '--platform-library', required=True, choices=['10x','smartseq2','celseq2'],
                                     help=(
                                         "The platform library used for sequencing. Required. "
                                         "Use '10x' for 10x Genomics RNA-seq (CellRanger) and 10x ATAC-seq (CellRanger ATAC). "
                                         "Use 'smartseq2' for SmartSeq2/STARsolo full-length RNA-seq. "
-                                        "Use 'celseq2' for CEL-Seq2 (e.g. bowtie2-based pipelines)."
+                                        "Use 'celseq2' for CEL-Seq2 (e.g. bowtie2-based pipelines). "
+                                        "It does not change the read filtering: it sets the read group fields of the filtered BAMs "
+                                        "(10x adds LB, PU and PL=ILLUMINA) and determines whether --umi-collapse is allowed (10x only)."
                                     ))
-    parser_preProcess.add_argument('-r', '--min-read-length', required=False, type=int, default=30,
+    parser_preProcess.add_argument('--min-read-length', required=False, type=int, default=30,
                                     help="The minimum read length for variant calling. Default is 30.")
     parser_preProcess.add_argument('-u', '--umi-collapse', required=False, nargs='?', const=True, default=None,
                                     help=(
@@ -1051,7 +1058,7 @@ python MonopogenLite.py germline --help\n\n
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser_germline.add_argument('-r', '--region', required= True,
-                                help="The genome regions for variant calling. This file should have either 1 column (chromosome) or 3 columns (chromosome, start, end), where chromosome X is noted as chrX. Required.")
+                                help="The genome regions for variant calling: one region per line, either 'chromosome' (whole chromosome) or 'chromosome,start,end'. Chromosomes may be written with or without 'chr' and in any order; a chromosome may have several regions. Blank lines and lines starting with '#' are ignored. Required.")
     parser_germline.add_argument('-s', '--step', required=False, default="all", choices=['varScan', 'varProb' , 'varPhasing', 'all'],
                                 help=("Run germline variant calling step by step. "
                                       "varScan: call variants with bcftools (and sort and index the unphased VCF); "
@@ -1062,18 +1069,19 @@ python MonopogenLite.py germline --help\n\n
                                 help=("Directory holding one preProcess output folder per sample (each with a Bam/ folder). "
                                       "Used to build OUT/ListedBamsPerChr/chrN.lst when that list does not exist yet. "
                                       "Default: the --out directory."))
-    parser_germline.add_argument('-o', '--out', required= False,
-                                help="The output directory. The output will be saved in the output directory. Required.")
+    parser_germline.add_argument('-o', '--out', required=True,
+                                help="The output directory, usually the study folder holding the monopogen_<sample> preProcess folders. Job scripts, BAM lists and VCFs are written here. Required.")
     parser_germline.add_argument('-g', '--reference', required= True,
-                                help="The human genome reference used for alignment")
+                                help="The human genome reference (FASTA) used for alignment. Required.")
     parser_germline.add_argument('-p', '--imputation-panel', required= True,
-                                help="The population-level variant panel for variant phasing, such as 1000 Genome phase 3 high-coverage b38 data.")
-    parser_germline.add_argument('-m', '--max-softClipped', required=False, type=int, default=1,
-                                help="The maximal soft-clipped allowed in one reads for variant calling")
+                                help="Directory with the population-level variant panel for variant phasing, one VCF per chromosome, such as 1000 Genomes phase 3 high-coverage b38 data. Required.")
+    # Unused (also in the original Monopogen); still accepted so existing scripts keep working, but hidden from --help -- 2026-11-09
+    parser_germline.add_argument('--max-softClipped', required=False, type=int, default=None,
+                                help=argparse.SUPPRESS)
     parser_germline.add_argument('-a', '--app-path', required=True,
-                                help="The app library paths used in the tool")
+                                help="The app library path; it should contain (a symlink to) beagle.jar. Required.")
     parser_germline.add_argument('-t', '--nthreads', required=False, type=int, default=1,
-                                help="Number of jobs used for SNVs calling")
+                                help="Number of threads. Beagle uses half of them (at least 1); with several regions per chromosome, as many region jobs run at once as the threads allow. Default is 1.")
     parser_germline.add_argument('-n', '--norun', action='store_true',
                                 help="Generate the job scripts only. The jobs will not be run.")
     parser_germline.add_argument('-v', '--verbose', action='store_true',

@@ -2,6 +2,16 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.8 -- 2026-11-09
+### Options and help texts (`MonopogenLite.py`)
+- 🗑️ `germline --max-softClipped`: Hidden from `--help` and ignored with a warning; it never had any effect (also not in the original Monopogen). It is still accepted so scripts that pass it keep working, and will be removed once those scripts are updated. Its short form `-m` is gone, so `-m` now only means `preProcess --max-mismatch`.
+- 🔧 `preProcess --min-read-length`: Short form `-r` removed, so `-r` now only means `germline --region`.
+- 🔧 `germline --out`: Now marked required (it already was in practice).
+- 🐛 `preProcess`: The BAM index check now accepts both `file.bam.bai` and `file.bai`; it checked `file.bam.bai` twice.
+- 📝 Help texts corrected: `--platform-library` (only sets read group fields and whether `--umi-collapse` is allowed; it does not change filtering), `preProcess --nthreads` (chromosomes filtered in parallel, not SNV calling), `germline --nthreads` (threads for Beagle and region jobs), `--region` (any order, with or without `chr`, several regions per chromosome, comment lines), `--out`, `--reference`, `--imputation-panel`, `--app-path`, `--bamFile` (typo; index conventions; the sampleID becomes the VCF sample name).
+- 📝 Module docstring: lists the current options per subcommand instead of outdated ones (`--max_softClipped`, platform "Illumina, PacBio").
+
+
 ## 🛠️ v1.4.7 -- 2026-11-09
 ### Connecting preProcess and germline (`MonopogenLite.py`)
 - 🔗 `germline`: Builds the per-chromosome BAM list `OUT/ListedBamsPerChr/chrN.lst` itself from the preProcess output (`<preprocess-dir>/*/Bam/*_chrN.filter.bam`) when the list does not exist yet. New option `--preprocess-dir`, defaulting to `--out`. An existing list is used as-is, with a warning when it differs from the filtered BAMs found. Every listed BAM must exist and be indexed. This replaces the need for `runBamListPerChrConstructor.sh`.
