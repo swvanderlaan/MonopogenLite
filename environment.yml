@@ -1,0 +1,30 @@
+# Conda/mamba environment for MonopogenLite and the MetaPlaq workflows that use it.
+#
+# Create it with (see README.md, "Installation", for Apple Silicon Macs and HPC clusters):
+#   mamba env create -f environment.yml
+#
+# Python is kept at 3.9: it is what MonopogenLite has been tested with, and Snakemake 7.32 is the
+# last Snakemake that runs on Python 3.9.
+name: monopogen
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # MonopogenLite (src/MonopogenLite.py, src/germline.py)
+  - python=3.9
+  - pysam>=0.22
+  - pandas>=2.0
+  - numpy
+  - samtools>=1.20
+  - bcftools>=1.20
+  - htslib>=1.20          # bgzip and tabix
+  - vcftools=0.1.16
+  - openjdk>=17           # runs apps/beagle.jar (BEAGLE 4.1)
+  # Utility scripts in src/
+  - matplotlib            # variant_ref_checker.py, bcftools plot-vcfstats
+  - cmcrameri             # variant_ref_checker.py (colour maps)
+  - refgenie              # variant_ref_create.sh (genome reference)
+  # MetaPlaq Snakemake workflows (molqtl_scrnaseq: monopogen/Snakefile, cellsnp/Snakefile)
+  - snakemake-minimal=7.32
+  - pulp<2.8              # Snakemake 7 does not work with pulp 2.8 or newer
+  - openpyxl              # reading the MetaPlaq metadata (.xlsx)

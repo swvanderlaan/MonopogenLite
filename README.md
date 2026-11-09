@@ -41,6 +41,70 @@ It has a few improvements:
 
 That said, `MonopogenLite` is just a light-weight version of `Monopogen`, originally developed by the [Ken Chen Lab](https://www.mdanderson.org/research/departments-labs-institutes/labs/ken-chen-laboratory.html) at the [MD Anderson Cancer Center](https://www.mdanderson.org/). All credit goes to the original authors and contributors of the concepts underlying `Monopogen`; we simply adapted and improved it in some functional and coding areas.
 
+## 📦 Installation
+
+`MonopogenLite` runs in one conda environment, `monopogen`, defined in [`environment.yml`](environment.yml). It holds the core tools (`python` 3.9, `pysam`, `samtools`, `bcftools`, `htslib`, `vcftools`, `openjdk`), the extras for the utility scripts (`matplotlib`, `cmcrameri`, `refgenie`) and `snakemake` 7.32 for the **MetaPlaq** workflows. `BEAGLE` 4.1 is included in the repository as `apps/beagle.jar`.
+
+### 1. Get the code
+
+```bash
+git clone https://github.com/swvanderlaan/MonopogenLite.git
+cd MonopogenLite
+git checkout dev
+```
+
+### 2. Create the environment
+
+With [`mamba`](https://github.com/conda-forge/miniforge) (or `conda`) on Linux or an Intel Mac:
+
+```bash
+mamba env create -f environment.yml
+```
+
+On a Mac with Apple Silicon (M1–M4), create it as an Intel (`osx-64`) environment; it then runs through Rosetta, as the existing `monopogen` environments do:
+
+```bash
+CONDA_SUBDIR=osx-64 mamba env create -f environment.yml
+mamba activate monopogen
+conda config --env --set subdir osx-64
+```
+
+The last line makes sure later installs into this environment are Intel packages too.
+
+On an HPC cluster with `micromamba` (e.g. UVA Rivanna); the run scripts activate the environment by the name `monopogen`:
+
+```bash
+micromamba env create -f environment.yml
+```
+
+### 3. Check the installation
+
+```bash
+mamba activate monopogen
+python src/MonopogenLite.py --version
+samtools --version | head -1
+bcftools --version | head -1
+java -jar apps/beagle.jar 2>&1 | head -1
+snakemake --version
+```
+
+### 4. Reference data
+
+`germline` needs two resources:
+
+- **Genome reference:** the GRCh38 FASTA the BAM files were aligned to (with its `.fai` index), e.g. `refdata-gex-GRCh38-2024-A/fasta/genome.fa` from 10x Genomics, or `refgenie seek hg38/fasta`.
+- **Imputation panel:** a directory with one VCF per chromosome, named `1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrN.vcf.gz` (with `.tbi`) for chromosomes 1–22 and X. `src/variant_ref_create.sh` downloads the phased high-coverage 1000 Genomes data (3,202 individuals) and filters it to bi-allelic SNVs with AF ≥ 0.0005 (files up to `...norm.chrN.vcf.gz`). The final variant-ID step that produces the `fixvariantid` files is not in this repository yet. On Rivanna the finished panel is in `/project/cphg-millerlab/software/MonopogenLite/resources/`.
+
+### Updating or repairing the environment
+
+Install or change packages with `mamba`, not `pip`: `pip` can bring in versions that do not match (Snakemake 7 fails with `pulp` 2.8 or newer) or, on Apple Silicon, packages built for the wrong architecture. To bring an existing environment in line with `environment.yml`:
+
+```bash
+mamba env update -n monopogen -f environment.yml --prune
+```
+
+Python packages in your personal `~/.local` folder are visible in every environment and can override the environment's own. If something behaves differently for you than for others, check with `python -m pip list --user`, or run with `PYTHONNOUSERSITE=1`.
+
 ## 🚀 Usage
 
 `MonopogenLite` runs in two steps: `preProcess` once per sample, then `germline` once per chromosome for all samples of a study together. See `python src/MonopogenLite.py preProcess --help` and `python src/MonopogenLite.py germline --help` for all options.
@@ -119,6 +183,8 @@ sbatch src/runGermline.sh --study <study>
 ```
 
 ## 📣 Acknowledgements
+We thank Damian Ulrich for the per-chromosome germline calling and phasing, and Teresa Jhee for the per-chromosome read counting and contig-name handling in `preProcess`; both also contributed to testing `MonopogenLite` on the **MetaPlaq** studies.
+
 Dr. Sander W. van der Laan is funded through EU H2020 TO_AITION (grant number: 848146), EU HORIZON NextGen (grant number: 101136962), EU HORIZON MIRACLE (grant number: 101115381), Health~Holland PPP Allowance ‘Getting the Perfect Image’, and CZI ['MetaPlaq'](https://chanzuckerberg.com/science/programs-resources/cell-science/data-insights/metaplaq-integrative-single-cell-meta-analysis-for-atherosclerosis/).
 
 We are thankful for the support of the Leducq Fondation ‘PlaqOmics’ and 'AtheroGen'. The research for this contribution was made possible by the AI for Health working group of the [EWUU alliance](https://aiforhealth.ewuu.nl/). The collaborative project ‘Getting the Perfect Image’ was co-financed through use of PPP Allowance awarded by Health~Holland, Top Sector Life Sciences & Health, to stimulate public-private partnerships. Part of the work and data generation (scRNAseq and bulk RNAseq) were funded through ERA-CVD 'druggable-MI-targets' project (grantnumber: 01KL1802). 
@@ -132,15 +198,19 @@ Dr. Sander W. van der Laan has received Roche funding for unrelated work.
 
 #### 📦 Changes log
     
-    _Version:_      v1.3.1</br>
-    _Last update:_  2025-06-06</br>
-    _Written by:_   Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com.
+    _Version:_      v1.4.10</br>
+    _Last update:_  2026-11-09</br>
+    _Changes:_      see CHANGELOG.md</br>
+    _Written by:_   Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com.</br>
+    _Contributors:_ Damian Ulrich; Teresa Jhee.
     
     **MoSCoW To-Do List**
     The things we Must, Should, Could, and Would have given the time we have.
     _M_
-    
+    - [ ] test v1.4.9 on Rivanna with a 10x ATAC study (Turner) and a SmartSeq2 study (Katyayani)
+
     _S_
+    - [ ] remove the hidden `--max-softClipped` option once no script passes it anymore
     
     _C_
 
@@ -150,4 +220,4 @@ Dr. Sander W. van der Laan has received Roche funding for unrelated work.
 --------------
 
 #### MIT License (MIT)
-##### Copyright (c) 1979-2025 Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com.
+##### Copyright (c) 1979-2026 Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com.

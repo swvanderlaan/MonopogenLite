@@ -2,6 +2,12 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.10 -- 2026-11-09
+### Installation and documentation
+- 📦 Added `environment.yml` for the `monopogen` conda environment: the core tools of `MonopogenLite`, the packages of the utility scripts (`matplotlib`, `cmcrameri`, `refgenie`) and Snakemake 7.32 with `pulp<2.8` and `openpyxl` for the MetaPlaq workflows.
+- 📝 `README.md`: Added an "Installation" section (environment on Linux, Intel and Apple Silicon Macs, and HPC clusters; checks; reference genome and imputation panel; updating the environment) and a "Usage" section; updated the feature list, credits and version block.
+
+
 ## 🛠️ v1.4.9 -- 2026-11-09
 ### Logging
 - 🧾 `MonopogenLite.py` and `germline.py` now share one logger (`MonopogenLite`). Previously `germline.py` had its own logger with only a console handler, so `BamFilter()` and job messages never reached `--logfile`.
