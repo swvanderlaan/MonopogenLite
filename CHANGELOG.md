@@ -32,6 +32,12 @@ All notable changes to `MonopogenLite` will be documented in this file.
 - 📝 `MonopogenLite.py`: Corrected CEL-Seq2 UMI guidance — the UMI is encoded in the read name (`BC-<barcode>_UMI-<umi>`), not a BAM tag; `--umi-collapse` should not be used for CEL-Seq2.
 
 
+## 🛠️ v1.4.0 -- 2026-01-28
+### Smaller Fixes
+- 🐛 Fixed issues with `--preProcess`; specifically in `runPreprocess.sh` and `runPreprocess_submit_jobs.sh` to handle platform and array, as well as overall logic.
+- 🔀 Released on `main` only; brought into `dev` on 2026-11-09.
+
+
 ## 🛠️ v1.3.9 -- 2025-10-02
 ### Smaller Fixes
 - 🐛 Fixed issue where job-scripts were written, but not added to the `joblst` for the job-pool.
