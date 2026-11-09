@@ -2,6 +2,15 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.4 -- 2026-11-09
+### Improvements
+- ⚡ `MonopogenLite.py` `count_and_filter_reads()`: Now counts reads per chromosome (`bam.fetch(contig)`) instead of scanning the whole BAM once per chromosome, removing up to 23 full passes over each BAM during `--preProcess`.
+- 🧬 `MonopogenLite.py`: Added `resolve_contig()` to detect whether a BAM uses `chr1` or `1` style contig names; a missing contig now logs a warning instead of failing.
+- 📊 `MonopogenLite.py` `count_and_filter_reads()`: Added counters for skipped unmapped reads and reads without a query sequence; per-chromosome statistics are logged as one block so output from different chromosomes does not interleave.
+- 🔁 `MonopogenLite.py` `preProcess()`: Moved read counting to after the parallel `BamFilter` step and disabled (commented out) the hard-coded `"chr" + chrom` quick-count blocks.
+- 🐛 `MonopogenLite.py` `count_and_filter_reads()`: Mismatch count now reads `NM` and falls back to `nM` (STARsolo/CellRanger), matching `BamFilter()` in `germline.py`; reads without either tag are no longer counted as 0 mismatches but are left unjudged, so logged statistics match what `BamFilter()` keeps.
+
+
 ## 🛠️ v1.4.3 -- 2026-11-09
 ### Smaller Fixes
 - 🐛 `MonopogenLite.py` `count_and_filter_reads()`: Fixed mismatch threshold to align with the original Monopogen (`val < max_mismatch`). Reads with exactly `max_mismatch` mismatches are now discarded (`>=`) rather than retained (`>`).

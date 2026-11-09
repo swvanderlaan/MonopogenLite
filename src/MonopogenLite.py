@@ -62,7 +62,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.3'
+VERSION = '1.4.4'
 VERSION_DATE = '2026-11-09'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -597,64 +597,128 @@ def germline(args):
         print(f"\nExiting.")
         print(f"{VERSION_NAME} v{VERSION}. {COPYRIGHT}\n")
 
-# ADDED by Damian, made with ChatGPT.
-def count_and_filter_reads(bam_path, max_mismatch, min_read_length):
+# Added by Teresa with help of ClaudeAI (09-11-26).
+def resolve_contig(bam, chrom):
     """
-    Count and filter reads in a BAM file, tracking discarded reads based on max_mismatch and min_read_length.
+    Return the contig name used for a chromosome in a BAM file (e.g. '1' OR 'chr1') or None.
+    This function is used in count_and_filter_reads() to resolve how the chromosomes are named in a BAM file.
+
+    Args:
+        bam (pysam.AlignmentFile): Open BAM file to be filtered in count_and_filter_reads().
+        chrom (str or int): Chromosome label to look up, either with or without 'chr' prefix.
+    """
+    name = str(chrom)
+    bare_name = name[3:] if name.startswith("chr") else name
+    refs = set(bam.references)
+    for candidate in ("chr" + bare_name, bare_name):
+        if candidate in refs:
+            return candidate
+    return None
+
+# ADDED by Damian, made with ChatGPT. Edited by Teresa with help of ClaudeAI (09-11-26).
+def count_and_filter_reads(bam_path, chrom, max_mismatch, min_read_length):
+    """
+    Count and filter reads per chromosome in a BAM file, tracking discarded reads based on max_mismatch and min_read_length.
 
     Args:
         bam_path (str): Path to the BAM file.
+        chrom (str): Chromosome number.
         max_mismatch (int): Maximum allowed mismatches for reads.
         min_read_length (int): Minimum length of reads.
 
     Returns:
-        tuple: Total reads, discarded reads due to mismatch, discarded reads due to length, and retained reads.
+        tuple: Total reads, reads skipped due to being unmapped, discarded reads due to mismatch, secondary/supplementary reads skipped due to None type, discarded reads due to length, and retained reads.
     """
-    bamfile = pysam.AlignmentFile(bam_path, "rb")
+    # bamfile = pysam.AlignmentFile(bam_path, "rb")
 
+    chrom_label = "chr" + str(chrom).removeprefix("chr")
     total_reads = 0
+    skipped_unmapped = 0
     discarded_mismatch = 0
+    skipped_Nonetype = 0
     discarded_length = 0
     retained_reads = 0
 
-    for read in bamfile.fetch():
-        total_reads += 1
+    # for read in bamfile.fetch():
+    #     total_reads += 1
 
-        # Skip unmapped reads — they carry no alignment position, no NM tag,
-        # and query_sequence is None for mate-rescued unmapped entries.
-        if read.is_unmapped:
-            continue
+    #     # Skip unmapped reads — they carry no alignment position, no NM tag,
+    #     # and query_sequence is None for mate-rescued unmapped entries.
+    #     if read.is_unmapped:
+    #         continue
 
-        # Check mismatch
-        mismatch_count = read.get_tag('NM') if read.has_tag('NM') else 0
-        if mismatch_count >= max_mismatch:
-            discarded_mismatch += 1
-            continue  # Discard read if mismatch count meets or exceeds max_mismatch
+    #     # Check mismatch
+    #     mismatch_count = read.get_tag('NM') if read.has_tag('NM') else 0
+    #     if mismatch_count > max_mismatch:
+    #         discarded_mismatch += 1
+    #         continue  # Discard read if mismatch count exceeds max_mismatch
 
-        # query_sequence is None for secondary/supplementary alignments that
-        # omit the sequence field; skip them rather than crashing on len().
-        if read.query_sequence is None:
-            continue
+    #     # query_sequence is None for secondary/supplementary alignments that
+    #     # omit the sequence field; skip them rather than crashing on len().
+    #     if read.query_sequence is None:
+    #         continue
 
-        # Check read length
-        if len(read.query_sequence) < min_read_length:
-            discarded_length += 1
-            continue  # Discard read if it is shorter than the minimum length
+    #     # Check read length
+    #     if len(read.query_sequence) < min_read_length:
+    #         discarded_length += 1
+    #         continue  # Discard read if it is shorter than the minimum length
 
-        retained_reads += 1
+    #     retained_reads += 1
 
-    bamfile.close()
+    # bamfile.close()
 
-    # Log the filtering results
-    logger.info(f"BAM File: {bam_path}")
-    logger.info(f"  Total Reads: {total_reads}")
+    # Altered version of filtering step above that incorporates resolve_contig() (Teresa -- 09-11-26).
+    with pysam.AlignmentFile(bam_path, "rb") as bam:
+        contig = resolve_contig(bam, chrom)
+        # Ensure contig for chromosome in the BAM file is correct.
+        if contig is None:
+            logger.warning(f"Contig for {chrom_label} not found in {bam_path}.")
+            return None
+        for read in bam.fetch(contig):
+            total_reads += 1
+
+            # Skip unmapped reads — they carry no alignment position, no NM tag, and query_sequence is None for mate-rescued unmapped entries.
+            if read.is_unmapped:
+                skipped_unmapped += 1
+                continue
+
+            # Check mismatch: NM first, then nM (STARsolo/CellRanger), as in BamFilter() in germline.py.
+            # Reads without either tag cannot be judged on mismatches and are not discarded here.
+            if read.has_tag('NM'):
+                mismatch_count = read.get_tag('NM')
+            elif read.has_tag('nM'):
+                mismatch_count = read.get_tag('nM')
+            else:
+                mismatch_count = None
+            if mismatch_count is not None and mismatch_count >= max_mismatch:
+                discarded_mismatch += 1
+                continue  # Discard read if mismatch count meets or exceeds max_mismatch
+
+            # query_sequence is None for secondary/supplementary alignments that omit the sequence field; skip them rather than crashing on len().
+            if read.query_sequence is None:
+                skipped_Nonetype += 1
+                continue
+
+            # Check read length
+            if len(read.query_sequence) < min_read_length:
+                discarded_length += 1
+                continue  # Discard read if it is shorter than the minimum length
+
+            retained_reads += 1
+
+    # Log the filtering results # Combined seperate logger.info() lines into one to avoid results from different chromosomes overlapping (Teresa 09-11-26).
     logger.info(
-        f"  Discarded (mismatch >= {max_mismatch}): {discarded_mismatch}")
-    logger.info(
-        f"  Discarded (length < {min_read_length}): {discarded_length}")
-    logger.info(f"  Retained Reads: {retained_reads}")
+        f"BAM File: {bam_path}\n"
+        f"Chromosome: {chrom_label}\n"
+        f"Total Reads: {total_reads}\n"
+        f"Discarded unmapped sequences: {skipped_unmapped}\n"
+        f"Discarded (mismatch >= {max_mismatch}): {discarded_mismatch}\n"
+        f"Discarded 'Nonetype' sequences: {skipped_Nonetype}\n"
+        f"Discarded (length < {min_read_length}): {discarded_length}\n"
+        f"Retained Reads: {retained_reads}"
+    )
 
-    return total_reads, discarded_mismatch, discarded_length, retained_reads
+    return total_reads, skipped_unmapped, discarded_mismatch, skipped_Nonetype, discarded_length, retained_reads
 
 # Function to perform pre-processing of bam files -- 2024-08-08
 def preProcess(args):
@@ -743,21 +807,21 @@ def preProcess(args):
                 )
                 para_lst.append(para_single)
 
-                # --- Quick read count --- ADDED by Damian, made with ChatGPT.
-                bam_path = record[1]
-                try:
-                    bamfile = pysam.AlignmentFile(bam_path, "rb")
-                    read_count = bamfile.count(
-                        contig="chr" + str(chrom))
-                    bamfile.close()
-                    print(
-                        f"BAM {bam_path} has {read_count} reads on chromosome chr{chrom}")
-                    # Here we call count_and_filter_reads for each BAM file, which already logs stats
-                    count_and_filter_reads(bam_path, args.max_mismatch,
-                                           args.min_read_length)
-                except ValueError as e:
-                    print(
-                        f"Could not count reads for chr{chrom} in BAM {bam_path}: {e}")
+                # # --- Quick read count --- ADDED by Damian, made with ChatGPT.
+                # bam_path = record[1]
+                # try:
+                #     bamfile = pysam.AlignmentFile(bam_path, "rb")
+                #     read_count = bamfile.count(
+                #         contig="chr" + str(chrom))
+                #     bamfile.close()
+                #     print(
+                #         f"BAM {bam_path} has {read_count} reads on chromosome chr{chrom}")
+                #     # Here we call count_and_filter_reads for each BAM file, which already logs stats
+                #     count_and_filter_reads(bam_path, args.max_mismatch,
+                #                            args.min_read_length)
+                # except ValueError as e:
+                #     print(
+                #         f"Could not count reads for chr{chrom} in BAM {bam_path}: {e}")
 
             # Process chromosome X -- 2024-09-17
             for chrom in ["X"]:
@@ -779,24 +843,28 @@ def preProcess(args):
                 )
                 para_lst.append(para_single)
 
-                # --- Quick read count --- ADDED by Damian, made with ChatGPT.
-                bam_path = record[1]
-                try:
-                    bamfile = pysam.AlignmentFile(bam_path, "rb")
-                    read_count = bamfile.count(contig="chr" + chrom)
-                    bamfile.close()
-                    print(
-                        f"BAM {bam_path} has {read_count} reads on chromosome chr{chrom}")
-                    # Here we call count_and_filter_reads for each BAM file, which already logs stats
-                    count_and_filter_reads(bam_path, args.max_mismatch,
-                                           args.min_read_length)
-                except ValueError as e:
-                    print(
-                        f"Could not count reads for chr{chrom} in BAM {bam_path}: {e}")
+                # # --- Quick read count --- ADDED by Damian, made with ChatGPT.
+                # bam_path = record[1]
+                # try:
+                #     bamfile = pysam.AlignmentFile(bam_path, "rb")
+                #     read_count = bamfile.count(contig="chr" + chrom)
+                #     bamfile.close()
+                #     print(
+                #         f"BAM {bam_path} has {read_count} reads on chromosome chr{chrom}")
+                #     # Here we call count_and_filter_reads for each BAM file, which already logs stats
+                #     count_and_filter_reads(bam_path, args.max_mismatch,
+                #                            args.min_read_length)
+                # except ValueError as e:
+                #     print(
+                #         f"Could not count reads for chr{chrom} in BAM {bam_path}: {e}")
 
     # Run the BamFilter function in parallel for each chromosome from the germline.py module -- 2024-09-16
     with Pool(processes=args.nthreads) as pool:
         result = pool.map(BamFilter, para_lst)
+
+    # Relocating read count based on new count_and_filter_reads() function (Teresa with help of ClaudeAI -- 09-11-2026)
+    for para in para_lst:
+        count_and_filter_reads(para["bamFile"], para["chr"], para["max_mismatch"], para["min_read_length"])
 
     # NEW CODE: Create bam file list for chromosomes 1-22, X
     if args.verbose:
