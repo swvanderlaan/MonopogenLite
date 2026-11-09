@@ -37,6 +37,9 @@ if LIB_PATH not in sys.path:
 PIPELINE_BASEDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 CFG_DIR = os.path.join(PIPELINE_BASEDIR, "cfg")
 
+# BAM tag holding the corrected cell barcode (10x Genomics CellRanger); used to keep UMI collapsing within cells.
+CELL_BARCODE_TAG = "CB"
+
 # global logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -205,12 +208,11 @@ def BamFilter(myargs):
     
     # Get umi_collapse and UMI tag
     # Check also this reference: https://github.com/single-cell-genetics/cellsnp-lite/issues/121
-    # Get whether UMI collapsing is enabled
+    # Get whether UMI collapsing is enabled; MonopogenLite.py passes the UMI tag ('UB' by default) when it is.
     umi_collapse = myargs.get("umi_collapse", False)
-    # Default UMI tag is 'RX'
-    umi_tag = myargs.get("umi_tag", "RX")
+    umi_tag = myargs.get("umi_tag")
     if umi_collapse:
-        logger.info(f"UMI collapsing is enabled. Using tag {umi_tag} to extract UMIs.")
+        logger.info(f"UMI collapsing is enabled. Using tag {umi_tag} for UMIs and tag {CELL_BARCODE_TAG} for cell barcodes.")
 
     os.system("mkdir -p " + out +  "/Bam")
     infile = pysam.AlignmentFile(bamFile,"rb")
@@ -251,11 +253,23 @@ def BamFilter(myargs):
 
     outfile =  pysam.AlignmentFile( out + "/Bam/" +id + "_" + chr + ".filter.bam", "wb", header=tp)
 
-    # NEW code -- 2024-09-18
-    # Dictionary to group reads by UMI and position
-    umi_dict = defaultdict(list)
+    # UMI collapsing -- 2026-11-09
+    # A UMI identifies one molecule within one cell, so duplicates are reads with the same cell barcode,
+    # UMI, start position and strand. Reads arrive sorted by position, so once the start position moves
+    # on, every group at the previous position is complete and is written straight away. This keeps only
+    # one position's reads in memory and keeps the output sorted (and therefore indexable).
+    umi_groups = defaultdict(list)
+    umi_group_pos = None
+    umi_stats = {"reads_with_umi": 0, "molecules_written": 0}
 
-    # Process reads and group them by UMI and position
+    def flush_umi_groups():
+        for reads in umi_groups.values():
+            # Collapsing strategy: keep the read with the highest mapping quality
+            outfile.write(max(reads, key=lambda x: x.mapping_quality))
+            umi_stats["molecules_written"] += 1
+        umi_groups.clear()
+
+    # Process reads
     for s in infile.fetch(search_chr):
         # Skip unmapped reads — they carry no alignment position and no NM tag
         if s.is_unmapped:
@@ -281,25 +295,28 @@ def BamFilter(myargs):
                 logger.info(f"Read {s.query_name} has {val} mismatches and length {s.query_length}.")
             # Point every kept read at the single read group of this sample (see header above).
             s.set_tag("RG", id, value_type="Z")
-            if umi_collapse and umi_tag and s.has_tag(umi_tag):  # Use the specified UMI tag
+            # Write out finished UMI groups before any read at a later position, so the output stays sorted.
+            if umi_groups and s.reference_start != umi_group_pos:
+                flush_umi_groups()
+            if umi_collapse and umi_tag and s.has_tag(umi_tag) and s.has_tag(CELL_BARCODE_TAG):
                 if debug:
-                    logger.info(f"Read {s.query_name} has UMI tag {umi_tag}.")
-                umi = s.get_tag(umi_tag)  # Extract UMI from the specified tag
-                pos = (s.reference_name, s.reference_start)
-                umi_dict[(umi, pos)].append(s)  # Group reads by UMI and position
+                    logger.info(f"Read {s.query_name} has UMI tag {umi_tag} and cell barcode tag {CELL_BARCODE_TAG}.")
+                umi_group_pos = s.reference_start
+                umi_groups[(s.get_tag(CELL_BARCODE_TAG), s.get_tag(umi_tag), s.is_reverse)].append(s)
+                umi_stats["reads_with_umi"] += 1
             else:
-                if debug:
-                    logger.info(f"Read {s.query_name} does not have UMI tag; no UMI collapsing is applied.")
+                if debug and umi_collapse:
+                    logger.info(f"Read {s.query_name} lacks the UMI or cell barcode tag; no UMI collapsing is applied.")
                 outfile.write(s)
 
-    # If UMI collapsing is enabled, process grouped reads
+    # Write the UMI groups of the last position
+    flush_umi_groups()
     if umi_collapse:
-        if debug:
-            logger.info(f"UMI collapsing is enabled. Processing reads grouped by UMI and position.")
-        for (umi, pos), reads in umi_dict.items():
-            # Collapsing strategy: Keep the read with the highest mapping quality
-            best_read = max(reads, key=lambda x: x.mapping_quality)
-            outfile.write(best_read)  # Write the collapsed read
+        if umi_stats["reads_with_umi"] == 0:
+            logger.warning(f"UMI collapsing was requested, but no reads on {chr} carried both the {umi_tag} and {CELL_BARCODE_TAG} tags; nothing was collapsed.")
+        else:
+            logger.info(f"UMI collapsing on {chr}: {umi_stats['reads_with_umi']} reads with a UMI were collapsed into "
+                        f"{umi_stats['molecules_written']} molecules ({umi_stats['reads_with_umi'] - umi_stats['molecules_written']} duplicates removed).")
 
     # close out the files
     infile.close()

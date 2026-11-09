@@ -62,7 +62,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.5'
+VERSION = '1.4.6'
 VERSION_DATE = '2026-11-09'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -731,6 +731,13 @@ def preProcess(args):
     logger.info("Performing data preprocess before variant calling with the following arguments.")
     print_parameters_given(args)
 
+    # UMI collapsing needs a UMI tag and a cell barcode tag in the BAM; SmartSeq2 has no UMIs and
+    # CEL-Seq2 pipelines keep the UMI in the read name, so stop before doing any work -- 2026-11-09
+    if args.umi_collapse and args.platform_library != "10x":
+        print(f"ERROR: --umi-collapse is only supported with --platform-library 10x (got '{args.platform_library}'). "
+              f"SmartSeq2 has no UMIs and CEL-Seq2 stores the UMI in the read name, not in a BAM tag.")
+        sys.exit(1)
+
     if not os.path.isfile(args.bamFile):
         print(f"ERROR: The list of bam file(s) '{args.bamFile}' cannot be found!")
         sys.exit(1)
@@ -769,7 +776,7 @@ def preProcess(args):
     # Handle UMI collapse and UMI tag -- 2024-09-18
     if args.umi_collapse:
         umi_collapse = True
-        umi_tag = args.umi_collapse if isinstance(args.umi_collapse, str) else "UMI"
+        umi_tag = args.umi_collapse if isinstance(args.umi_collapse, str) else "UB"
     else:
         umi_collapse = False
         umi_tag = None
@@ -944,13 +951,15 @@ python MonopogenLite.py germline --help\n\n
                                     help="The minimum read length for variant calling. Default is 30.")
     parser_preProcess.add_argument('-u', '--umi-collapse', required=False, nargs='?', const=True, default=None,
                                     help=(
-                                        "Collapse reads by UMI to remove PCR duplicates. "
-                                        "Only supported for platforms where the corrected UMI is stored as a BAM auxiliary tag. "
+                                        "Collapse PCR duplicates by UMI. Not recommended for germline variant calling: "
+                                        "duplicate reads add depth, and base and mapping quality filters in bcftools handle PCR errors. "
+                                        "Only allowed with --platform-library 10x, for 10x RNA-seq (CellRanger). "
                                         "Omit this flag for: 10x ATAC-seq (no UMIs), SmartSeq2 (no UMIs), and CEL-Seq2 "
                                         "(UMI is encoded in the read name as 'BC-<barcode>_UMI-<umi>', not a BAM tag). "
-                                        "When used, provide the BAM tag that holds the corrected UMI: "
-                                        "'UB' for 10x RNA-seq (CellRanger). "
-                                        "If the flag is given without a tag name, the default tag is 'UMI'."
+                                        "Reads are treated as duplicates when they share the cell barcode (CB tag), UMI, "
+                                        "start position and strand; the read with the highest mapping quality is kept. "
+                                        "Reads without a UMI or cell barcode tag are kept as they are. "
+                                        "Optionally give the BAM tag that holds the corrected UMI; the default is 'UB'."
                                     ))
     parser_preProcess.add_argument('-v', '--verbose', action='store_true',
                                     help="Increase output verbosity.")

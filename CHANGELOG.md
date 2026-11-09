@@ -2,6 +2,18 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.6 -- 2026-11-09
+### UMI collapsing (`--umi-collapse`)
+- 🐛 `germline.py` `BamFilter()`: Duplicates are now defined per cell: reads must share the cell barcode (`CB`), UMI, start position and strand. Previously reads from different cells that happened to share a UMI at the same position were merged, discarding independent evidence for the genotype.
+- 🐛 `germline.py` `BamFilter()`: Collapsed reads are now written as soon as the reader moves past their position, so the filtered BAM stays sorted and can be indexed. Previously they were written after all reads without a UMI tag, producing an unsorted BAM that `samtools index` rejected.
+- ⚡ `germline.py` `BamFilter()`: Only the reads at the current position are held in memory, instead of all UMI-tagged reads of a chromosome.
+- 📊 `germline.py` `BamFilter()`: Logs how many reads were collapsed into how many molecules per chromosome, and warns when no read carried the UMI and cell barcode tags.
+- 🛑 `MonopogenLite.py`: `--umi-collapse` is refused unless `--platform-library 10x`; SmartSeq2 has no UMIs and CEL-Seq2 keeps the UMI in the read name.
+- 🔧 `MonopogenLite.py`: The default UMI tag when `--umi-collapse` is given without a value is now `UB` (10x CellRanger) instead of `UMI`.
+- 📝 `MonopogenLite.py`: `--umi-collapse` help now states that UMI collapsing is not recommended for germline variant calling and how duplicates are defined.
+- 📝 `germline.py`: Removed the outdated comment that the default UMI tag is `RX`.
+
+
 ## 🛠️ v1.4.5 -- 2026-11-09
 ### Fixes affecting genotypes
 - 🐛 `germline.py` `BamFilter()`: Every filtered BAM now carries exactly one read group, with `ID` and `SM` set to the sample ID from the `--bamFile` list, and every kept read is tagged with it. Previously, BAMs without read groups were named after the BAM file (CellRanger names every BAM `possorted_genome_bam.bam`, so all samples could merge into one in `bcftools mpileup`), and upstream read groups were kept as-is (STARsolo SmartSeq2 BAMs with one read group per cell would be genotyped per cell). One filtered BAM is now always one individual.
