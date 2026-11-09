@@ -128,7 +128,6 @@ if [ "$DRY_RUN" = true ]; then
         --reference ${GRCh38} \
         --imputation-panel ${IMP_PANEL} \
         --step all \
-        --max-softClipped 3 \
         --app-path ${MPG}/apps \
         --nthreads 8 \
         --out ${PROJECT_DIR}/monopogen/monopogen_${SAMPLE} --verbose --norun"
@@ -138,7 +137,6 @@ else
         --reference ${GRCh38} \
         --imputation-panel ${IMP_PANEL} \
         --step all \
-        --max-softClipped 3 \
         --app-path ${MPG}/apps \
         --nthreads 8 \
         --out ${PROJECT_DIR}/monopogen/monopogen_${SAMPLE} --verbose"
@@ -157,7 +155,7 @@ mamba deactivate
 
 # python src/MonopogenLite.py  germline --help
 # usage: MonopogenLite.py germline [-h] -r REGION -s {varScan,varProb,varPhasing,all} [-o OUT] -g REFERENCE -p
-#                                  IMPUTATION_PANEL [-m MAX_SOFTCLIPPED] -a APP_PATH [-t NTHREADS] [-n] [-v] [-d]
+#                                  IMPUTATION_PANEL -a APP_PATH [-t NTHREADS] [-n] [-v] [-d]
 
 # Perform germline variant calling and phasing from single-cell sequencing data.
 
@@ -176,8 +174,6 @@ mamba deactivate
 #   -p IMPUTATION_PANEL, --imputation-panel IMPUTATION_PANEL
 #                         The population-level variant panel for variant phasing, such as 1000 Genome phase 3 high-coverage
 #                         b38 data. (default: None)
-#   -m MAX_SOFTCLIPPED, --max-softClipped MAX_SOFTCLIPPED
-#                         The maximal soft-clipped allowed in one reads for variant calling (default: 1)
 #   -a APP_PATH, --app-path APP_PATH
 #                         The app library paths used in the tool (default: None)
 #   -t NTHREADS, --nthreads NTHREADS

@@ -66,7 +66,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.10'
+VERSION = '1.4.11'
 VERSION_DATE = '2026-11-09'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -429,9 +429,6 @@ def germline(args):
     if args.debug:
         print(f"  -- DEBUGGING: Germline before print_parameters_given()")
     print_parameters_given(args)
-
-    if args.max_softClipped is not None:
-        logger.warning("--max-softClipped has no effect and will be removed in a future version; remove it from your scripts.")
 
     logger.info("Checking existence of essential resource files.")
     if args.debug:
@@ -1073,9 +1070,6 @@ python MonopogenLite.py germline --help\n\n
                                 help="The human genome reference (FASTA) used for alignment. Required.")
     parser_germline.add_argument('-p', '--imputation-panel', required= True,
                                 help="Directory with the population-level variant panel for variant phasing, one VCF per chromosome, such as 1000 Genomes phase 3 high-coverage b38 data. Required.")
-    # Unused (also in the original Monopogen); still accepted so existing scripts keep working, but hidden from --help -- 2026-11-09
-    parser_germline.add_argument('--max-softClipped', required=False, type=int, default=None,
-                                help=argparse.SUPPRESS)
     parser_germline.add_argument('-a', '--app-path', required=True,
                                 help="The app library path; it should contain (a symlink to) beagle.jar. Required.")
     parser_germline.add_argument('-t', '--nthreads', required=False, type=int, default=1,

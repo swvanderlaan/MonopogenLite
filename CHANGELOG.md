@@ -2,6 +2,15 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.11 -- 2026-11-09
+### Options
+- 🗑️ `germline --max-softClipped` removed. It never had any effect (also not in the original Monopogen) and was hidden since v1.4.8; no script passes it anymore. Passing it now gives argparse's "unrecognized arguments" error.
+- 🧹 `example/runGermline_ae.sh`: No longer passes `--max-softClipped`; removed it from the copied `--help` text.
+### Documentation
+- 📝 `README.md`: Corrected the imputation panel description. `src/variant_ref_create.sh` does produce the `...norm.fixvariantid.chrN.vcf.gz` files `germline` uses: after normalisation it sets every variant ID to `CHROM:POS:REF:ALT`, and it also writes the combined cellSNP panel.
+- 📝 `README.md`: Apple Silicon Macs can use a native (`osx-arm64`) environment; `environment.yml` was checked to solve for `linux-64`, `osx-64` and `osx-arm64`.
+
+
 ## 🛠️ v1.4.10 -- 2026-11-09
 ### Installation and documentation
 - 📦 Added `environment.yml` for the `monopogen` conda environment: the core tools of `MonopogenLite`, the packages of the utility scripts (`matplotlib`, `cmcrameri`, `refgenie`) and Snakemake 7.32 with `pulp<2.8` and `openpyxl` for the MetaPlaq workflows.

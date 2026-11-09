@@ -61,7 +61,7 @@ With [`mamba`](https://github.com/conda-forge/miniforge) (or `conda`) on Linux o
 mamba env create -f environment.yml
 ```
 
-On a Mac with Apple Silicon (M1–M4), create it as an Intel (`osx-64`) environment; it then runs through Rosetta, as the existing `monopogen` environments do:
+On a Mac with Apple Silicon (M1–M4) the same command creates a native (`osx-arm64`) environment; all packages are available for it. Only if you need an Intel (`osx-64`) environment, for example to match an existing one, create it this way; it then runs through Rosetta:
 
 ```bash
 CONDA_SUBDIR=osx-64 mamba env create -f environment.yml
@@ -69,7 +69,9 @@ mamba activate monopogen
 conda config --env --set subdir osx-64
 ```
 
-The last line makes sure later installs into this environment are Intel packages too.
+The last line makes sure later installs into this environment are Intel packages too. Do not mix the two: packages built for Apple Silicon do not load in an Intel environment.
+
+Tested package versions differ a little per platform: on Linux the solver picks `samtools`/`htslib` 1.20 and `pysam` 0.22.1 (the versions `MonopogenLite` was tested with), on macOS currently 1.25 and 0.24.1.
 
 On an HPC cluster with `micromamba` (e.g. UVA Rivanna); the run scripts activate the environment by the name `monopogen`:
 
@@ -93,7 +95,7 @@ snakemake --version
 `germline` needs two resources:
 
 - **Genome reference:** the GRCh38 FASTA the BAM files were aligned to (with its `.fai` index), e.g. `refdata-gex-GRCh38-2024-A/fasta/genome.fa` from 10x Genomics, or `refgenie seek hg38/fasta`.
-- **Imputation panel:** a directory with one VCF per chromosome, named `1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrN.vcf.gz` (with `.tbi`) for chromosomes 1–22 and X. `src/variant_ref_create.sh` downloads the phased high-coverage 1000 Genomes data (3,202 individuals) and filters it to bi-allelic SNVs with AF ≥ 0.0005 (files up to `...norm.chrN.vcf.gz`). The final variant-ID step that produces the `fixvariantid` files is not in this repository yet. On Rivanna the finished panel is in `/project/cphg-millerlab/software/MonopogenLite/resources/`.
+- **Imputation panel:** a directory with one VCF per chromosome, named `1kGP_high_coverage_Illumina.SNVonly_poly.filtered_AF_5e-04.norm.fixvariantid.chrN.vcf.gz` (with `.tbi`) for chromosomes 1–22 and X. `src/variant_ref_create.sh` makes these as SLURM jobs: it downloads the phased high-coverage 1000 Genomes data (3,202 individuals), keeps bi-allelic SNVs with AF ≥ 0.0005 (`--af`, `--af-field`), normalises them against the reference (`.norm`), sets every variant ID to `CHROM:POS:REF:ALT` (`.fixvariantid`, the same IDs `germline` gives its calls), and also writes a combined sites-only panel for cellSNP (`...fixvariantid.chr1_22X.cellsnp.vcf.gz`). On Rivanna the finished panel is in `/project/cphg-millerlab/software/MonopogenLite/resources/`.
 
 ### Updating or repairing the environment
 
@@ -198,7 +200,7 @@ Dr. Sander W. van der Laan has received Roche funding for unrelated work.
 
 #### 📦 Changes log
     
-    _Version:_      v1.4.10</br>
+    _Version:_      v1.4.11</br>
     _Last update:_  2026-11-09</br>
     _Changes:_      see CHANGELOG.md</br>
     _Written by:_   Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com.</br>
@@ -210,7 +212,7 @@ Dr. Sander W. van der Laan has received Roche funding for unrelated work.
     - [ ] test v1.4.9 on Rivanna with a 10x ATAC study (Turner) and a SmartSeq2 study (Katyayani)
 
     _S_
-    - [ ] remove the hidden `--max-softClipped` option once no script passes it anymore
+    - [x] remove the hidden `--max-softClipped` option once no script passes it anymore (v1.4.11)
     
     _C_
 
