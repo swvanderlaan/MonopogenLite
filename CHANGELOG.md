@@ -2,6 +2,19 @@
 
 All notable changes to `MonopogenLite` will be documented in this file.
 
+## 🛠️ v1.4.9 -- 2026-11-09
+### Logging
+- 🧾 `MonopogenLite.py` and `germline.py` now share one logger (`MonopogenLite`). Previously `germline.py` had its own logger with only a console handler, so `BamFilter()` and job messages never reached `--logfile`.
+- 🧾 `MonopogenLite.py`: Worker processes of `preProcess` (BamFilter) and `germline` (jobs) attach the same log file; `setup_logger()` no longer attaches a log file twice.
+- 🐛 `MonopogenLite.py` `log_tool_versions()`: Receives `args` and the shared logger; it read a global `args` that does not exist, so with `--verbose` the Beagle version was never logged, and it logged to a logger without handlers.
+### Errors and output
+- 🛑 `germline.py`: `validate_user_setting_germline()` and `check_dependencies()` stop with a clear error message instead of an `assert` traceback (asserts are also skipped with `python -O`). Missing programs are looked up with `shutil.which`, so a missing tool no longer crashes with a `CalledProcessError`.
+- 🔇 "DEBUGGING" lines in `germline()` and its checks are only printed with `--debug`.
+### Cleanup
+- 🧹 Disabled (kept as comments while testing): `build_sample_commands()` (unused and called other functions with the wrong arguments), `read_sample_list_file()` (replaced by the BAM list building of v1.4.7) and `germline.py` `validate_sample_list_file()` (validated options MonopogenLite does not have).
+- 🧹 `germline()`: Removed the preProcess settings printout that could never run; removed a duplicate `set_defaults(func=preProcess)`; fixed the "essenstial" typo in a log message.
+
+
 ## 🛠️ v1.4.8 -- 2026-11-09
 ### Options and help texts (`MonopogenLite.py`)
 - 🗑️ `germline --max-softClipped`: Hidden from `--help` and ignored with a warning; it never had any effect (also not in the original Monopogen). It is still accepted so scripts that pass it keep working, and will be removed once those scripts are updated. Its short form `-m` is gone, so `-m` now only means `preProcess --max-mismatch`.

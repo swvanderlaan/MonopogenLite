@@ -66,7 +66,7 @@ from germline import *
 
 # Version and license information
 VERSION_NAME = 'MonopogenLite'
-VERSION = '1.4.8'
+VERSION = '1.4.9'
 VERSION_DATE = '2026-11-09'
 COPYRIGHT = 'Copyright 1979-2026. Jinzhuang Dou | jdou1 [at] mdanderson [dot] org; Sander W. van der Laan | s.w.vanderlaan [at] gmail [dot] com | https://vanderlaanand.science.'
 COPYRIGHT_TEXT = '''
@@ -100,23 +100,28 @@ if LIB_PATH not in sys.path:
 PIPELINE_BASEDIR = str(Path(sys.argv[0]).resolve().parent)
 CFG_DIR = str(Path(PIPELINE_BASEDIR) / "cfg")
 
-# global logger
-logger = logging.getLogger(__name__)
+# global logger, shared with germline.py (same name, see LOGGER_NAME there) -- 2026-11-09
+logger = logging.getLogger(LOGGER_NAME)
 logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter(
-    '[{asctime}] {levelname:8s} {filename} {message}', style='{'))
-logger.addHandler(handler)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(
+        '[{asctime}] {levelname:8s} {filename} {message}', style='{'))
+    logger.addHandler(handler)
 
 # Function to optionally add file logging
 def setup_logger(logfile_path, level=logging.DEBUG):
     """
-    Set up the logger to log to a file and console.
+    Add file logging to the shared logger. Safe to call more than once, e.g. as the initializer of
+    worker processes: a log file that is already attached is not attached again.
     Args:
         logfile_path (str): Path to the log file.
         level (int): Logging level (default: logging.DEBUG).
     """
 
+    logfile_path = os.path.abspath(logfile_path)
+    if any(isinstance(h, logging.FileHandler) and h.baseFilename == logfile_path for h in logger.handlers):
+        return
     handler = logging.FileHandler(logfile_path)
     handler.setFormatter(logging.Formatter('[{asctime}] {levelname:8s} {filename} {message}', style='{'))
     logger.addHandler(handler)
@@ -143,18 +148,16 @@ def error_check(all, output, step):
         sys.exit(1)
 
 # Utility function to log tool versions -- 2024-06-05
-def log_tool_versions(logger):
+def log_tool_versions(logger, args):
     """
     Log the versions of essential tools used in the pipeline.
     Args:
         logger (logging.Logger): Logger instance to log the tool versions.
+        args (argparse.Namespace): Parsed command-line arguments; app_path locates beagle.jar.
     """
 
-    # Use the global 'args' variable if present, else skip beagle version
-    try:
-        app_path = args.app_path
-    except Exception:
-        app_path = None
+    # args is passed in; there is no global 'args', so the Beagle version was never logged before -- 2026-11-09
+    app_path = getattr(args, "app_path", None)
     tools = {
         "bcftools": ["bcftools", "--version"],
     }
@@ -168,26 +171,27 @@ def log_tool_versions(logger):
         except Exception as e:
             logger.warning(f"Failed to retrieve version for {name}: {e}")
 
-# Function to build sample commands for variant calling and phasing
-def build_sample_commands(samples, chrom, out_path, args):
-    commands = []
-    for sample in samples:
-        bam_path = sample["bam"]
-        sampleID = sample["sampleID"]
-        output_vcf = out_path / "VCF" / f"{sampleID}.chr{chrom}.bcf"
-        # Updated: pass bam_path, chrom, args.reference, out_path
-        bcftools_cmd = generate_bcftools_command(bam_path, chrom, args.reference, out_path)
-        # bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chrom, out_path)
-        if hasattr(args, 'impute') and args.impute:
-            if hasattr(args, 'genotype') and args.genotype:
-                beagle_cmd = generate_beagle_cmd_gt(output_vcf, args.app_path, out_path)
-            else:
-                beagle_cmd = generate_beagle_cmd_gp(output_vcf, args.app_path, out_path)
-            command = f"{bcftools_cmd} && {beagle_cmd}"
-        else:
-            command = bcftools_cmd
-        commands.append((sampleID, command))
-    return commands
+# Disabled -- 2026-11-09: unused (per-sample jobs were replaced by per-chromosome jobs) and broken: it called generate_bcftools_command() and generate_beagle_cmd_gt() with the wrong arguments. Kept as comments while testing.
+# # Function to build sample commands for variant calling and phasing
+# def build_sample_commands(samples, chrom, out_path, args):
+#     commands = []
+#     for sample in samples:
+#         bam_path = sample["bam"]
+#         sampleID = sample["sampleID"]
+#         output_vcf = out_path / "VCF" / f"{sampleID}.chr{chrom}.bcf"
+#         # Updated: pass bam_path, chrom, args.reference, out_path
+#         bcftools_cmd = generate_bcftools_command(bam_path, chrom, args.reference, out_path)
+#         # bcftools_cmd = generate_bcftools_command(bam_path, sampleID, chrom, out_path)
+#         if hasattr(args, 'impute') and args.impute:
+#             if hasattr(args, 'genotype') and args.genotype:
+#                 beagle_cmd = generate_beagle_cmd_gt(output_vcf, args.app_path, out_path)
+#             else:
+#                 beagle_cmd = generate_beagle_cmd_gp(output_vcf, args.app_path, out_path)
+#             command = f"{bcftools_cmd} && {beagle_cmd}"
+#         else:
+#             command = bcftools_cmd
+#         commands.append((sampleID, command))
+#     return commands
 
 # Function to write a job script for germline variant calling
 def write_job_script(jobid, command, out_path, version=VERSION, verbose=False):
@@ -305,35 +309,36 @@ def prepare_output_dirs(base_out, subdirs, verbose=False):
         if verbose:
             print(f"  - Created directory: {path}")
 
-# Function to read a sample list based on the region file and return a list of dicts with a "bam" key
-def read_sample_list_file(region_file_path, out):
-    """
-    Read the sample list based on the region file.
-
-    Args:
-        region_file_path (str): Path to the region file.
-        out (str): Output directory.
-
-    Returns:
-        list of dict: A list of samples where each sample is a dictionary with at least a 'bam' key.
-    """
-    sample_set = set()
-    with open(region_file_path) as f:
-        for line in f:
-            parts = line.strip().split(",")
-            if len(parts) >= 1:
-                chrom = parts[0]
-                # FIXME: Adjust the file path to the correct folder with the lists containing the BAMS per chromosome.
-                bam_file_path = Path(out) / ".." / "ListedBamsPerChr" / f"{chrom}.lst"
-                print(
-                    f"  -- DEBUGGING: The BAM file path is: [{bam_file_path}].")
-                with bam_file_path.open() as bf:
-                    for line in bf:
-                        bam = line.strip()
-                        sample_set.add(bam)
-
-    samples = [{"bam": bam} for bam in sorted(sample_set)]
-    return samples
+# Disabled -- 2026-11-09: unused; germline now builds the per-chromosome BAM lists with build_chromosome_bam_list(). Kept as comments while testing.
+# # Function to read a sample list based on the region file and return a list of dicts with a "bam" key
+# def read_sample_list_file(region_file_path, out):
+#     """
+#     Read the sample list based on the region file.
+#
+#     Args:
+#         region_file_path (str): Path to the region file.
+#         out (str): Output directory.
+#
+#     Returns:
+#         list of dict: A list of samples where each sample is a dictionary with at least a 'bam' key.
+#     """
+#     sample_set = set()
+#     with open(region_file_path) as f:
+#         for line in f:
+#             parts = line.strip().split(",")
+#             if len(parts) >= 1:
+#                 chrom = parts[0]
+#                 # FIXME: Adjust the file path to the correct folder with the lists containing the BAMS per chromosome.
+#                 bam_file_path = Path(out) / ".." / "ListedBamsPerChr" / f"{chrom}.lst"
+#                 print(
+#                     f"  -- DEBUGGING: The BAM file path is: [{bam_file_path}].")
+#                 with bam_file_path.open() as bf:
+#                     for line in bf:
+#                         bam = line.strip()
+#                         sample_set.add(bam)
+#
+#     samples = [{"bam": bam} for bam in sorted(sample_set)]
+#     return samples
 
 # Chromosomes MonopogenLite can call; the imputation panel covers 1-22 and X -- 2026-11-09
 SUPPORTED_CHROMOSOMES = [str(n) for n in range(1, 23)] + ["X"]
@@ -421,18 +426,21 @@ def germline(args):
     """
 
     logger.info("Performing germline variant calling with the following arguments.")
-    print(f"  -- DEBUGGING: Germline before print_parameters_given()")
+    if args.debug:
+        print(f"  -- DEBUGGING: Germline before print_parameters_given()")
     print_parameters_given(args)
 
     if args.max_softClipped is not None:
         logger.warning("--max-softClipped has no effect and will be removed in a future version; remove it from your scripts.")
 
-    logger.info("Checking existence of essenstial resource files.")
-    print(f"  -- DEBUGGING: Germline before validate_user_setting()")
+    logger.info("Checking existence of essential resource files.")
+    if args.debug:
+        print(f"  -- DEBUGGING: Germline before validate_user_setting()")
     validate_user_setting_germline(args)
 
     logger.info("Checking dependencies.")
-    print(f"  -- DEBUGGING: Germline before check_dependencies()")
+    if args.debug:
+        print(f"  -- DEBUGGING: Germline before check_dependencies()")
     check_dependencies(args)
 
     # Create necessary directories -- 2024-09-17
@@ -626,7 +634,8 @@ def germline(args):
     # pool the shell scripts in the job list when the norun flag is not set
     # Each job runs Beagle with nthreads_downsample threads, so run only as many jobs at once as the threads allow.
     if not args.norun:
-        with Pool(processes=max(1, min(len(joblst), args.nthreads // nthreads_downsample))) as pool:
+        with Pool(processes=max(1, min(len(joblst), args.nthreads // nthreads_downsample)),
+                  initializer=setup_logger, initargs=(args.logfile,)) as pool:
             print(f"{VERSION_NAME} v{VERSION} ({VERSION_DATE}) \nMonopogenLite: SNV calling and phasing from single-cell sequencing data.")
             print("\nSettings:")
             print(f"  - App path...............: {args.app_path}")
@@ -637,11 +646,6 @@ def germline(args):
             print(f"  - Regions................: {args.region}")
             print(f"  - Reference..............: {args.reference}")
             print(f"  - Imputation panel.......: {args.imputation_panel}")
-            if args.subcommand == "preProcess":
-                print(f"  - Maximum mismatch.......: {args.max_mismatch}")
-                print(f"  - Platform library.......: {args.platform_library}")
-                print(f"  - Minimum read length....: {args.min_read_length}")
-                print(f"  - UMI collapse...........: {args.umi_collapse}")
             print(f"\nRunning the germline variant calling pipeline in a pool.")
             print(f"> Jobs submitted:")
             print(joblst)
@@ -664,11 +668,6 @@ def germline(args):
         print(f"  - Regions................: {args.region}")
         print(f"  - Reference..............: {args.reference}")
         print(f"  - Imputation panel.......: {args.imputation_panel}")
-        if args.subcommand == "preProcess":
-            print(f"  - Maximum mismatch.......: {args.max_mismatch}")
-            print(f"  - Platform library.......: {args.platform_library}")
-            print(f"  - Minimum read length....: {args.min_read_length}")
-            print(f"  - UMI collapse...........: {args.umi_collapse}")
         print(f"\nGenerated the job scripts only. The jobs will not be run.")
         print(f"> Jobs generated:")
         print(joblst)
@@ -944,7 +943,8 @@ def preProcess(args):
                 #         f"Could not count reads for chr{chrom} in BAM {bam_path}: {e}")
 
     # Run the BamFilter function in parallel for each chromosome from the germline.py module -- 2024-09-16
-    with Pool(processes=args.nthreads) as pool:
+    # The initializer attaches the log file in each worker, so BamFilter messages reach --logfile -- 2026-11-09
+    with Pool(processes=args.nthreads, initializer=setup_logger, initargs=(args.logfile,)) as pool:
         result = pool.map(BamFilter, para_lst)
 
     # Relocating read count based on new count_and_filter_reads() function (Teresa with help of ClaudeAI -- 09-11-2026)
@@ -1046,8 +1046,6 @@ python MonopogenLite.py germline --help\n\n
                                     help="Increase output verbosity.")
     parser_preProcess.add_argument('-d', '--debug', action='store_true',
                                     help="For debugging, specifically for installed tools.")
-    parser_preProcess.set_defaults(func=preProcess)
-
     # Set the default function to run when 'preProcess' is called
     parser_preProcess.set_defaults(func=preProcess)
 
@@ -1118,12 +1116,14 @@ python MonopogenLite.py germline --help\n\n
         Path(logfile_path).parent.mkdir(parents=True, exist_ok=True)
 
     setup_logger(logfile_path)
+    # Kept in args so worker processes can attach the same log file (see the Pool initializers) -- 2026-11-09
+    args.logfile = logfile_path
     if getattr(args, "verbose", False):
         print(f"> Log file set to: {logfile_path}")
 
     # Log tool versions if verbose
     if getattr(args, "verbose", False):
-        log_tool_versions(logging.getLogger())
+        log_tool_versions(logger, args)
 
     # Updated code -- 2024-09-17
     # set paths for tools

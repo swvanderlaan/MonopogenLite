@@ -4,7 +4,7 @@
 
 **MonopogenLite** _Germline SNV calling and phasing from single-cell sequencing data (for macOS Sequoia and Linux Rocky8)._
 
-This is a fork of the original [`MonopogenLite`](https://github.com/KChen-lab/Monopogen) which works with python (3.9+), and `samtools` and `bcftools` (v1.21), `vcftools` (v0.1.16), and `tabix` (`htslib`, v1.21), as well as in the context of `Rocky8` (Linux) and macOS Sequoia with [`brew`](https://brew.sh). 
+This is a fork of the original [`Monopogen`](https://github.com/KChen-lab/Monopogen) which works with python (3.9+), and `samtools` and `bcftools` (v1.21), `vcftools` (v0.1.16), and `tabix` (`htslib`, v1.21), as well as in the context of `Rocky8` (Linux) and macOS Sequoia with [`brew`](https://brew.sh). 
 
 `MonopogenLite` was forked from `Monopogen` and edited as such to accommodate the work in [**MetaPlaq**](https://chanzuckerberg.com/science/programs-resources/cell-science/data-insights/metaplaq-integrative-single-cell-meta-analysis-for-atherosclerosis/). In **MetaPlaq** we meta-analyzed 140+ samples with single-cell RNA and ATAC sequencing data which have varying degrees of sequencing quality and depth. Many of these datasets are of limited use for reliable _de novo_ genotype calling. The main focus is on genetic ancestry inference and _cis_-acting expression quantitative trait loci (eQTL). 
 
@@ -19,10 +19,14 @@ It has a few improvements:
 * ✅ Reproducible workflow to include a genome reference through [`refgenie`](http://refgenie.databio.org/en/latest/).
 * ✅ Reproducible workflow to include 1000G phase 3 high-coverage b38 data including 3,202 individuals.
 * ✅ Streamline code.
-* ✅ Added `--debug`, `--logFile`, `--version` flags.
-* ✅ Removed hard-coding of `--platform-library`; now works with _smartseq2_ and _celseq2_, aside of _10x_ data.
+* ✅ Added `--debug`, `--logfile`, `--version` flags; messages from all steps, including parallel workers, go to one log file.
+* ✅ Removed hard-coding of `--platform-library`; now works with _smartseq2_ and _celseq2_, aside of _10x_ (RNA and ATAC) data.
 * ✅ Removed hard-coding of `--nthreads` for the phasing step executed through `BEAGLE`.
-* ✅ Improved handling of per-sample or per-cell SNV calling and phasing.
+* ✅ One genotype per individual: every filtered BAM gets a single read group named after its sample ID, so samples are never merged and cells never become samples.
+* ✅ Germline calling per chromosome with all samples of a study together; the per-chromosome BAM lists are built automatically from the `preProcess` output.
+* ✅ Run germline calling step by step (`--step varScan`, `varProb`, `varPhasing`, or `all`); failed `bcftools` or `BEAGLE` steps are reported as errors.
+* ✅ Handles STAR-based BAMs (`nM` tag), unmapped mates (e.g. 10x ATAC), and BAMs with `1` or `chr1` contig names.
+* ✅ Optional UMI collapsing per cell (`--umi-collapse`, 10x RNA only; not recommended for germline calling).
 * ✅ Added script to prepare outputs for TOPMed imputation.
 * ✅ Code improved to only calls bi-allelic SNVs; no structural, INDELs or multi-allelic variants are called.
 * ✅ Added handling of chromosome X - Phased haploid male samples in the phased imputation panel are now converted from "0" or "1" to "0|0" or "1|1", respectively.
@@ -36,6 +40,83 @@ It has a few improvements:
   * ✅ `cellsnp_vcf_merger.py` -- merge per-sample VCF files into 1 VCF per study. Including `cellsnp_vcf_merger_submit.sh` to submit the `cellsnp_vcf_merger.py` script to a job scheduler.
 
 That said, `MonopogenLite` is just a light-weight version of `Monopogen`, originally developed by the [Ken Chen Lab](https://www.mdanderson.org/research/departments-labs-institutes/labs/ken-chen-laboratory.html) at the [MD Anderson Cancer Center](https://www.mdanderson.org/). All credit goes to the original authors and contributors of the concepts underlying `Monopogen`; we simply adapted and improved it in some functional and coding areas.
+
+## 🚀 Usage
+
+`MonopogenLite` runs in two steps: `preProcess` once per sample, then `germline` once per chromosome for all samples of a study together. See `python src/MonopogenLite.py preProcess --help` and `python src/MonopogenLite.py germline --help` for all options.
+
+### 1. `preProcess` (per sample)
+
+```bash
+python src/MonopogenLite.py preProcess \
+    --bamFile sampleA.bam.lst \
+    --out study/monopogen_sampleA \
+    --app-path apps \
+    --platform-library 10x \
+    --max-mismatch 3 \
+    --nthreads 8
+```
+
+`--bamFile` is a comma-separated file with one line per sample: the sample ID and the path to a sorted, indexed BAM (`file.bam.bai` or `file.bai`). The sample ID becomes the sample name in the VCF.
+
+```text
+sampleA,/path/to/sampleA/outs/possorted_genome_bam.bam
+```
+
+For chromosomes 1–22 and X, `preProcess` writes `OUT/Bam/<sampleID>_chrN.filter.bam` (indexed). Reads are removed when they are unmapped, have `--max-mismatch` or more mismatches (`NM` tag, or `nM` for STAR-based BAMs; the default of 3 keeps reads with at most 2 mismatches, as in the original `Monopogen`), or are shorter than `--min-read-length` (default 30). Duplicate reads are kept: they add depth, and base and mapping quality filters in `bcftools` handle PCR errors.
+
+| Data | Aligner | `--platform-library` | UMI | `--umi-collapse` |
+| --- | --- | --- | --- | --- |
+| 10x RNA-seq | CellRanger | `10x` | `UB` tag | allowed, not recommended |
+| 10x ATAC-seq | CellRanger ATAC | `10x` | none | omit |
+| SmartSeq2 | STARsolo | `smartseq2` | none | refused |
+| CEL-Seq2 | e.g. bowtie2 | `celseq2` | in the read name | refused |
+
+`--platform-library` does not change the filtering; it sets the read group fields of the filtered BAMs and whether `--umi-collapse` is allowed.
+
+### 2. `germline` (per chromosome, all samples of a study)
+
+```bash
+python src/MonopogenLite.py germline \
+    --chromosome 1 \
+    --region region.lst \
+    --out study \
+    --reference genome.fa \
+    --imputation-panel resources/ \
+    --app-path apps \
+    --nthreads 8
+```
+
+`--out` is the study folder holding the `monopogen_<sampleID>` folders from `preProcess` (or set `--preprocess-dir`). If `OUT/ListedBamsPerChr/chrN.lst` does not exist yet, `germline` builds it from all `*/Bam/*_chrN.filter.bam` files it finds there.
+
+The region file has one region per line: a chromosome (whole chromosome) or `chromosome,start,end`. Chromosomes may be written with or without `chr` and in any order; a chromosome may have several regions, and lines starting with `#` are ignored.
+
+```text
+chr1
+chr2,1,120000000
+chr2,120000001,242193529
+X
+```
+
+For each region, `germline` calls bi-allelic SNVs with `bcftools mpileup` and `call` (mapping and base quality ≥ 20), then estimates genotype probabilities and phases with `BEAGLE` against the imputation panel. `--step varScan`, `varProb` or `varPhasing` runs a single step; the default is `all`. Output in `OUT/`:
+
+| File | Content |
+| --- | --- |
+| `monopogen_<region>_sorted.vcf.gz` (+ `.tbi`) | Unphased calls, all samples |
+| `monopogen_<region>.gp.vcf.gz` | Genotype probabilities (`BEAGLE`) |
+| `monopogen_<region>.phased.vcf.gz` | Phased genotypes (`BEAGLE`) |
+| `runGermline_<region>.sh` | The job script that produced them |
+
+A region without any called variant skips `BEAGLE` and keeps only the unphased VCF.
+
+### Running on a SLURM cluster
+
+`src/runPreprocess.sh` runs `preProcess` as a SLURM array with one task per sample; `src/runGermline.sh` runs `germline` as an array with one task per chromosome (`--array=1-23`, where 23 is X). Both use `PROJECT_DIR/<study>/monopogen_<sample>` as the folder layout. Adjust the `#SBATCH` lines and default paths for your cluster.
+
+```bash
+sbatch src/runPreprocess.sh --input-dir /path/to/cellranger_outs/<study> --study <study> --platform 10x
+sbatch src/runGermline.sh --study <study>
+```
 
 ## 📣 Acknowledgements
 Dr. Sander W. van der Laan is funded through EU H2020 TO_AITION (grant number: 848146), EU HORIZON NextGen (grant number: 101136962), EU HORIZON MIRACLE (grant number: 101115381), Health~Holland PPP Allowance ‘Getting the Perfect Image’, and CZI ['MetaPlaq'](https://chanzuckerberg.com/science/programs-resources/cell-science/data-insights/metaplaq-integrative-single-cell-meta-analysis-for-atherosclerosis/).

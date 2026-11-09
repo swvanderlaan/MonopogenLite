@@ -40,13 +40,16 @@ CFG_DIR = os.path.join(PIPELINE_BASEDIR, "cfg")
 # BAM tag holding the corrected cell barcode (10x Genomics CellRanger); used to keep UMI collapsing within cells.
 CELL_BARCODE_TAG = "CB"
 
-# global logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter(
-    '[{asctime}] {levelname:8s} {filename} {message}', style='{'))
-logger.addHandler(handler)
+# Shared logger -- 2026-11-09
+# MonopogenLite.py uses the same logger name and attaches the console and --logfile handlers to it, so
+# messages from this module (BamFilter, runCMD) also reach the log file. No handlers are added here.
+LOGGER_NAME = "MonopogenLite"
+logger = logging.getLogger(LOGGER_NAME)
+
+# Stop with a clear error message instead of an assert (asserts give a traceback and are skipped with python -O) -- 2026-11-09
+def fail(message):
+    logger.error(message)
+    sys.exit(1)
 
 # Function to print the parameters
 def print_parameters_given(args):
@@ -54,51 +57,57 @@ def print_parameters_given(args):
     for arg in vars(args):
         if arg=="func": continue
         logger.info("--{} = [{}]".format(arg, vars(args)[arg]))
-    print(f"  -- DEBUGGING: Germline before print_parameters_given()")
+    if getattr(args, "debug", False):
+        print(f"  -- DEBUGGING: Germline after print_parameters_given()")
 
-# Function to validate the input sample list
-def validate_sample_list_file(args):
-    if args.check_hard_clipped:
-        out=os.popen("command -v bioawk").read().strip()
-        assert out!="", "Program bioawk cannot be found!"
-
-    assert os.path.isfile(args.sample_list), "Sample index file {} cannot be found!".format(args.sample_list)
-
-    try:
-        with open(args.sample_list) as f_in:
-            for line in f_in:
-                record = line.strip().split("\t")
-                logger.debug("Checking sample {}".format(record[0]))
-                assert len(record)==3, "Every line has to have exactly 3 tab-delimited columns! Line with sample name {} does not satisify this requiremnt!".format(record[0])
-                assert os.path.isfile(record[1]), "Bam file {} cannot be found!".format(record[1])
-                assert os.path.isfile(record[1]+".bai"), "Bam file {} has not been indexed!".format(record[1])
-                assert os.path.isabs(record[1]), "Please use absolute path for bam file {}!".format(record[1])
-
-                if args.check_hard_clipped:
-                    logger.debug("Checking existence of hard-clipped reads.")
-                    cmd = "samtools view {} | bioawk -c sam 'BEGIN {{count=0}} ($cigar ~ /H/)&&(!and($flag,256)) {{count++}} END {{print count}}'".format(record[1])
-                    logger.debug("Command: "+cmd)
-                    out=os.popen(cmd).read().strip()
-                    logger.debug("Results: "+out)
-                    assert out=="0", "Bam file {} contains hard-clipped reads without proper flag (0x100) set! Please use -M or -Y options of BWA MEM!".format(record[1])
-
-                try:
-                    float(record[2])
-                    assert 0.0 <= float(record[2]) and float(record[2]) <= 1.0, "Contamination rate of sample {0} has to be a float number between 0 and 1 instead of {1}!".format(record[0], record[2])
-                except:
-                    logger.error("Contamination rate of sample {0} has to be a float number between 0 and 1 instead of {1}!".format(record[0], record[2]))
-                    raise ValueError(f"Contamination rate of sample {record[0]} is invalid: {record[2]}")
-
-    except Exception as e:
-        logger.error("There is something wrong with the sample index file. Check the logs for more information.")
-        logger.exception(e)
-        raise
+# Disabled -- 2026-11-09: unused; it validates a tab-delimited sample list (--sample_list, --check_hard_clipped)
+# that MonopogenLite has no options for. Kept as comments while testing.
+# # Function to validate the input sample list
+# def validate_sample_list_file(args):
+#     if args.check_hard_clipped:
+#         out=os.popen("command -v bioawk").read().strip()
+#         assert out!="", "Program bioawk cannot be found!"
+#
+#     assert os.path.isfile(args.sample_list), "Sample index file {} cannot be found!".format(args.sample_list)
+#
+#     try:
+#         with open(args.sample_list) as f_in:
+#             for line in f_in:
+#                 record = line.strip().split("\t")
+#                 logger.debug("Checking sample {}".format(record[0]))
+#                 assert len(record)==3, "Every line has to have exactly 3 tab-delimited columns! Line with sample name {} does not satisify this requiremnt!".format(record[0])
+#                 assert os.path.isfile(record[1]), "Bam file {} cannot be found!".format(record[1])
+#                 assert os.path.isfile(record[1]+".bai"), "Bam file {} has not been indexed!".format(record[1])
+#                 assert os.path.isabs(record[1]), "Please use absolute path for bam file {}!".format(record[1])
+#
+#                 if args.check_hard_clipped:
+#                     logger.debug("Checking existence of hard-clipped reads.")
+#                     cmd = "samtools view {} | bioawk -c sam 'BEGIN {{count=0}} ($cigar ~ /H/)&&(!and($flag,256)) {{count++}} END {{print count}}'".format(record[1])
+#                     logger.debug("Command: "+cmd)
+#                     out=os.popen(cmd).read().strip()
+#                     logger.debug("Results: "+out)
+#                     assert out=="0", "Bam file {} contains hard-clipped reads without proper flag (0x100) set! Please use -M or -Y options of BWA MEM!".format(record[1])
+#
+#                 try:
+#                     float(record[2])
+#                     assert 0.0 <= float(record[2]) and float(record[2]) <= 1.0, "Contamination rate of sample {0} has to be a float number between 0 and 1 instead of {1}!".format(record[0], record[2])
+#                 except:
+#                     logger.error("Contamination rate of sample {0} has to be a float number between 0 and 1 instead of {1}!".format(record[0], record[2]))
+#                     raise ValueError(f"Contamination rate of sample {record[0]} is invalid: {record[2]}")
+#
+#     except Exception as e:
+#         logger.error("There is something wrong with the sample index file. Check the logs for more information.")
+#         logger.exception(e)
+#         raise
 
 # Function to validate the input region file
 def validate_user_setting_germline(args):
-    assert os.path.isfile(args.reference), "The genome reference fasta file {} cannot be found!".format(args.reference)
-    assert os.path.isdir(args.imputation_panel), "Filtered genotype file of the imputation reference panel {} cannot be found!".format(args.imputation_panel)
-    assert os.path.isfile(args.region), "The region file {} cannot be found!".format(args.region)
+    if not os.path.isfile(args.reference):
+        fail(f"The genome reference fasta file [{args.reference}] cannot be found!")
+    if not os.path.isdir(args.imputation_panel):
+        fail(f"The imputation panel directory [{args.imputation_panel}] cannot be found!")
+    if not os.path.isfile(args.region):
+        fail(f"The region file [{args.region}] cannot be found!")
     # check whether each bam file available (outdated worked for per sample).
     # Implementing a new check is redundant, because of the presence of validateChromosomalBams.sh
     # for chr in range(1, 23):
@@ -116,10 +125,12 @@ def validate_user_setting_germline(args):
             if not line.strip() or line.strip().startswith("#"):
                 continue
             record = line.strip().split(",")
-            assert len(record)==3 or len(record)==1, "Every line has to have exactly 3 comma-delimited columns chr1,1,100000 or chr1 (on the whole chromosome)! Line with region {} does not satisify this requiremnt!".format(line)
+            if len(record) not in (1, 3):
+                fail(f"Every line of the region file has to have 1 column (chr1, the whole chromosome) or 3 comma-delimited "
+                     f"columns (chr1,1,100000); this line does not: [{line.strip()}]")
 
-
-    print(f"  -- DEBUGGING: Germline after validate_user_seting_germline()")
+    if getattr(args, "debug", False):
+        print(f"  -- DEBUGGING: Germline after validate_user_setting_germline()")
 
 # Function to check the dependencies
 def check_dependencies(args):
@@ -128,12 +139,12 @@ def check_dependencies(args):
     programs_to_check = ("vcftools", "bgzip",  "bcftools", "samtools", "java")
 
     for prog in programs_to_check:
-        # NEW code -- 2024-08-15
-        location_prog = subprocess.check_output(['which', prog]).strip().decode('utf-8')
-        progr_out = os.popen("command -v {}".format(location_prog)).read()
+        # Look the program up on PATH; a missing program gives a clear error instead of a traceback -- 2026-11-09
+        location_prog = shutil.which(prog)
         if args.debug:
-            print(f"DEBUGGING: progr_out = {progr_out}")
-        assert progr_out != "", "Program {} cannot be found!".format(prog)
+            print(f"DEBUGGING: {prog} = {location_prog}")
+        if location_prog is None:
+            fail(f"Program [{prog}] cannot be found! Is the 'monopogen' environment activated?")
     # NEW code -- 2024-08-15
     # these programs are downloaded via the Monopogen github repository
     jars_to_check = ("beagle.jar", ) # keeping the comma to make it a tuple
@@ -141,8 +152,10 @@ def check_dependencies(args):
         jar_path = os.path.join(args.app_path, jar)
         if args.debug:
             print(f"DEBUGGING: Checking JAR file at {jar_path}")
-        assert os.path.isfile(jar_path), "Java jar file {} cannot be found at path {}!".format(jar, jar_path)
-    print(f"  -- DEBUGGING: Germline before check_dependencies()")
+        if not os.path.isfile(jar_path):
+            fail(f"Java jar file [{jar}] cannot be found at path [{jar_path}]!")
+    if args.debug:
+        print(f"  -- DEBUGGING: Germline after check_dependencies()")
 
 # Function to add the chr prefix to the bam file
 def addChr(in_bam, samtools, verbose=False):
